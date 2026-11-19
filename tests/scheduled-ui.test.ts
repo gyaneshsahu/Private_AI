@@ -1,6 +1,7 @@
 // Scheduled tasks (docs/scheduled-20261115.md) in a real browser at phone, tablet and desktop
 // width, in English and German: the Scheduled screen, the New task form and its validation,
-// templates, the Due now strip and Run now (a task's search runs without asking), the chat card,
+// templates, the Due now strip and Run now (answered like a chat message, so a time-sensitive
+// instruction searches at once; the form has no search choice since 19 November), the chat card,
 // the calendar download, and the Auto flows against the contract fake of the server
 // (tests/fixtures/background-tasks-fake.ts). No consent boxes in the form (owner, 18 November): the
 // client fills the server's consent record itself.
@@ -24,6 +25,9 @@ let origin = "";
 let offOrigin = "";
 const WIDTHS = [375, 768, 1280];
 const LANGS = ["en", "de"] as const;
+// The form's removed search choice (19 November), by its old labels.
+const OLD_SEARCH = { en: "Search the web first", de: "Zuerst im Web suchen" };
+const OLD_SEARCH_TEXT = { en: "Search text", de: "Suchtext" };
 
 async function serve(scheduled: boolean) {
   if (scheduled) process.env.VITE_SCHEDULED = "1";
@@ -221,6 +225,9 @@ for (const width of WIDTHS)
         await ui(form.getByRole("radio", { name: new RegExp(s.modeAuto) })).toBeDisabled();
         await ui(form.getByText(s.notAvailable)).toBeVisible();
         await ui(form.getByRole("option", { name: s.hourly })).toHaveAttribute("disabled", "");
+        // No search choice: the app decides from the instruction when the task runs.
+        await ui(form.getByLabel(OLD_SEARCH[lang])).toHaveCount(0);
+        await ui(form.getByLabel(OLD_SEARCH_TEXT[lang])).toHaveCount(0);
         await form.getByLabel(s.name, { exact: true }).fill("");
         await form.getByLabel(s.time, { exact: true }).fill("09:00");
         await target(form.getByRole("button", { name: s.create }), width);
@@ -366,7 +373,7 @@ for (const width of WIDTHS)
       }
     }, 120_000);
 
-it("Run now of a task with a search text searches that text at once and answers: no card", async () => {
+it("Run now of a time-sensitive task searches its masked instruction at once and answers: no card, no search choice in the form", async () => {
   const a = appText.en;
   const s = scheduledText.en;
   const { page, state, outside, searches } = await open(origin, 1280, "en");
@@ -387,26 +394,29 @@ it("Run now of a task with a search text searches that text at once and answers:
     await menu.getByRole("button", { name: a.tabConversation, exact: true }).click();
     await page.getByRole("button", { name: s.menu, exact: true }).click();
     await panel.getByRole("button", { name: s.newTask }).first().click();
+    // With search available the form still has no search choice, also behind "more".
+    for (const more of await form.locator("details:not([open]) > summary").all()) await more.click();
+    await ui(form.getByLabel(OLD_SEARCH.en)).toHaveCount(0);
+    await ui(form.getByLabel(OLD_SEARCH_TEXT.en)).toHaveCount(0);
     await form.getByLabel(s.name, { exact: true }).fill("Synthetic news");
-    await form.getByLabel(s.instruction, { exact: true }).fill("Summarise the synthetic news.");
+    // A time-sensitive instruction with an identifier: the search text is masked on this device.
+    const instruction = "Summarise today's synthetic news for write@example.org.";
+    await form.getByLabel(s.instruction, { exact: true }).fill(instruction);
     await form.getByLabel(s.time, { exact: true }).fill("09:00");
-    // The search text, with an identifier: it is masked on this device when the task is saved.
-    const useSearch = form.getByLabel(s.search, { exact: true });
-    if (!(await useSearch.isVisible())) await form.locator("details > summary").click();
-    await useSearch.check();
-    await form.getByLabel(s.searchText, { exact: true }).fill("synthetic news write@example.org");
     await form.getByRole("button", { name: s.create }).click();
     await ui(form).toHaveCount(0);
     await panel.getByRole("button", { name: s.close }).click();
-    // Due two minutes later: Run now searches the saved text once, then answers; nothing asks.
+    // Due two minutes later: Run now searches the masked instruction once, then answers; nothing asks.
     await page.clock.fastForward("02:30");
     const strip = page.getByRole("region", { name: s.dueRegion });
     await strip.getByRole("button", { name: new RegExp(`^${s.runNow}`) }).click();
-    await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer.");
-    expect(searches).toEqual([{ kind: "search", value: "synthetic news [email address removed]" }]);
-    await ui(page.getByText(s.runSearchTitle)).toHaveCount(0);
-    await ui(page.getByRole("button", { name: s.runSearch })).toHaveCount(0);
-    expect(await sent(page)).toEqual([expect.stringContaining("Summarise the synthetic news.")]);
+    const answer = page.locator("article.assistant").last();
+    await ui(answer).toContainText("Synthetic answer.");
+    expect(searches).toEqual([{ kind: "search", value: "Summarise today's synthetic news for [email address removed]." }]);
+    await ui(page.getByRole("region", { name: "Search suggestion" })).toHaveCount(0);
+    expect(await sent(page)).toEqual([expect.stringContaining(instruction)]);
+    // The answer says what was searched, as a chat answer does.
+    await ui(answer.locator("details.searched-web")).toHaveCount(1);
     await ui(strip).toHaveCount(0);
     expect(outside).toEqual([]);
   } finally {

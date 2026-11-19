@@ -1,4 +1,4 @@
-// Deep research in the Research tab (docs/deep-research-20261114.md): the question, one progress
+// Deep research in the chat (docs/deep-research-20261114.md): the question, one progress
 // line with its Stop button, and the result. A run starts straight away (owner, 18 November): the
 // plan's search texts are masked on this device and sent without an approval step; a text the
 // masking cannot make safe is skipped (src/deep-research.ts parsePlan). The pipeline is

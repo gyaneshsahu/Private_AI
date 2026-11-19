@@ -625,16 +625,9 @@ try {
         const tab = (name: string) =>
           workspaceControl(page, name);
         if (!selection || fixture.sources.length) {
-          await tab("Research").click();
-          await page.getByLabel("Exact search query").fill(fixture.query);
-          await page.getByRole("button", { name: "Review disclosure" }).click();
-          await page
-            .getByRole("button", { name: "Approve and retrieve" })
-            .click();
-          await page
-            .getByRole("status")
-            .filter({ hasText: "Search results added" })
-            .waitFor({ timeout: 30000 });
+          // The Research page with typed, approved searches was removed on 19 November 2026 (search is
+          // automatic: docs/owner-decisions.md). This October harness loaded its fixture sources through it.
+          throw Error("evaluation/run-workspace.ts: the Research page this run needs was removed on 19 November 2026; rework the source loading before running it again.");
           record.sourceCount = sources.length;
           record.sourceHash = hash(sources);
           record.evidenceCharacters = sources.reduce(

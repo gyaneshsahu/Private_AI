@@ -1,13 +1,25 @@
 import { workspaceControl } from "./workspace-navigation";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-test("search is explicitly approved and remains temporary after source removal", async ({
+// Search is automatic (owner, 19 November): it needs search and a ready model. No answer is
+// stubbed here, so the answer after the search fails; only the search is under test.
+async function readyForSearch(page: Page) {
+  await page.route("**/api/status", async (route) => {
+    const status = await (await route.fetch()).json();
+    await route.fulfill({
+      json: { ...status, search: true, inference: { ...status.inference, ready: true } },
+    });
+  });
+}
+async function sendQuestion(page: Page, text: string) {
+  await page.getByLabel("Message CometRow").fill(text);
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+}
+
+test("a current question is searched on Send and the results stay temporary after source removal", async ({
   page,
 }) => {
-  await page.route("**/api/status", async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({ json: { ...(await response.json()), search: true } });
-  });
+  await readyForSearch(page);
   let calls = 0;
   await page.route("**/api/research/execute", async (route) => {
     calls++;
@@ -27,39 +39,17 @@ test("search is explicitly approved and remains temporary after source removal",
   });
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
-  await tab("Research").click();
-  await page.getByLabel("Exact search query").fill("synthetic library hours");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  // A search query is not a page address; the URL note does not appear.
-  await expect(page.getByText("personal details in it are not removed")).toHaveCount(0);
-  expect(calls).toBe(0);
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Search results added" }),
-  ).toBeVisible();
-  expect(calls).toBe(1);
-  await page
-    .getByRole("button", { name: "Prepare a question about these sources" })
-    .click();
-  await expect(page.getByLabel("Message CometRow")).toHaveValue(
-    /Using the selected web sources/,
-  );
-  await expect(page.getByLabel("Message CometRow")).toHaveValue(
-    /synthetic library hours/,
-  );
-  await page
-    .getByLabel("Message CometRow")
-    .fill("SYNTHETIC preserve my own question");
-  await tab("Research").click();
-  await page
-    .getByRole("button", { name: "Prepare a question about these sources" })
-    .click();
-  await expect(page.getByLabel("Message CometRow")).toHaveValue(
-    "SYNTHETIC preserve my own question",
+  await sendQuestion(page, "What are the library opening hours today?");
+  await expect(page.locator("details.searched-web")).toContainText(
+    "Searched the web",
   );
   expect(calls).toBe(1);
   await tab("Context").click();
+  await expect(
+    page.locator(".content-view .panel label").filter({ hasText: "Public search results" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Remove", exact: true }).click();
+  expect(calls).toBe(1);
   await tab("Saved").click();
   await page
     .getByLabel("Vault passphrase")
@@ -89,9 +79,10 @@ test("search is explicitly approved and remains temporary after source removal",
   ).toBeVisible();
 });
 
-test("malformed research is rejected without changing the draft or retrying", async ({
+test("a malformed search result is rejected, nothing is added and nothing is retried", async ({
   page,
 }) => {
+  await readyForSearch(page);
   let executions = 0;
   await page.route("**/api/research/execute", async (route) => {
     executions++;
@@ -101,36 +92,36 @@ test("malformed research is rejected without changing the draft or retrying", as
   });
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
-  await page.getByLabel("Message CometRow").fill("SYNTHETIC preserved draft");
-  await tab("Research").click();
-  await page.getByLabel("Research method").selectOption("page");
-  await page
-    .getByLabel("Exact HTTPS URL")
-    .fill("https://example.com/synthetic");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "Research returned invalid source information",
+  await sendQuestion(page, "SYNTHETIC library opening hours today");
+  // The question is still answered, and says it has no web results.
+  await expect(
+    page.getByRole("status").filter({
+      hasText: "The web search did not complete, so this answer does not use web results.",
+    }),
+  ).toBeVisible();
+  await expect(page.locator("article.user")).toContainText(
+    "SYNTHETIC library opening hours today",
   );
+  await expect(page.locator("details.searched-web")).toHaveCount(0);
   await tab("Context").click();
   await expect(
     page.getByText("Your context is empty.", { exact: false }),
   ).toBeVisible();
-  await tab("Conversation").click();
-  await expect(page.getByLabel("Message CometRow")).toHaveValue(
-    "SYNTHETIC preserved draft",
-  );
   expect(executions).toBe(1);
 });
 
-test("approved research retains inspectable provenance through encrypted save and reopen", async ({
+// The approved page and its save-and-reopen half are gone: a page is no longer opened by its address,
+// and a saved chat never keeps search results (live-search-save.spec.ts covers the reopen).
+test("an automatic search keeps inspectable provenance in the open chat and sends only the question", async ({
   page,
   baseURL,
 }) => {
+  await readyForSearch(page);
   const disclosures: unknown[] = [];
   const external: string[] = [];
   let executions = 0;
   const url = "https://example.com/synthetic-opening-hours";
+  const question = "Is the library open today?";
   page.on("request", (request) => {
     if (new URL(request.url()).origin !== new URL(baseURL!).origin)
       external.push(request.url());
@@ -142,7 +133,7 @@ test("approved research retains inspectable provenance through encrypted save an
     executions++;
     expect(route.request().postDataJSON()).toEqual({
       id: expect.stringMatching(/^[a-f0-9]{48}$/),
-      request: { kind: "page", value: url },
+      request: { kind: "search", value: question },
     });
     await route.fulfill({
       json: {
@@ -160,18 +151,11 @@ test("approved research retains inspectable provenance through encrypted save an
   });
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
-  await page
-    .getByLabel("Message CometRow")
-    .fill("SYNTHETIC PRIVATE DRAFT not part of research");
-  await tab("Research").click();
-  await page.getByLabel("Research method").selectOption("page");
-  await page.getByLabel("Exact HTTPS URL").fill(url);
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  expect(disclosures).toEqual([]);
-  expect(executions).toBe(0);
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(page.getByRole("status")).toContainText("Public sources added");
-  expect(disclosures).toEqual([{ kind: "page", value: url }]);
+  await sendQuestion(page, question);
+  await expect(page.locator("details.searched-web")).toContainText(
+    "Searched the web",
+  );
+  expect(disclosures).toEqual([{ kind: "search", value: question }]);
   expect(executions).toBe(1);
   await tab("Context").click();
   await page.locator(".content-view details summary").click();
@@ -199,35 +183,7 @@ test("approved research retains inspectable provenance through encrypted save an
   await expect(
     page.getByRole("button", { name: "Close source" }),
   ).toBeFocused();
-
   await page.getByRole("button", { name: "Close source" }).click();
-  await tab("Saved").click();
-  await page
-    .getByLabel("Vault passphrase")
-    .fill("synthetic research workspace password");
-  await page.getByRole("button", { name: "Create or unlock vault" }).click();
-  await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Encrypted snapshot saved" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Lock and clear workspace" }).click();
-  await page.reload();
-  await tab("Saved").click();
-  await page
-    .getByLabel("Vault passphrase")
-    .fill("synthetic research workspace password");
-  await page.getByRole("button", { name: "Create or unlock vault" }).click();
-  await page.getByRole("button", { name: "Open", exact: true }).click();
-  await tab("Context").click();
-  await page.locator(".content-view details summary").click();
-  await page.getByRole("button", { name: "Inspect source" }).click();
-  await expect(page.getByRole("dialog")).toContainText(url);
-  await expect(page.getByRole("dialog")).toContainText("Saturday: 10:00–14:00");
-  await page.getByRole("button", { name: "Close source" }).click();
-  await tab("Conversation").click();
-  await expect(page.getByLabel("Message CometRow")).toHaveValue(
-    "SYNTHETIC PRIVATE DRAFT not part of research",
-  );
   expect(executions).toBe(1);
   expect(external).toEqual([]);
 });

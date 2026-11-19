@@ -1,4 +1,4 @@
-// Deep research (docs/deep-research-20261114.md): the panel in Research, its progress line and
+// Deep research (docs/deep-research-20261114.md): the run in the chat, its progress line and
 // the note kept on the answer. German has the same keys.
 import { defineText } from "./core";
 

@@ -408,7 +408,7 @@ export interface Attachment {
   /**
    * Set when this search attachment was saved: its results and links were
    * removed on this device (owner decision, 22 October 2026) and only the
-   * approved query remains, so the user can search again for current sources.
+   * searched query remains, so the user can search again for current sources.
    */
   liveSearch?: { strippedAt: string };
 }
@@ -422,6 +422,10 @@ export interface Message {
   failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty" | "busy" | "capacity" | "error";
   /** For an answer about a large document: which of its passages were sent, and that the rest was not. */
   passagesUsed?: string;
+  /** For an answer after an automatic web search: the exact (masked) text that was searched. */
+  searchedFor?: string;
+  /** The ids of that search's own sources, so its line never lists an earlier search's. */
+  searchedSources?: string[];
   /** For an answer: the ids of the memories sent with its question. Ids only, so a deleted memory leaves no text here. */
   memoriesUsed?: string[];
   /** For an answer: its chat's project instructions were sent with its question (the text is not kept here). */

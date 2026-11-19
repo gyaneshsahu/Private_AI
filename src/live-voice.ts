@@ -35,7 +35,6 @@ export type LiveReasonKey =
   | "edit"
   | "blocked"
   | "consent"
-  | "searchChoice"
   | "sendFailed"
   | "noVoice";
 export interface LiveReason {
@@ -63,7 +62,7 @@ export interface LiveSnapshot {
   replyDelayMs?: number;
 }
 
-export type SendOutcome = "answered" | "consent" | "choice" | "failed";
+export type SendOutcome = "answered" | "consent" | "failed";
 export type Earcon = "listen" | "heard" | "sent" | "end";
 
 export interface LiveVoiceDeps {
@@ -80,8 +79,8 @@ export interface LiveVoiceDeps {
   /** Asked before the microphone opens and before a question is sent: a reason not to go on. */
   blocked(): LiveStop | undefined;
   /**
-   * One question through the app's ordinary send path. "consent" (health consent) and "choice"
-   * (search first?): nothing was sent, a choice on screen comes first, so the session ends.
+   * One question through the app's ordinary send path (it searches the web by itself when the
+   * question needs it). "consent" (health consent): nothing was sent, so the session ends.
    */
   /** The question of the turn just recorded, sent with that recording's id. */
   send(text: string, signal: AbortSignal): Promise<SendOutcome>;
@@ -229,9 +228,9 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
       outcome = "failed";
     }
     if (mine !== run) return;
-    if (outcome === "consent" || outcome === "choice") {
+    if (outcome === "consent") {
       set({ turns: snapshot.turns - 1 }); // nothing was sent
-      return halt("ended", { key: outcome === "consent" ? "consent" : "searchChoice" });
+      return halt("ended", { key: "consent" });
     }
     if (outcome === "failed") return halt("paused", { key: "sendFailed" });
     // Talked over while the answer was still being written: straight back to listening.

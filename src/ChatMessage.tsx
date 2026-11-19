@@ -9,6 +9,7 @@ import { completenessWarning } from "./arithmetic/completeness";
 import { CodeRuns } from "./CodeRuns";
 import { fitHeight, isSendKey, MESSAGE_LIMIT, touchDevice } from "./composer-keys";
 import { GERMAN_RULES } from "./german-rules";
+import { WHEN_TO_SEARCH } from "./when-to-search";
 import { Icon } from "./Icon";
 import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
 import { useLang } from "./i18n";
@@ -361,6 +362,12 @@ export function ChatMessage({
         </LoadBoundary>
         )
       )}
+      {!user && message.searchedFor && (
+        <SearchedWeb
+          query={message.searchedFor}
+          sources={(message.sourceSnapshot ?? []).filter((source) => !message.searchedSources || message.searchedSources.includes(source.id))}
+        />
+      )}
       {sourceHistoryStatus(message, sourceHistory) === "changed" && (
         <details className="source-history-note">
           <summary>{t.sourcesChanged}</summary>
@@ -447,5 +454,36 @@ export function ChatMessage({
         </div>
       )}
     </article>
+  );
+}
+
+/**
+ * Under an answer after an automatic search (owner, 19 November): the short line "Searched the web";
+ * opened, the exact text that was searched and the web sources. A saved chat keeps the text, not the results.
+ */
+function SearchedWeb({ query, sources }: { query: string; sources: Source[] }) {
+  useLang();
+  const web = sources.filter((source) => source.url);
+  return (
+    <details className="source-history-note searched-web">
+      <summary>
+        <Icon name="globe" />
+        {WHEN_TO_SEARCH.searchedWeb}
+      </summary>
+      <p>{WHEN_TO_SEARCH.searchedFor(query)}</p>
+      {web.length ? (
+        <ol>
+          {web.map((source) => (
+            <li key={source.id}>
+              <a href={source.url} target="_blank" rel="noopener noreferrer">
+                {source.title || new URL(source.url!).hostname}
+              </a>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>{WHEN_TO_SEARCH.sourcesNotKept}</p>
+      )}
+    </details>
   );
 }

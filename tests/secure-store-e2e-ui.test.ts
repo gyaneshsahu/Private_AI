@@ -381,7 +381,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await A.context().close();
 }, 300_000);
 
-it("1280 px, English: an approved search keeps its results in Secure, also after a change from another device (FE-01)", async () => {
+it("1280 px, English: an automatic search keeps its results in Secure, also after a change from another device (FE-01)", async () => {
   const s = await site({ secure: true, sync: false });
   const account = randomUUID();
   const a = appText.en;
@@ -390,7 +390,7 @@ it("1280 px, English: an approved search keeps its results in Secure, also after
   A.on("request", (request) => {
     if (new URL(request.url()).origin !== s.origin) outside.push(request.url());
   });
-  // The search provider is mocked: the approved text comes back with one synthetic result.
+  // The search provider is mocked: the searched text comes back with one synthetic result.
   await A.route("**/api/research/*", (route) =>
     new URL(route.request().url()).pathname.endsWith("/prepare")
       ? route.fulfill({ json: { id: "synthetic-prepared" } })
@@ -401,17 +401,7 @@ it("1280 px, English: an approved search keeps its results in Secure, also after
   // A chat with a message saves by itself; the search below then changes a saved chat.
   await ask(A, "en", "SYNTHETIC FIRST QUESTION");
   await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThanOrEqual(1);
-  await A.locator("details.tools-menu summary").click();
-  await A.locator("details.tools-menu").getByRole("button", { name: a.tabResearch }).click();
-  await A.getByLabel(a.exactQuery).fill("synthetic public query");
-  await A.getByRole("button", { name: a.reviewDisclosure }).click();
-  await A.getByRole("button", { name: a.approve }).click();
-  await ui(A.getByRole("button", { name: a.prepareQuestion })).toBeVisible();
-  // Long enough for the automatic save (300 ms) and the list refresh after it.
   const written = (await s.stores.secure.usage(account)).cursor;
-  await focus(A);
-  await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThan(written);
-  await A.getByRole("button", { name: a.prepareQuestion }).click();
   const answer = A.locator("article.assistant").last();
   const check = async () => {
     await ui(answer).toContainText("Sources: 1");
@@ -419,8 +409,12 @@ it("1280 px, English: an approved search keeps its results in Secure, also after
     await ui(answer).not.toContainText("[synthetic-0002]");
     await ui(A.getByText(a.sourcesUnrecorded)).toHaveCount(0);
   };
-  await A.getByRole("button", { name: a.sendLabel, exact: true }).click();
+  // Search is automatic (owner, 19 November): a question that asks for it is searched on Send.
+  await ask(A, "en", "search the web for synthetic public query");
   await check();
+  // Long enough for the automatic save (300 ms) and the list refresh after it.
+  await focus(A);
+  await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThan(written);
 
   // B changes the chat; the change reaches A, where the chat is open, and A keeps its results.
   const B = await device(s, account);

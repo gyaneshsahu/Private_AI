@@ -1,7 +1,7 @@
 // The Settings dialog's tabs and their content (SS-05, SS-15; docs/settings-structure-20261116.md).
 // src/App.tsx keeps the <dialog>, its title, close button and focus handling, and closes Settings
 // before anything here leaves it (another tab of the app, the account page, sign out).
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { accountRequest } from "./account-request";
 import { ConfirmDialog } from "./ConfirmDialog";
 import type { AppStatus, Conversation } from "../shared/contracts";
@@ -22,6 +22,7 @@ import { modesText } from "./text/modes";
 import { settingsText } from "./text/settings";
 import { syncText } from "./text/sync";
 import { workspaceText } from "./text/workspace";
+import { WHEN_TO_SEARCH } from "./when-to-search";
 import type { Vault } from "./vault";
 
 /** Sections of the account page (src/AccountLab.tsx) that Settings links to. */
@@ -55,6 +56,8 @@ export function SettingsBody({
   onArchived,
   onAccountPage,
   onSignOut,
+  lookUp,
+  onLookUp,
 }: {
   section: string;
   onSection: (id: string) => void;
@@ -88,6 +91,9 @@ export function SettingsBody({
   onArchived?: () => void;
   onAccountPage: (part: AccountPart) => void;
   onSignOut: () => void;
+  /** "Look things up online" (owner, 19 November): automatic web search, on unless switched off. Absent without search. */
+  lookUp?: boolean;
+  onLookUp: (on: boolean) => void;
 }) {
   const { lang } = useLang();
   const t = appText[lang];
@@ -133,6 +139,7 @@ export function SettingsBody({
               <option value="dark">{t.themeDark}</option>
             </select>
             <p className="muted">{tm.appearanceNote}</p>
+            {lookUp !== undefined && <LookUpSetting value={lookUp} onChange={onLookUp} />}
             {germanEnabled() && (
               <>
                 <h4>{t.languageLabel}</h4>
@@ -289,5 +296,22 @@ function SignOutEverywhere({ busy, onSignOut, onNotice }: { busy: boolean; onSig
         />
       )}
     </>
+  );
+}
+
+/** Settings > General: "Look things up online", one switch with one line under it (like Secure Max's). */
+function LookUpSetting({ value, onChange }: { value: boolean; onChange: (on: boolean) => void }) {
+  useLang();
+  const id = useId();
+  return (
+    <div className="settings-switch">
+      <label>
+        <input type="checkbox" role="switch" checked={value} aria-describedby={id} onChange={(event) => onChange(event.target.checked)} />{" "}
+        {WHEN_TO_SEARCH.lookUpLabel}
+      </label>
+      <p id={id} className="muted">
+        {WHEN_TO_SEARCH.lookUpHelp}
+      </p>
+    </div>
   );
 }

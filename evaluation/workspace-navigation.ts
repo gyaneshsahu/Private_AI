@@ -7,13 +7,13 @@ export function workspaceControl(page: Page, name: string) {
       // Multi-tab journeys must activate the tab before interacting with its UI.
       await page.bringToFront();
       await page.locator(".app-shell").waitFor({ state: "visible" });
-      if (["Context", "Research"].includes(name)) {
+      if (name === "Context") {
         await workspaceControl(page, "Conversation").click();
         await page.getByLabel("Attachments and tools", { exact: true }).click();
         await page
           .locator(".tools-menu")
           .getByRole("button", {
-            name: name === "Context" ? "Conversation files" : "Research",
+            name: "Conversation files",
             exact: true,
           })
           .click();

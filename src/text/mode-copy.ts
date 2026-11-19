@@ -72,7 +72,7 @@ export const modeCopyText = defineText({
     introSession_secure:
       "Signing in opens your saved chats on any device. Secure Max, if you use it, stays locked until you unlock it.",
     exportBody_secure:
-      "One file with the records this service holds about your account: your account identity and contact email, sign-in methods (never their secret keys or tokens), active sessions, security notices, request and usage records with their published cost, billing operations and any closure request. Your saved chats, files and memories are listed only by number, size and time, without their content (search text you approve passes through the service on the way to the search provider).",
+      "One file with the records this service holds about your account: your account identity and contact email, sign-in methods (never their secret keys or tokens), active sessions, security notices, request and usage records with their published cost, billing operations and any closure request. Your saved chats, files and memories are listed only by number, size and time, without their content (a search text passes through the service on the way to the search provider).",
     vaultNote_secure:
       "Your saved chats are kept with your account, so signing in on a new device brings them back. Secure Max has its own key and its own recovery key.",
     // shared/privacy-copy.ts PRIVACY_SUMMARY (binding text, not edited here)
@@ -115,7 +115,7 @@ export const modeCopyText = defineText({
     introSession_secure:
       "Mit der Anmeldung öffnen Sie Ihre gespeicherten Chats auf jedem Gerät. Secure Max bleibt, falls Sie es nutzen, gesperrt, bis Sie es entsperren.",
     exportBody_secure:
-      "Eine Datei mit den Daten, die dieser Dienst zu Ihrem Konto speichert: Ihre Kontoidentität und Kontakt-E-Mail-Adresse, Anmeldemethoden (niemals deren geheime Schlüssel oder Tokens), aktive Sitzungen, Sicherheitshinweise, Anfrage- und Nutzungsdaten mit ihren veröffentlichten Kosten, Abrechnungsvorgänge und einen etwaigen Antrag auf Schließung. Ihre gespeicherten Chats, Dateien und Erinnerungen sind nur mit Anzahl, Größe und Zeitpunkt aufgeführt, ohne ihren Inhalt (Suchtext, den Sie freigeben, läuft auf dem Weg zum Suchanbieter durch den Dienst hindurch).",
+      "Eine Datei mit den Daten, die dieser Dienst zu Ihrem Konto speichert: Ihre Kontoidentität und Kontakt-E-Mail-Adresse, Anmeldemethoden (niemals deren geheime Schlüssel oder Tokens), aktive Sitzungen, Sicherheitshinweise, Anfrage- und Nutzungsdaten mit ihren veröffentlichten Kosten, Abrechnungsvorgänge und einen etwaigen Antrag auf Schließung. Ihre gespeicherten Chats, Dateien und Erinnerungen sind nur mit Anzahl, Größe und Zeitpunkt aufgeführt, ohne ihren Inhalt (ein Suchtext läuft auf dem Weg zum Suchanbieter durch den Dienst hindurch).",
     vaultNote_secure:
       "Ihre gespeicherten Chats liegen in Ihrem Konto. Wenn Sie sich auf einem neuen Gerät anmelden, sind sie wieder da. Secure Max hat einen eigenen Schlüssel und einen eigenen Wiederherstellungsschlüssel.",
     privacySummary_secure:

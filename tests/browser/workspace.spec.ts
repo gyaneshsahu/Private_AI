@@ -62,29 +62,72 @@ test("temporary text extraction, context corrections and calculator work without
   expect(external).toEqual([]);
 });
 
-test("research review and cancellation make no research request; unsafe page approval fails closed", async ({
+test("with Look things up online off a current question makes no research request; a failed search and an unsafe page fail closed", async ({
   page,
 }) => {
   const requests: string[] = [];
   page.on("request", (r) => {
     if (r.url().includes("/api/research/")) requests.push(r.url());
   });
+  // Search is automatic (owner, 19 November): it needs search and a ready model. The real server
+  // has no search service and no answer is stubbed, so both fail here.
+  await page.route("**/api/status", async (route) => {
+    const status = await (await route.fetch()).json();
+    await route.fulfill({
+      json: { ...status, search: true, inference: { ...status.inference, ready: true } },
+    });
+  });
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem("synthetic-look-up-set")) {
+      sessionStorage.setItem("synthetic-look-up-set", "1");
+      localStorage.setItem("privateai.lookUpOnline", "off");
+    }
+  });
   await page.goto("/?developmentTools");
-  await workspaceControl(page, "Research").click();
-  await page.getByLabel("Research method").selectOption("page");
-  await page
-    .getByLabel("Exact HTTPS URL")
-    .fill("https://127.0.0.1/private-canary");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
+  const send = async (text: string) => {
+    await page.getByLabel("Message CometRow").fill(text);
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
+  };
+  await send("What is the weather in Berlin today?");
+  await expect(page.locator("article.user")).toHaveCount(1);
   expect(requests).toEqual([]);
-  await page.getByRole("button", { name: "Cancel", exact: true }).click();
-  expect(requests).toEqual([]);
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
+  // Switched on again: the search is tried once; the server refuses it and nothing is retried.
+  await page.evaluate(() => localStorage.removeItem("privateai.lookUpOnline"));
+  page.on("dialog", (dialog) => dialog.accept());
+  await page.reload();
+  await send("What is the weather in Berlin today?");
   await expect(
-    page.getByRole("status").filter({ hasText: "Research could not complete" }),
+    page.getByRole("status").filter({
+      hasText: "The web search did not complete, so this answer does not use web results.",
+    }),
   ).toBeVisible();
   expect(requests).toHaveLength(2);
+  // The server still refuses an unsafe page (it opens the top result page during a search).
+  const refused = await page.evaluate(async () => {
+    const { csrf } = await (await fetch("/api/status")).json();
+    const post = (path: string, body: unknown) =>
+      fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-PrivateAI-CSRF": csrf },
+        body: JSON.stringify(body),
+      });
+    const request = { kind: "page", value: "https://127.0.0.1/private-canary" };
+    const prepared = await post("/api/research/prepare", request);
+    const { id } = await prepared.json();
+    const response = await post("/api/research/execute", { id, request });
+    return { prepared: prepared.status, id, status: response.status, body: await response.json() };
+  });
+  // The page was accepted for retrieval, so the refusal comes from the page fetch itself.
+  expect(refused).toEqual({
+    prepared: 200,
+    id: expect.stringMatching(/^[a-f0-9]{48}$/),
+    status: 400,
+    body: {
+      error:
+        "The web search could not complete: the search service or the page is unavailable, redirects, or exceeds safety limits. No automatic retry was made.",
+    },
+  });
+  expect(requests).toHaveLength(4);
 });
 
 test("encrypted snapshots survive reload, lock clears content and deletion persists", async ({
@@ -182,7 +225,7 @@ test("desktop and basic phone layouts have no horizontal overflow", async ({
   await page.goto("/?developmentTools");
   for (const width of [1440, 360]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const tab of ["Conversation", "Context", "Research", "Saved"]) {
+    for (const tab of ["Conversation", "Context", "Saved"]) {
       await workspaceControl(page, tab).click();
       expect(
         await page.evaluate(

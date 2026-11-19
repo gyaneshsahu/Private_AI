@@ -1,12 +1,16 @@
 import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
-test("a live search conversation saves its written draft and query, never the results, and reopens with Search again", async ({
+test("an automatic search conversation saves its written draft and query, never the results, and reopens with Search again", async ({
   page,
 }) => {
+  // Search is automatic (owner, 19 November): it needs search and a ready model. No answer is
+  // stubbed here, so the answer after the search fails; only the search is under test.
   await page.route("**/api/status", async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({ json: { ...(await response.json()), search: true } });
+    const status = await (await route.fetch()).json();
+    await route.fulfill({
+      json: { ...status, search: true, inference: { ...status.inference, ready: true } },
+    });
   });
   const disclosures: unknown[] = [];
   page.on("request", (request) => {
@@ -32,15 +36,13 @@ test("a live search conversation saves its written draft and query, never the re
   });
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
-  await tab("Research").click();
-  await page.getByLabel("Exact search query").fill("synthetic library hours");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Search results added" }),
-  ).toBeVisible();
+  await page
+    .getByLabel("Message CometRow")
+    .fill("What are the library opening hours today?");
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  const searched = page.locator("details.searched-web");
+  await expect(searched).toContainText("Searched the web");
   expect(executions).toBe(1);
-  await tab("Conversation").click();
   await page
     .getByLabel("Message CometRow")
     .fill("SYNTHETIC WRITTEN DRAFT about the hours");
@@ -101,19 +103,13 @@ test("a live search conversation saves its written draft and query, never the re
   await expect(page.locator("body")).not.toContainText(
     "SYNTHETIC RESULT TITLE",
   );
-  await note.getByRole("button", { name: "Search again" }).click();
-  // One tap prepares the same approved query; nothing is sent until approval.
-  await expect(
-    page.getByRole("region", { name: "Confirm external disclosure" }),
-  ).toContainText("synthetic library hours");
   expect(executions).toBe(1);
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Search results added" }),
-  ).toBeVisible();
-  expect(executions).toBe(2);
+  // One tap searches the saved query again and answers again; nothing to approve.
+  await note.getByRole("button", { name: "Search again" }).click();
+  await expect.poll(() => executions).toBe(2);
+  await expect(page.locator("body")).toContainText("SYNTHETIC RESULT TITLE");
   expect(disclosures).toEqual([
-    { kind: "search", value: "synthetic library hours" },
-    { kind: "search", value: "synthetic library hours" },
+    { kind: "search", value: "What are the library opening hours today?" },
+    { kind: "search", value: "What are the library opening hours today?" },
   ]);
 });

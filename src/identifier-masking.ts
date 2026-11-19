@@ -844,17 +844,17 @@ const germanKinds: Record<string, [one: string, many: string]> = {
   "BIRTH-DATE": ["Geburtsdatum", "Geburtsdaten"],
 };
 
-/** The note under a reply or a search approval; kind labels in the search text itself stay English. */
+/** The note under a reply or a search; kind labels in the search text itself stay English. */
 export const maskingText = {
   en: {
     kept: (list: string) => `Kept on this device: ${list}.`,
-    removed: (list: string) => `Removed from the search text before approval: ${list}.`,
+    removed: (list: string) => `Removed from the search text before the search: ${list}.`,
     item: (_kind: string, count: number, label: string) =>
       `${count} ${count === 1 ? label : label.replace(/(ess|y)$/, (m) => (m === "y" ? "ies" : "esses")).replace(/(?<!s)$/, "s")}`,
   },
   de: {
     kept: (list: string) => `Auf diesem Gerät behalten: ${list}.`,
-    removed: (list: string) => `Vor der Freigabe aus dem Suchtext entfernt: ${list}.`,
+    removed: (list: string) => `Vor der Suche aus dem Suchtext entfernt: ${list}.`,
     item: (kind: string, count: number, label: string) =>
       `${count} ${germanKinds[kind]?.[count === 1 ? 0 : 1] ?? label}`,
   },
@@ -887,7 +887,7 @@ const POSSIBLY_PERSONAL = unicodeWords(
 );
 
 /**
- * Prepares a web-search query for the approval preview: recognised identifiers
+ * Prepares a web-search query: recognised identifiers
  * are removed (not placeholdered, since the search provider must not receive
  * them at all) and the user is warned when the rest may still name a person.
  */

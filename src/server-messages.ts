@@ -96,8 +96,12 @@ const GERMAN: Record<string, string> = {
     "Ungültige Freigabe. Verwenden Sie eine kurze Suchanfrage oder eine öffentliche HTTPS-Adresse.",
   "Search service is not configured. No query was sent.":
     "Die Websuche ist nicht eingerichtet. Es wurde keine Suchanfrage gesendet.",
-  "Research could not complete. Approval may have expired, or the destination is unavailable, redirects, or exceeds safety limits. No automatic retry was made.":
-    "Die Recherche konnte nicht abgeschlossen werden. Die Freigabe ist möglicherweise abgelaufen, oder das Ziel ist nicht erreichbar, leitet weiter oder überschreitet die Sicherheitsgrenzen. Es wurde nicht automatisch erneut versucht.",
+  "The web search could not complete: the search service or the page is unavailable, redirects, or exceeds safety limits. No automatic retry was made.":
+    "Die Websuche konnte nicht abgeschlossen werden: Der Suchdienst oder die Seite ist nicht erreichbar, leitet weiter oder überschreitet die Sicherheitsgrenzen. Es wurde nicht automatisch erneut versucht.",
+  "Too many searches are waiting. Try again in five minutes.": "Zu viele Suchen warten. Versuchen Sie es in fünf Minuten erneut.",
+  "This search expired before it ran. Ask again.": "Diese Suche ist abgelaufen, bevor sie lief. Fragen Sie erneut.",
+  "This website cannot be opened by CometRow.": "Diese Website kann CometRow nicht öffnen.",
+  "This page redirects to another address, so it was not opened.": "Diese Seite leitet auf eine andere Adresse weiter und wurde deshalb nicht geöffnet.",
   // Account and sign-in
   "Account access is paused for recovery verification.":
     "Der Zugang zum Konto ist für die Überprüfung der Wiederherstellung pausiert.",

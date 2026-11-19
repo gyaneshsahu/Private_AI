@@ -99,17 +99,12 @@ it("delivers bounded continuation in the actual temporary research workspace wit
     });
     const tab = (name: string) => workspaceControl(page, name);
     await page.goto(origin, { timeout: 30000 });
-    await tab("Research").click();
-    await page.getByLabel("Exact search query").fill("public synthetic price");
-    await page.getByRole("button", { name: "Review disclosure" }).click();
-    await page.getByRole("button", { name: "Approve and retrieve" }).click();
-    await ui(
-      page.getByRole("status").filter({ hasText: "Search results added" }),
-    ).toBeVisible();
-    await tab("Conversation").click();
+    // Search is automatic (owner, 19 November): "current price" is searched on Send, then answered.
     await page
       .getByLabel("Message CometRow")
-      .fill("Calculate the items and explain missing delivery information.");
+      .fill(
+        "Calculate the items at the current price and explain missing delivery information.",
+      );
     await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.locator("article.assistant").last()).toContainText(
       "14.00 EUR",

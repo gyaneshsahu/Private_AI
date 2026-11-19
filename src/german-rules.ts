@@ -364,20 +364,6 @@ export function checkUncheckedFigures(
 }
 
 /**
- * Search first (decided 13 November): Send on a German-rules question asks "Search and answer"
- * or "Answer without checking" instead of answering, unless web results are already selected or
- * automatic search is on. Needs a suggestion, so the exact masked text can be shown; nothing is
- * remembered, it asks each time.
- */
-export function asksBeforeSending(
-  suggestion: { rules: boolean; again?: boolean } | undefined,
-  autoSearch: boolean,
-  web: boolean,
-): boolean {
-  return !!suggestion?.rules && !suggestion.again && !autoSearch && !web;
-}
-
-/**
  * Official-source preference (13 November, docs/german-rules-20261113.md). Who publishes a page,
  * for searches on German rules, fees and deadlines. These are authorities and public-interest
  * bodies, not facts, so the lists stay stable when the rules change. A host counts when it is the
@@ -504,19 +490,10 @@ export function liveText<T extends object>(text: { en: T; de: T }): T {
 const sourcedPolicy =
   " For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in. Prefer official sources; if they disagree with other sources, follow the official one. If no source is official, say that no official source was found, that the figures may be wrong, and name the authority to check.";
 const policy =
-  " This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, name the official place to check (the law on gesetze-im-internet.de or the responsible authority), and offer a web search. If you mention a figure, say that it is unchecked.";
+  " This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, and name the official place to check (the law on gesetze-im-internet.de or the responsible authority). If you mention a figure, say that it is unchecked.";
 
 export const GERMAN_RULES_TEXT = textBlock({
   en: {
-    // Heading of the pre-send search suggestion when the question is about German rules.
-    heading: "Rules, fees and deadlines change. Check the official source first.",
-    // After Send: the inline choice (search first by default).
-    choiceHeading:
-      "This is about rules, fees or deadlines, which change. Search the official source first?",
-    // Replaces WHEN_TO_SEARCH.explanation where Send asks first ("Press Send instead…" is not true).
-    explanation:
-      "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent.",
-    without: "Answer without checking",
     // Added to the default product prompt for that turn only, when web results are in context.
     sourcedPolicy,
     // Under an answer to a German-rules question whose web results hold no official source.
@@ -529,12 +506,6 @@ export const GERMAN_RULES_TEXT = textBlock({
     policy,
   },
   de: {
-    heading: "Regeln, Gebühren und Fristen ändern sich. Prüfen Sie zuerst die offizielle Quelle.",
-    choiceHeading:
-      "Hier geht es um Regeln, Gebühren oder Fristen, und die ändern sich. Zuerst die offizielle Quelle suchen?",
-    explanation:
-      "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, und unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website. Sonst wird nichts aus Ihrer Unterhaltung gesendet.",
-    without: "Ohne Prüfung antworten",
     sourcedPolicy,
     noOfficial:
       "In den Suchergebnissen wurde keine offizielle Quelle gefunden. Fragen Sie bei der zuständigen Behörde nach, bevor Sie sich auf diese Zahlen verlassen.",

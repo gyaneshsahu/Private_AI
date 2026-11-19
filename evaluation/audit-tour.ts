@@ -8,7 +8,6 @@ import { resolve } from "node:path";
 import type { Browser, BrowserContext, BrowserType, Locator, Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { appText } from "../src/text/app";
-import { deepResearchText } from "../src/text/deep-research";
 import { installFakes, type AnswerName, type AuditConfig, type Fakes } from "./audit-fakes";
 
 type Lang = "en" | "de";
@@ -292,47 +291,37 @@ const STEPS: Step[] = [
     await c.shot("voice-transcribed");
   }, "on"],
   ["live-voice", async (c) => { await c.fresh(); await c.click("Voice conversation"); await pause(c.page, 800); await c.shot("live-voice"); }, "on"],
-  ["research-panel", async (c) => { await c.fresh(); await tools(c, "Research"); await c.shot("research-panel"); }],
-  ["search-approval", async (c) => {
-    await c.fresh();
-    await tools(c, "Research");
-    await c.label("Exact search query").fill("synthetic notice period for tenants");
-    await c.click("Review disclosure");
-    await pause(c.page, 600);
-    await c.shot("search-approval");
-    await c.click("Approve and retrieve");
-    await pause(c.page, 1500);
-    await c.shot("search-results");
-    await c.click("Prepare a question about these sources");
-    await pause(c.page, 800);
-    await c.send("What does the source say? audit:citations", undefined, true);
-    await c.shot("answer-citations");
-  }, "on"], // search needs a search key: off in a build without switches
   ["web-search", async (c) => {
-    // "+" > Search the web, then Send: the search runs at once with the masked text (no approval card,
-    // owner, 18 November), then the answer.
+    // Search is automatic (owner, 19 November): a time-sensitive question is searched at once, the answer
+    // carries one quiet "Searched the web" line, and opening it shows the searched text and the sources.
     await c.fresh();
-    await tools(c, "Search the web");
-    await c.label("Message CometRow").fill(c.lang === "de" && !c.germanOff() ? "Wer ist aktuell Bundeskanzler?" : "Who is the current chancellor of Germany?");
-    await pause(c.page, 500);
-    await c.shot("web-search-armed");
-    await c.click("Send message");
-    await pause(c.page, 2500);
+    await c.send(
+      `${c.lang === "de" && !c.germanOff() ? "Wie lang ist die aktuelle Kündigungsfrist für Mieter?" : "What is the current notice period for tenants?"} audit:citations`,
+      undefined,
+      true,
+    );
+    await vis(c.page.locator(".searched-web summary")).waitFor({ timeout: 15000 });
     await c.shot("web-search-answer");
+    await c.page.locator(".searched-web summary").last().click();
+    c.clicked.push("Searched the web");
+    await pause(c.page, 400);
+    await c.shot("web-search-opened");
+  }, "on"],
+  ["look-up-setting", async (c) => {
+    await c.fresh();
+    await settings(c, "General");
+    await vis(c.page.locator(".settings-switch")).waitFor();
+    await c.shot("settings-look-up-online");
   }, "on"],
   ["deep-research", async (c) => {
+    // "+" > Deep research arms the next Send; the run starts in the chat at once (owner, 18 November).
     await c.fresh();
-    await tools(c, "Research");
-    const region = c.page.getByRole("region", { name: c.tr("Deep research") });
-    await region.scrollIntoViewIfNeeded();
-    await c.shot("deep-research-panel");
-    await c.label("Research question").fill("How long is the synthetic notice period, and what is the fee?");
-    // It starts at once (owner, 18 November): one progress line with Stop, then the result.
-    await vis(c.page.getByRole("button", { name: deepResearchText[c.germanOff() ? "en" : c.lang].start, exact: true })).click();
-    c.clicked.push("Start research");
-    await pause(c.page, 600);
+    await tools(c, "Deep research");
+    await c.label("Message CometRow").fill("How long is the synthetic notice period, and what is the fee?");
+    await c.click("Send message");
+    await vis(c.page.locator(".research-progress")).waitFor({ timeout: 15000 });
     await c.shot("deep-research-progress");
-    await vis(c.page.locator(".research-result h4")).waitFor({ timeout: 30000 });
+    await pause(c.page, 6000);
     await c.shot("deep-research-answer");
   }, "on"],
   ["code-execution", async (c) => {

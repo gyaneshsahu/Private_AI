@@ -35,8 +35,6 @@ const resultSchema = z.object({
   }).strict().optional(),
 }).strict();
 
-/** Added to every search approval: the same approval also opens one page. English; the screen uses researchText.approval. */
-export const TOP_PAGE_APPROVAL = researchText.en.approval;
 
 /** What happened to the top result page, in the words shown to the user. */
 export function topPageNote(input: unknown, lang: Lang = uiLang()): string {

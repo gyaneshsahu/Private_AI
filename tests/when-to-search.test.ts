@@ -1,14 +1,13 @@
-// When to search (docs/when-to-search-20261112.md): detection on the device, masked
-// search text, and automatic search off by default.
+// When to search (docs/when-to-search-20261112.md): detection on the device and the masked search
+// text. Search is automatic (owner, 19 November): "Look things up online" is on unless switched off.
 import { afterEach, expect, it, vi } from "vitest";
 import { prepareSearchQuery } from "../src/identifier-masking";
 import { disclosureSchema } from "../shared/contracts";
 import {
   editedSearchText,
   needsCurrentInformation,
-  readAutoSearch,
-  RULES_KEY,
-  saveAutoSearch,
+  readLookUp,
+  saveLookUp,
   searchSuggestion,
   WHEN_TO_SEARCH,
 } from "../src/when-to-search";
@@ -80,7 +79,7 @@ it("suggests the question itself as search text, with identifiers removed on the
   expect(masked.value).toContain("[bank account removed]");
   expect(masked.value).toContain("[email address removed]");
   expect(masked.note).toBe(
-    "Removed from the search text before approval: 1 bank account, 1 email address.",
+    "Removed from the search text before the search: 1 bank account, 1 email address.",
   );
   // Long messages are not simple lookups: no suggestion, so nothing can be searched automatically.
   expect(
@@ -129,8 +128,8 @@ it("adds Germany to the suggested text of a rules question that names no country
   expect(value(long)).toBe(long);
 });
 
-// 14 November 2026: the shown text can be edited; what the user types is masked again and held
-// to the server's own limits (2 to 400 characters) before a tap can send it.
+// A search text from a deep research plan or a scheduled task is masked again and held to the
+// server's own limits (2 to 400 characters) before it is sent.
 it("masks an edited search text again and applies the server's limits on the device", () => {
   // Unchanged or harmless edits pass through as typed.
   expect(editedSearchText("How much is the TV licence? Germany")).toMatchObject({
@@ -147,15 +146,15 @@ it("masks an edited search text again and applies the server's limits on the dev
   // A typed email address is removed and reported.
   const typed = editedSearchText("TV licence fee max.mustermann@example.com", {}, "en");
   expect(typed.value).toBe("TV licence fee [email address removed]");
-  expect(typed.note).toBe("Removed from the search text before approval: 1 email address.");
+  expect(typed.note).toBe("Removed from the search text before the search: 1 email address.");
   expect(typed.problem).toBeUndefined();
   // What the suggestion already removed from the question stays in the count.
   const question = searchSuggestion("Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", now)!;
   const again = editedSearchText(`${question.value} IBAN DE89 3704 0044 0532 0130 00`, question.removed, "en");
   expect(again.value).toBe("Wie hoch ist der Mindestlohn? Mail [email address removed] Deutschland IBAN [bank account removed]");
-  expect(again.note).toBe("Removed from the search text before approval: 1 bank account, 1 email address.");
+  expect(again.note).toBe("Removed from the search text before the search: 1 bank account, 1 email address.");
   expect(editedSearchText("max.mustermann@example.com", {}, "de").note).toBe(
-    "Vor der Freigabe aus dem Suchtext entfernt: 1 E-Mail-Adresse.",
+    "Vor der Suche aus dem Suchtext entfernt: 1 E-Mail-Adresse.",
   );
   // The masked text is the same when masked once more: what is shown is what is sent.
   expect(editedSearchText(again.value).value).toBe(again.value);
@@ -174,41 +173,69 @@ it("masks an edited search text again and applies the server's limits on the dev
 
 afterEach(() => vi.unstubAllGlobals());
 
-it("keeps automatic search off by default, on only after the user switches it on, on this device", () => {
+it("looks things up online by default; off only after the user switches it off, on this device", () => {
   const store = new Map<string, string>();
   vi.stubGlobal("localStorage", {
     getItem: (k: string) => store.get(k) ?? null,
     setItem: (k: string, v: string) => store.set(k, v),
     removeItem: (k: string) => store.delete(k),
   });
-  expect(readAutoSearch()).toBe(false);
-  saveAutoSearch(true);
-  expect([...store]).toEqual([["privateai.autoSearch", "on"]]);
-  expect(readAutoSearch()).toBe(true);
-  saveAutoSearch(false);
+  expect(readLookUp()).toBe(true);
+  saveLookUp(false);
+  expect([...store]).toEqual([["privateai.lookUpOnline", "off"]]);
+  expect(readLookUp()).toBe(false);
+  saveLookUp(true);
   expect(store.size).toBe(0);
-  expect(readAutoSearch()).toBe(false);
-  // "Always search for rules, fees and deadlines": its own key, off by default, this browser only.
-  expect(readAutoSearch(RULES_KEY)).toBe(false);
-  saveAutoSearch(true, RULES_KEY);
-  expect([...store]).toEqual([["privateai.autoSearchRules", "on"]]);
-  expect(readAutoSearch(RULES_KEY)).toBe(true);
-  expect(readAutoSearch()).toBe(false);
-  saveAutoSearch(false, RULES_KEY);
-  expect(store.size).toBe(0);
+  expect(readLookUp()).toBe(true);
+  // The old opt-in keys mean nothing any more.
+  store.set("privateai.autoSearch", "on");
+  store.set("privateai.autoSearchRules", "on");
+  expect(readLookUp()).toBe(true);
+  // Blocked storage: searching stays on.
   vi.stubGlobal("localStorage", {
     getItem: () => {
       throw new Error("blocked");
     },
   });
-  expect(readAutoSearch()).toBe(false);
-  expect(readAutoSearch(RULES_KEY)).toBe(false);
+  expect(readLookUp()).toBe(true);
 });
 
 it("shows the search texts in the interface language", () => {
   vi.stubGlobal("navigator", { languages: ["de-DE"], language: "de-DE" });
-  expect(WHEN_TO_SEARCH.button).toBe("Suchen und antworten");
-  expect(WHEN_TO_SEARCH.searched("Kindergeld 2026")).toBe("Im Web gesucht nach: „Kindergeld 2026“");
+  expect(WHEN_TO_SEARCH.lookUpLabel).toBe("Online nachschlagen");
+  expect(WHEN_TO_SEARCH.searchedWeb).toBe("Im Web gesucht");
+  expect(WHEN_TO_SEARCH.searchedFor("Kindergeld 2026")).toBe("Gesucht nach: „Kindergeld 2026“");
   vi.stubGlobal("navigator", { languages: ["en-US"], language: "en-US" });
-  expect(WHEN_TO_SEARCH.againButton).toBe("Search and answer again");
+  expect(WHEN_TO_SEARCH.lookUpLabel).toBe("Look things up online");
+  expect(WHEN_TO_SEARCH.searchedWeb).toBe("Searched the web");
+});
+
+// Search is automatic (owner, 19 November), so asking in words is enough: no button to press.
+it("searches when the user asks for a look-up in words, in English and German, but not for search as a topic", () => {
+  for (const text of [
+    "Search the web for heat pump subsidies",
+    "Can you look this up: Rundfunkbeitrag",
+    "look it up please: Elbphilharmonie tickets",
+    "Such im Internet nach dem Mindestlohn",
+    "Recherchiere bitte die Öffnungszeiten der Bürgerämter",
+    "Schlag das online nach",
+  ])
+    expect(needsCurrentInformation(text, now), text).toBe(true);
+  for (const text of [
+    "How do I search a list in Python?",
+    "Write a binary search in JavaScript",
+    "Look up table in Excel: how does VLOOKUP work?",
+    "Was ist eine Suchmaschine?",
+  ])
+    expect(needsCurrentInformation(text, now), text).toBe(false);
+});
+
+it("searches what the user asked for, without the request words", () => {
+  expect(searchSuggestion("Search the web for heat pump subsidies 2026", now, false, "en")?.value).toBe("heat pump subsidies 2026");
+  expect(searchSuggestion("Recherchiere bitte die Öffnungszeiten des Bürgeramts", now, false, "en")?.value).toBe("die Öffnungszeiten des Bürgeramts");
+  expect(searchSuggestion("Can you look this up: Rundfunkbeitrag", now, false, "en")?.value).toBe("Rundfunkbeitrag Germany");
+  // Nothing left after the request words: the message itself is searched.
+  expect(searchSuggestion("search the web for", now, false, "en")?.value).toBe("search the web for");
+  // An ordinary question is searched as it is.
+  expect(searchSuggestion("What is the current ECB rate?", now, false, "en")?.value).toBe("What is the current ECB rate?");
 });

@@ -81,7 +81,7 @@ export class Approvals implements ResearchApprovals {
     for (const [id, record] of this.records)
       if (record.expires <= this.now()) this.records.delete(id);
     if (this.records.size >= 100)
-      throw new Error("Too many pending approvals. Try again in five minutes.");
+      throw new Error("Too many searches are waiting. Try again in five minutes.");
     const id = randomBytes(24).toString("hex");
     this.records.set(id, { session, request, expires: this.now() + 300000 });
     // Expiry also removes plaintext from the process map when no further requests arrive.
@@ -99,7 +99,7 @@ export class Approvals implements ResearchApprovals {
     const record = this.records.get(id);
     if (!record || record.session !== session || record.expires <= this.now())
       throw new Error(
-        "Approval is missing or expired. Review the disclosure again.",
+        "This search expired before it ran. Ask again.",
       );
     if (input !== undefined) {
       const request = disclosureSchema.parse(input);
@@ -175,7 +175,7 @@ export async function fetchPage(
     // The proxy owns DNS, so client-side DNS pinning cannot establish SSRF protection.
     // Only operator-reviewed public hosts are available in this restricted mode.
     if (!approvedProxyHost(url.hostname, publicFetchHosts))
-      throw new Error("Public host has not been approved for proxy retrieval.");
+      throw new Error("This website cannot be opened by CometRow.");
   } else {
     const addresses = await lookup(url.hostname, { all: true });
     if (!addresses.length || addresses.some((a) => !publicAddress(a.address)))
@@ -209,7 +209,7 @@ export async function fetchPage(
       if (redirects > 0 && next && sameSite(url, next) && allowTarget(next))
         return await fetchPage(next.href, signal, maxText, redirects - 1, allowTarget);
       throw new Error(
-        "This page redirects. No redirected request was made; approve the destination separately.",
+        "This page redirects to another address, so it was not opened.",
       );
     }
     if (!response.ok) {

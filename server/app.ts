@@ -1176,7 +1176,7 @@ export function createApp(config: Config) {
       count("search.failed");
       res.status(400).json({
         error:
-          "Research could not complete. Approval may have expired, or the destination is unavailable, redirects, or exceeds safety limits. No automatic retry was made.",
+          "The web search could not complete: the search service or the page is unavailable, redirects, or exceeds safety limits. No automatic retry was made.",
       });
     }
   });

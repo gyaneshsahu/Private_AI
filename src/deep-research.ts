@@ -1,6 +1,6 @@
 // Deep research (docs/deep-research-20261114.md): a bounded pipeline that runs in this browser.
-// Plan (one model request) -> the user approves the masked search texts -> search and read
-// (the existing approved search and page routes) -> answer (one model request). Nothing here
+// Plan (one model request) -> the plan's search texts, masked on this device -> search and read
+// (the server's search and page routes) -> answer (one model request). Nothing here
 // talks to the network itself: the caller passes the three ways out, so every cap, a stop and a
 // failure at each step can be tested offline.
 import type { Source } from "../shared/contracts";
@@ -138,8 +138,8 @@ export function selectSources(
 }
 
 /**
- * Runs the approved part of a research: the searches, the page reads and the answer.
- * `queries` are sent exactly as given and must be what the user approved: each is checked against
+ * Runs a research after its plan: the searches, the page reads and the answer.
+ * `queries` are sent exactly as given (masked by parsePlan): each is checked against
  * the masking again, and a text the masking would change stops the run before anything is sent.
  * `answer` makes the one model request and resolves true when the answer is complete.
  * `signal` is the user's stop: every call gets it, and nothing is called after it fired.

@@ -1,8 +1,10 @@
-// Deep research in the actual application (docs/deep-research-20261114.md): it starts at once
-// (owner, 18 November), with one progress line and Stop, at phone, tablet and desktop width, in
-// English and German; the plan's texts are masked before they are sent; a stop while searching;
-// the calm limit message at 0; hidden without the switch. Offline: a Vite plugin replaces src/inference.ts, the
-// status and the two research routes are faked, nothing leaves the machine.
+// Deep research in the actual application (docs/deep-research-20261114.md): "+" > "Deep research"
+// arms the next Send, which starts the run at once in the conversation (owner, 18 November; the
+// Research page is gone since 19 November), with one progress line and Stop, at phone, tablet and
+// desktop width, in English and German; the plan's texts are masked before they are sent; the plan
+// in Fast and the answer in Thinking; the answer rendered with its sources; a stop while searching;
+// the calm limit message at 0; hidden without the switch. Offline: a Vite plugin replaces
+// src/inference.ts, the status and the two research routes are faked, nothing leaves the machine.
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { chromium, expect as ui, type Browser, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
@@ -10,7 +12,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
 import { deepResearchText } from "../src/text/deep-research";
-import { WHEN_TO_SEARCH_TEXT } from "../src/when-to-search";
+import { researchNextText } from "../src/text/research-next";
 import { limitSentence } from "../src/limit-message";
 
 type Lang = "en" | "de";
@@ -126,9 +128,6 @@ async function open(lang: Lang, width: number, research = true, allowance?: Reco
   });
   await page.goto(origin, { timeout: 90000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
-  const t = appText[lang];
-  await page.getByLabel(t.tools, { exact: true }).click();
-  await page.locator(".tools-menu").getByRole("button", { name: t.tabResearch, exact: true }).click();
   return {
     context,
     page,
@@ -139,6 +138,13 @@ async function open(lang: Lang, width: number, research = true, allowance?: Reco
       return () => release?.();
     },
   };
+}
+/** "+" > "Deep research" arms the next Send; the note says what it does and what it counts. */
+async function arm(page: Page, lang: Lang, question: string) {
+  await page.getByLabel(appText[lang].tools, { exact: true }).click();
+  await page.locator(".tools-menu").getByRole("button", { name: deepResearchText[lang].heading, exact: true }).click();
+  await ui(page.locator(".search-next")).toContainText(researchNextText[lang].armed(15));
+  await page.getByLabel(appText[lang].messageInput).fill(question);
 }
 const calls = (page: Page) =>
   page.evaluate(() => (window as unknown as { __calls?: Record<string, unknown>[] }).__calls ?? []);
@@ -160,32 +166,30 @@ for (const lang of ["en", "de"] as const)
       const t = deepResearchText[lang];
       const { context, page, posted, hold } = await open(lang, width);
       try {
-        const panel = page.getByRole("region", { name: t.heading });
-        await ui(panel).toBeVisible();
-        await ui(panel).toContainText(t.intro(15, 4, 6, 3));
+        const box = page.getByLabel(appText[lang].messageInput);
+        await arm(page, lang, "How long is the synthetic notice period, and what is the fee?");
         await noSidewaysScroll(page);
-        const start = page.getByRole("button", { name: t.start, exact: true });
-        await ui(start).toBeDisabled();
-        await page.getByLabel(t.question).fill("How long is the synthetic notice period, and what is the fee?");
-        await tallEnough(page, t.start, width);
-        // Keyboard: the button is reached and pressed without a pointer. No approval step follows.
+        // Keyboard: Enter in the message box starts it without a pointer. No approval step follows.
         const release = hold();
-        await start.focus();
-        await page.keyboard.press("Enter");
+        await box.press("Enter");
         // One progress line with Stop; the first plan on a cold dev server also loads the model module.
-        const progress = page.locator(".research-progress");
+        const card = page.getByRole("region", { name: t.heading });
+        const progress = card.locator(".research-progress");
         await ui(progress).toContainText(t.searching(1, 3), { timeout: 20000 });
-        await ui(page.getByRole("button", { name: t.stop, exact: true })).toBeVisible();
+        await ui(card.getByRole("button", { name: t.stop, exact: true })).toBeVisible();
         await ui(page.getByRole("textbox")).toHaveCount(1); // the message box only: no search texts to edit
         await tallEnough(page, t.stop, width);
         await noSidewaysScroll(page);
         release();
 
-        // The end: the result takes the focus.
-        const done = page.getByRole("heading", { name: t.resultDone });
-        await ui(done).toBeVisible({ timeout: 20000 });
-        await ui(done).toBeFocused();
-        await ui(page.locator(".research-result")).not.toContainText(/\d+ (requests|Anfragen)/);
+        // The end: the answer is in the conversation, the note says so, the message box has the focus.
+        const answer = page.locator("article.assistant").last();
+        await ui(answer).toContainText("Synthetic heading", { timeout: 20000 });
+        await ui(card).toHaveCount(0);
+        const notice = page.locator(".dock-notice");
+        await ui(notice).toContainText(t.resultDone);
+        await ui(notice).not.toContainText(/\d+ (requests|Anfragen)/);
+        await ui(box).toBeFocused();
         await noSidewaysScroll(page);
 
         // The plan's three texts were searched, masked on this device: the address the model repeated never left it.
@@ -203,15 +207,13 @@ for (const lang of ["en", "de"] as const)
         ]);
         expect(made[1].sources).toBeGreaterThan(1);
 
-        // The answer is in the conversation with its source and the note of what was searched and read.
-        await page.getByRole("button", { name: t.showAnswer, exact: true }).click();
-        const answer = page.locator("article.assistant").last();
-        // Rendered at once (the renderer was loaded during the run), not the plain-text placeholder.
+        // The answer with its sources and the note of what was searched and read.
+        // Rendered (the renderer was loaded during the run), not the plain-text placeholder.
+        await ui(answer.locator("button.citation")).toHaveCount(2);
         const first = await answer.innerText();
         expect(first).toContain("Synthetic heading");
         expect(first).not.toContain("## Synthetic heading");
         expect(first).not.toContain("[synthetic-");
-        await ui(answer.locator("button.citation")).toHaveCount(2);
         await ui(answer).toContainText("(§ 573c Abs. 1 BGB)");
         await ui(answer).not.toContainText("0dffd17f5269");
         await answer.locator("button.citation").first().click();
@@ -232,16 +234,17 @@ for (const [lang, width] of [
     const t = deepResearchText[lang];
     const { context, page, posted, hold } = await open(lang, width);
     try {
-      await page.getByLabel(t.question).fill("How long is the synthetic notice period?");
+      await arm(page, lang, "How long is the synthetic notice period?");
       const release = hold();
-      await page.getByRole("button", { name: t.start, exact: true }).click();
-      await ui(page.locator(".research-progress")).toContainText(t.searching(1, 3), { timeout: 20000 });
+      await page.getByRole("button", { name: appText[lang].sendLabel, exact: true }).click();
+      const card = page.getByRole("region", { name: t.heading });
+      await ui(card.locator(".research-progress")).toContainText(t.searching(1, 3), { timeout: 20000 });
       // Keyboard stop.
-      await page.getByRole("button", { name: t.stop, exact: true }).focus();
+      await card.getByRole("button", { name: t.stop, exact: true }).focus();
       await page.keyboard.press("Enter");
-      const stopped = page.getByRole("heading", { name: t.resultCancelled });
-      await ui(stopped).toBeVisible();
-      await ui(stopped).toBeFocused();
+      await ui(page.locator(".dock-notice")).toContainText(t.resultCancelled);
+      await ui(card).toHaveCount(0);
+      await ui(page.getByLabel(appText[lang].messageInput)).toBeFocused();
       const sentAtStop = posted.length;
       release();
       await page.waitForTimeout(300);
@@ -249,26 +252,25 @@ for (const [lang, width] of [
       expect(executed(posted, "search")).toHaveLength(1);
       // Only the plan request went to the model.
       expect((await calls(page)).map((call) => call.research)).toEqual(["plan"]);
-      // A new run can be started.
-      await page.getByRole("button", { name: t.again, exact: true }).click();
-      await ui(page.getByLabel(t.question)).toBeFocused();
+      // A new run can be armed again.
+      await arm(page, lang, "How long is the synthetic notice period?");
     } finally {
       await context.close();
     }
   }, 120_000);
 
 it("at 0 left the one calm limit message, with no unit counts, and nothing is sent; without the switch no deep research", async () => {
-  const t = deepResearchText.en;
   const resetsAt = new Date(Date.now() + 3 * 3600_000).toISOString();
   const empty = { state: "exhausted", limit: 50, used: 50, remaining: 0, pending: 0, uncertain: 0, resetsAt, meteredRequests: 0, promptTokens: 0, completionTokens: 0, unmeteredRequests: 0 };
   const none = await open("en", 768, true, empty);
   try {
-    await none.page.getByLabel(t.question).fill("How long is the synthetic notice period?");
-    await none.page.getByRole("button", { name: t.start, exact: true }).click();
-    const alert = none.page.getByRole("region", { name: t.heading }).getByRole("alert");
-    await ui(alert).toHaveText(limitSentence(resetsAt, "en"));
+    await arm(none.page, "en", "How long is the synthetic notice period?");
+    await none.page.getByRole("button", { name: appText.en.sendLabel, exact: true }).click();
+    const notice = none.page.locator(".dock-notice");
+    await ui(notice).toContainText(limitSentence(resetsAt, "en"));
     // A clock time today, or the date and time when the reset falls on another day (late evening).
-    await ui(alert).toHaveText(/^Limit reached\. It resets at (?:\d+ \w+, )?\d\d:\d\d\.$/);
+    expect((await notice.innerText()).replace("×", "").trim()).toMatch(/^Limit reached\. It resets at (?:\d+ \w+, )?\d\d:\d\d\.$/);
+    await ui(none.page.getByLabel(appText.en.messageInput)).toHaveValue("How long is the synthetic notice period?");
     expect(none.posted).toEqual([]);
     expect(await calls(none.page)).toEqual([]);
   } finally {
@@ -276,8 +278,10 @@ it("at 0 left the one calm limit message, with no unit counts, and nothing is se
   }
   const off = await open("en", 768, false);
   try {
-    await ui(off.page.getByText(WHEN_TO_SEARCH_TEXT.en.researchIntro)).toBeVisible();
-    await ui(off.page.getByText(t.heading)).toHaveCount(0);
+    await off.page.getByLabel(appText.en.tools, { exact: true }).click();
+    const menu = off.page.locator(".tools-menu");
+    await ui(menu.getByRole("button", { name: appText.en.attachFile, exact: true })).toBeVisible();
+    await ui(menu.getByRole("button", { name: deepResearchText.en.heading, exact: true })).toHaveCount(0);
   } finally {
     await off.context.close();
   }

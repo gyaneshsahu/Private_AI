@@ -47,6 +47,8 @@ const conversationBody = z.object({
         .optional(),
       keptOnDevice: z.string().max(300).optional(),
       passagesUsed: z.string().max(4000).optional(),
+      searchedFor: z.string().max(400).optional(),
+      searchedSources: z.array(z.string().min(1).max(200)).max(50).optional(),
       memoriesUsed: z.array(z.string().uuid()).max(8).optional(),
       projectInstructionsSent: z.literal(true).optional(),
       answeredBy: z.string().max(300).optional(),
@@ -203,7 +205,7 @@ export function containsImageData(conversation: Conversation): boolean {
   return /"data:image\/[a-z0-9.+-]+;base64,/i.test(JSON.stringify(conversation));
 }
 
-/** Every source that arrived through an approved search belongs to a search attachment, whatever its labelled kind. */
+/** Every source that arrived through a web search belongs to a search attachment, whatever its labelled kind. */
 function searchResultIds(
   attachments: Conversation["attachments"],
 ): Set<string> {

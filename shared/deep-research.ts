@@ -1,5 +1,5 @@
 // Deep research: the caps shared by the browser and the relay (docs/deep-research-20261114.md).
-// One run is two model requests (plan, answer), a few approved searches and a few page reads.
+// One run is two model requests (plan, answer), a few searches and a few page reads.
 
 /** The value of `x-privateai-kind` (the image feature's header) on a run's two model requests. */
 export const RESEARCH_KINDS = { plan: "research-plan", answer: "research-answer" } as const;
@@ -8,7 +8,7 @@ export type ResearchStep = keyof typeof RESEARCH_KINDS;
 export const RESEARCH_LIMITS = {
   /** Model requests per run: the plan (Fast) and the answer (Thinking). No retry, no follow-up. */
   modelRequests: 2,
-  /** Search texts per run. All are shown, edited and approved before the first one is sent. */
+  /** Search texts per run, masked on the device before they are sent. */
   searches: 4,
   /** Result pages used per run, the top page our server opens with each search included. */
   pages: 6,

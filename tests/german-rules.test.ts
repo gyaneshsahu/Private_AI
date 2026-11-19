@@ -7,7 +7,6 @@ import { autoDecision } from "../src/answer-modes";
 import { composeContext, newMessage } from "../src/conversation";
 import {
   answerStatesRules,
-  asksBeforeSending,
   checkNoOfficialSource,
   checkUncheckedFigures,
   GERMAN_RULES,
@@ -152,31 +151,15 @@ describe("detector", () => {
   ])("leaves the English near-miss %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
 });
 
+// Search is automatic (owner, 19 November): a German-rules question is searched like a time-sensitive one.
 describe("before sending", () => {
-  it("offers the search with the rules heading even when the question is not time-sensitive", () => {
+  it("searches a rules question even when it is not time-sensitive, with the country added", () => {
     const now = new Date("2026-11-13T00:00:00Z");
     expect(searchSuggestion(prompts["G-04"], now)).toMatchObject({ value: `${prompts["G-04"]} Deutschland`, rules: true });
     expect(searchSuggestion(prompts["T-04"], now)).toMatchObject({ rules: false });
     expect(searchSuggestion("Explain recursion", now)).toBeUndefined();
-    // Ends with a full stop: the box goes on with "Search the web for:".
-    expect(GERMAN_RULES_TEXT.en.heading).toBe("Rules, fees and deadlines change. Check the official source first.");
   });
 
-  it("asks before sending only for a German-rules question without web results or automatic search", () => {
-    const now = new Date("2026-11-13T00:00:00Z");
-    const rules = searchSuggestion(prompts["G-04"], now);
-    expect(asksBeforeSending(rules, false, false)).toBe(true);
-    // Automatic search on: searched without asking. Web results selected: answered from them.
-    expect(asksBeforeSending(rules, true, false)).toBe(false);
-    expect(asksBeforeSending(rules, false, true)).toBe(false);
-    // The after-answer box is not a Send.
-    expect(asksBeforeSending(rules && { ...rules, again: true }, false, false)).toBe(false);
-    // Time-sensitive but not German rules, and a timeless question: Send answers directly.
-    expect(asksBeforeSending(searchSuggestion(prompts["T-04"], now), false, false)).toBe(false);
-    expect(asksBeforeSending(searchSuggestion("Explain recursion", now), false, false)).toBe(false);
-    // No showable search text (over 200 characters): nothing to approve, so no choice.
-    expect(asksBeforeSending(searchSuggestion(`Welche Kündigungsfrist gilt? ${"x".repeat(200)}`, now), false, false)).toBe(false);
-  });
 });
 
 const withWeb = (c: Conversation) => {
@@ -306,7 +289,7 @@ describe("answer-side check", () => {
     ["Notice must be given in writing (§ 568 BGB).", "Translate: Die Kündigung bedarf der Schriftform (§ 568 BGB)."],
   ])("stays quiet on %s", (answer, question) => expect(answerStatesRules(answer, question)).toBe(false));
 
-  it("offers the search-again box for an unrecognised question when the answer stated rules", () => {
+  it("gives a search text for an unrecognised question when the answer stated rules", () => {
     const now = new Date("2026-11-13T00:00:00Z");
     // "Was darf mein Chef mir schenken?" is recognised since the German cues of 13 November.
     const question = "Was ist bei Geschenken vom Chef zu beachten?";
@@ -387,14 +370,13 @@ it("shows the user-facing texts in the interface language; the model instruction
     expect(GERMAN_RULES.warning).toBe(
       "Diese Antwort nennt Zahlen oder Fristen, die nicht anhand einer offiziellen Quelle geprüft wurden.",
     );
-    expect(GERMAN_RULES.without).toBe("Ohne Prüfung antworten");
     expect(GERMAN_RULES.policy).toBe(GERMAN_RULES_TEXT.en.policy);
     expect(GERMAN_RULES.sourcedPolicy).toBe(GERMAN_RULES_TEXT.en.sourcedPolicy);
     vi.stubGlobal("navigator", { languages: ["en-US"], language: "en-US" });
-    expect(GERMAN_RULES.without).toBe("Answer without checking");
+    expect(GERMAN_RULES.noOfficial).toBe(GERMAN_RULES_TEXT.en.noOfficial);
     // The user's saved pick wins over the browser, as in src/i18n.tsx.
     vi.stubGlobal("localStorage", { getItem: (k: string) => (k === "cometrow.language" ? "de" : null) });
-    expect(GERMAN_RULES.without).toBe("Ohne Prüfung antworten");
+    expect(GERMAN_RULES.noOfficial).toBe(GERMAN_RULES_TEXT.de.noOfficial);
   } finally {
     vi.unstubAllGlobals();
   }

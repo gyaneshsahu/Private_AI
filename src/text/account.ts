@@ -337,7 +337,7 @@ export const accountDeletionText = defineText({
 export const accountExportText = defineText({
   en: {
     heading: "Download your account data",
-    body: "One file with the records this service holds about your account: your account identity and contact email, sign-in methods (never their secret keys or tokens), active sessions, security notices, request and usage records with their published cost, billing operations and any closure request. It contains no conversations, documents or search text, because the service does not store them (search text you approve passes through it on the way to the search provider); use the encrypted backup under Saved for those.",
+    body: "One file with the records this service holds about your account: your account identity and contact email, sign-in methods (never their secret keys or tokens), active sessions, security notices, request and usage records with their published cost, billing operations and any closure request. It contains no conversations, documents or search text, because the service does not store them (a search text passes through it on the way to the search provider); use the encrypted backup under Saved for those.",
     unavailable: "Export is unavailable.",
     downloaded: "Your account data file was downloaded.",
     failed: "Export could not be completed.",
@@ -345,7 +345,7 @@ export const accountExportText = defineText({
   },
   de: {
     heading: "Ihre Kontodaten herunterladen",
-    body: "Eine Datei mit den Daten, die dieser Dienst zu Ihrem Konto speichert: Ihre Kontoidentität und Kontakt-E-Mail-Adresse, Anmeldemethoden (niemals deren geheime Schlüssel oder Tokens), aktive Sitzungen, Sicherheitshinweise, Anfrage- und Nutzungsdaten mit ihren veröffentlichten Kosten, Abrechnungsvorgänge und einen etwaigen Antrag auf Schließung. Sie enthält keine Unterhaltungen, Dokumente oder Suchtexte, weil der Dienst diese nicht speichert (Suchtext, den Sie freigeben, läuft auf dem Weg zum Suchanbieter durch ihn hindurch); nutzen Sie dafür die verschlüsselte Sicherung unter „Gespeichert“.",
+    body: "Eine Datei mit den Daten, die dieser Dienst zu Ihrem Konto speichert: Ihre Kontoidentität und Kontakt-E-Mail-Adresse, Anmeldemethoden (niemals deren geheime Schlüssel oder Tokens), aktive Sitzungen, Sicherheitshinweise, Anfrage- und Nutzungsdaten mit ihren veröffentlichten Kosten, Abrechnungsvorgänge und einen etwaigen Antrag auf Schließung. Sie enthält keine Unterhaltungen, Dokumente oder Suchtexte, weil der Dienst diese nicht speichert (ein Suchtext läuft auf dem Weg zum Suchanbieter durch ihn hindurch); nutzen Sie dafür die verschlüsselte Sicherung unter „Gespeichert“.",
     unavailable: "Der Export ist nicht verfügbar.",
     downloaded: "Die Datei mit Ihren Kontodaten wurde heruntergeladen.",
     failed: "Der Export konnte nicht abgeschlossen werden.",

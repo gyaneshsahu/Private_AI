@@ -179,7 +179,7 @@ test("a draft without attachments can be saved and reopened", async ({
   await expect(page.getByLabel("Message CometRow")).toHaveValue("Draft only");
 });
 
-test("everyday starters prepare editable drafts and keep research an explicit action", async ({
+test("everyday starters prepare editable drafts, send nothing, and the + menu has no search item", async ({
   page,
 }) => {
   const outbound: string[] = [];
@@ -200,14 +200,18 @@ test("everyday starters prepare editable drafts and keep research an explicit ac
   await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "My existing unsent draft",
   );
+  // Search is automatic since 19 November: nothing in the "+" menu starts one.
   await page.getByLabel("Attachments and tools", { exact: true }).click();
-  await page
-    .locator(".composer")
-    .getByRole("button", { name: "Research", exact: true })
-    .click();
+  const tools = page.locator(".composer .tools-menu");
   await expect(
-    page.getByRole("button", { name: "Review disclosure" }),
+    tools.getByRole("button", { name: "Conversation files", exact: true }),
   ).toBeVisible();
+  await expect(
+    tools.getByRole("button", { name: "Research", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    tools.getByRole("button", { name: "Search the web", exact: true }),
+  ).toHaveCount(0);
   expect(outbound).toEqual([]);
 });
 
@@ -234,9 +238,9 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
     await expect(guide).toBeVisible();
     await expect(guide).toContainText("Temporary work disappears on reload");
     await expect(guide).toContainText("passphrase cannot be recovered");
-    await expect(guide).toContainText("review the exact query", {
-      ignoreCase: true,
-    });
+    // Search is automatic since 19 November: the guide says how to turn it off.
+    await expect(guide).toContainText("CometRow looks it up online");
+    await expect(guide).toContainText("Look things up online");
     await page.keyboard.press("Escape");
     await expect(guide).toHaveCount(0);
     await expect(

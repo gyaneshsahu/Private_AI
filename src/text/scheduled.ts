@@ -120,12 +120,6 @@ export const scheduledText = defineText({
     notifyEmail: "Email",
     notifyPush: "Push notification",
     later: "later",
-    search: "Search the web first",
-    searchNote:
-      "Each run first searches the web for exactly this text and gives the results to the answer. Email addresses, bank details and similar identifiers are removed first.",
-    searchText: "Search text",
-    searchSent: (text: string) => `Will be sent as: ${text}`,
-    searchUnavailable: "Web search is not switched on for this service.",
     howItRuns: "How it runs",
     modeManual: "Manual",
     modeManualText: "CometRow shows the task when it is due and you tap Run now. Stored only on this device.",
@@ -134,7 +128,7 @@ export const scheduledText = defineText({
     notAvailable: "Not available yet",
     consentTitle: "Run this task in the background?",
     consentBody: (days: number) =>
-      `A background task runs on our server at the times you set, even when CometRow is closed. For that, our server stores this task and can read it: its name, its instruction, its schedule and, if you approved one, its search text. Everything is stored encrypted, so a copy of our database alone does not reveal it, but our running server can read it, and so could anyone who gains control of it.\n\nAt each run, the task is sent end to end encrypted to the same checked secure server that answers your chats. If you approved a search, our server sends exactly that search text to the search provider (Brave) first.\n\nThe answer waits on our server, encrypted, until CometRow saves it on your device. It is deleted from our server at once when it is saved, and after ${days} days at the latest.\n\nEach run counts against your request allowance like a message. A task that cannot run for lack of allowance pauses itself after three tries.\n\nYou can pause or delete the task at any time. Deleting it, or switching it back to Manual, removes it and its stored answers from our server at once. Closing your account removes all of them.`,
+      `A background task runs on our server at the times you set, even when CometRow is closed. For that, our server stores this task and can read it: its name, its instruction, its schedule and, if it searches the web, its search text. Everything is stored encrypted, so a copy of our database alone does not reveal it, but our running server can read it, and so could anyone who gains control of it.\n\nAt each run, the task is sent end to end encrypted to the same checked secure server that answers your chats. If it searches the web, our server first sends its search text to the search provider (Brave); that text was set when the task was created, with personal details removed.\n\nThe answer waits on our server, encrypted, until CometRow saves it on your device. It is deleted from our server at once when it is saved, and after ${days} days at the latest.\n\nEach run counts against your request allowance like a message. A task that cannot run for lack of allowance pauses itself after three tries.\n\nYou can pause or delete the task at any time. Deleting it, or switching it back to Manual, removes it and its stored answers from our server at once. Closing your account removes all of them.`,
     autoConsent: "I agree that CometRow's server stores and reads this task to run it in the background.",
     documentTitle: "This task includes a document.",
     documentBody:
@@ -161,7 +155,7 @@ export const scheduledText = defineText({
     attachReading: "Reading the document on this device…",
     attachStoredRemove: "Remove the document stored with this task on the server",
     errorIdentifiers:
-      "Remove email addresses, phone numbers, bank or ID numbers from the name, the instruction and the search text: a background task is stored without them.",
+      "Remove email addresses, phone numbers, bank or ID numbers from the name and the instruction: a background task is stored without them.",
     cost: (units: number) =>
       units === 1 ? "Each run counts as 1 request of your allowance." : `Each run counts as ${units} requests of your allowance.`,
     costUnknown: "Each run counts against your allowance like a message.",
@@ -174,8 +168,6 @@ export const scheduledText = defineText({
     errorEvery: "Choose a number from 1 to 31.",
     errorTime: "Choose a time.",
     errorConsent: "Tick the box to agree, or choose Manual.",
-    errorSearch: "Write a search text of at least 2 characters, or switch the search off.",
-    errorSearchLong: "The search text can have at most 400 characters after identifiers are removed.",
     serverRefused: (message: string) => `Our server did not accept the background task: ${message}`,
     // Templates
     templatesIntro: "Start from one of these. You can change everything before you create it.",
@@ -203,10 +195,6 @@ export const scheduledText = defineText({
     skip: "Skip this time",
     openScheduled: "Open Scheduled",
     becameDue: (name: string) => `Scheduled task due: ${name}. Tap Run now above the chat.`,
-    runSearchTitle: "This task searches the web first",
-    runSearchLabel: "Search the web for:",
-    runSearch: "Search, then answer",
-    runWithout: "Answer without searching",
     // Background results
     resultTitle: (name: string) => `${name} (background task)`,
     resultSaved: (count: number) =>
@@ -355,12 +343,6 @@ export const scheduledText = defineText({
     notifyEmail: "E-Mail",
     notifyPush: "Push-Benachrichtigung",
     later: "später",
-    search: "Zuerst im Web suchen",
-    searchNote:
-      "Jede Ausführung sucht zuerst genau nach diesem Text im Web und gibt die Ergebnisse an die Antwort. E-Mail-Adressen, Bankdaten und ähnliche Kennungen werden vorher entfernt.",
-    searchText: "Suchtext",
-    searchSent: (text: string) => `Wird so gesendet: ${text}`,
-    searchUnavailable: "Die Websuche ist für diesen Dienst nicht eingeschaltet.",
     howItRuns: "Wie sie läuft",
     modeManual: "Manuell",
     modeManualText: "CometRow zeigt die Aufgabe, wenn sie fällig ist, und Sie tippen auf „Jetzt ausführen“. Nur auf diesem Gerät gespeichert.",
@@ -369,7 +351,7 @@ export const scheduledText = defineText({
     notAvailable: "Noch nicht verfügbar",
     consentTitle: "Diese Aufgabe im Hintergrund ausführen?",
     consentBody: (days: number) =>
-      `Eine Hintergrundaufgabe läuft zu den von Ihnen gewählten Zeiten auf unserem Server, auch wenn CometRow geschlossen ist. Dafür speichert unser Server diese Aufgabe und kann sie lesen: ihren Namen, ihre Anweisung, ihren Zeitplan und, falls Sie einen freigegeben haben, ihren Suchtext. Alles wird verschlüsselt gespeichert, sodass eine Kopie unserer Datenbank allein nichts verrät, aber unser laufender Server kann es lesen, und ebenso jeder, der die Kontrolle über ihn erlangt.\n\nBei jeder Ausführung wird die Aufgabe Ende-zu-Ende-verschlüsselt an denselben geprüften sicheren Server gesendet, der Ihre Chats beantwortet. Wenn Sie eine Suche freigegeben haben, sendet unser Server zuerst genau diesen Suchtext an den Suchanbieter (Brave).\n\nDie Antwort wartet verschlüsselt auf unserem Server, bis CometRow sie auf Ihrem Gerät speichert. Sobald sie gespeichert ist, wird sie von unserem Server gelöscht, spätestens nach ${days} Tagen.\n\nJede Ausführung zählt wie eine Nachricht für Ihr Anfragen-Kontingent. Eine Aufgabe, die mangels Kontingent nicht laufen kann, pausiert sich nach drei Versuchen selbst.\n\nSie können die Aufgabe jederzeit pausieren oder löschen. Wenn Sie sie löschen oder wieder auf „Manuell“ stellen, werden sie und ihre gespeicherten Antworten sofort von unserem Server entfernt. Wenn Sie Ihr Konto schließen, werden alle entfernt.`,
+      `Eine Hintergrundaufgabe läuft zu den von Ihnen gewählten Zeiten auf unserem Server, auch wenn CometRow geschlossen ist. Dafür speichert unser Server diese Aufgabe und kann sie lesen: ihren Namen, ihre Anweisung, ihren Zeitplan und, wenn sie im Web sucht, ihren Suchtext. Alles wird verschlüsselt gespeichert, sodass eine Kopie unserer Datenbank allein nichts verrät, aber unser laufender Server kann es lesen, und ebenso jeder, der die Kontrolle über ihn erlangt.\n\nBei jeder Ausführung wird die Aufgabe Ende-zu-Ende-verschlüsselt an denselben geprüften sicheren Server gesendet, der Ihre Chats beantwortet. Wenn sie im Web sucht, sendet unser Server zuerst ihren Suchtext an den Suchanbieter (Brave); dieser Text wurde beim Anlegen der Aufgabe festgelegt, ohne persönliche Angaben.\n\nDie Antwort wartet verschlüsselt auf unserem Server, bis CometRow sie auf Ihrem Gerät speichert. Sobald sie gespeichert ist, wird sie von unserem Server gelöscht, spätestens nach ${days} Tagen.\n\nJede Ausführung zählt wie eine Nachricht für Ihr Anfragen-Kontingent. Eine Aufgabe, die mangels Kontingent nicht laufen kann, pausiert sich nach drei Versuchen selbst.\n\nSie können die Aufgabe jederzeit pausieren oder löschen. Wenn Sie sie löschen oder wieder auf „Manuell“ stellen, werden sie und ihre gespeicherten Antworten sofort von unserem Server entfernt. Wenn Sie Ihr Konto schließen, werden alle entfernt.`,
     autoConsent: "Ich willige ein, dass der Server von CometRow diese Aufgabe speichert und liest, um sie im Hintergrund auszuführen.",
     documentTitle: "Diese Aufgabe enthält ein Dokument.",
     documentBody:
@@ -396,7 +378,7 @@ export const scheduledText = defineText({
     attachReading: "Das Dokument wird auf diesem Gerät gelesen …",
     attachStoredRemove: "Das mit dieser Aufgabe auf dem Server gespeicherte Dokument entfernen",
     errorIdentifiers:
-      "Entfernen Sie E-Mail-Adressen, Telefonnummern, Bank- oder Ausweisnummern aus Name, Anweisung und Suchtext: Eine Hintergrundaufgabe wird ohne sie gespeichert.",
+      "Entfernen Sie E-Mail-Adressen, Telefonnummern, Bank- oder Ausweisnummern aus Name und Anweisung: Eine Hintergrundaufgabe wird ohne sie gespeichert.",
     cost: (units: number) =>
       units === 1 ? "Jede Ausführung zählt als 1 Anfrage Ihres Kontingents." : `Jede Ausführung zählt als ${units} Anfragen Ihres Kontingents.`,
     costUnknown: "Jede Ausführung zählt wie eine Nachricht gegen Ihr Kontingent.",
@@ -409,8 +391,6 @@ export const scheduledText = defineText({
     errorEvery: "Wählen Sie eine Zahl von 1 bis 31.",
     errorTime: "Wählen Sie eine Uhrzeit.",
     errorConsent: "Setzen Sie den Haken, um zuzustimmen, oder wählen Sie Manuell.",
-    errorSearch: "Schreiben Sie einen Suchtext mit mindestens 2 Zeichen oder schalten Sie die Suche aus.",
-    errorSearchLong: "Der Suchtext darf nach dem Entfernen von Kennungen höchstens 400 Zeichen haben.",
     serverRefused: (message: string) => `Unser Server hat die Hintergrundaufgabe nicht angenommen: ${message}`,
     templatesIntro: "Beginnen Sie mit einer dieser Vorlagen. Vor dem Anlegen können Sie alles ändern.",
     useTemplate: "Vorlage verwenden",
@@ -436,10 +416,6 @@ export const scheduledText = defineText({
     skip: "Diesmal überspringen",
     openScheduled: "Geplant öffnen",
     becameDue: (name: string) => `Geplante Aufgabe fällig: ${name}. Tippen Sie über dem Chat auf „Jetzt ausführen“.`,
-    runSearchTitle: "Diese Aufgabe sucht zuerst im Web",
-    runSearchLabel: "Im Web suchen nach:",
-    runSearch: "Suchen, dann antworten",
-    runWithout: "Ohne Suche antworten",
     resultTitle: (name: string) => `${name} (Hintergrundaufgabe)`,
     resultSaved: (count: number) =>
       count === 1

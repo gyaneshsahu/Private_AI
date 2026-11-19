@@ -53,7 +53,7 @@ it("builds the arithmetic and kept-on-device notes in German and leaves English 
   );
   expect(describeKept({ IBAN: 2, EMAIL: 1 }, "en")).toBe("Kept on this device: 2 bank accounts, 1 email address.");
   const prepared = prepareSearchQuery("Kontostand DE89370400440532013000 Gebühren", "de");
-  expect(prepared.note).toBe("Vor der Freigabe aus dem Suchtext entfernt: 1 Bankkonto.");
+  expect(prepared.note).toBe("Vor der Suche aus dem Suchtext entfernt: 1 Bankkonto.");
   // The search text itself goes to the provider and keeps its English label.
   expect(prepared.value).toContain("[bank account removed]");
 });

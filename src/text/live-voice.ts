@@ -54,8 +54,6 @@ export const liveVoiceText = defineText({
     cancelled: "Cancelled. Nothing was sent.",
     edit_: "The text is in the message box. Edit it and press Send.",
     consent: "Voice conversation ended: please answer the health data question on screen first.",
-    searchChoice:
-      "Voice conversation ended: this question is about current facts or German rules. It is in the message box, so you can choose whether to search first.",
     sendFailed: "The answer did not arrive. The message line says why.",
     offline: "You are offline. Press Resume when you are back online.",
     verifyWait: "The connection check is busy. Wait for the countdown, then press Resume.",
@@ -107,8 +105,6 @@ export const liveVoiceText = defineText({
     cancelled: "Abgebrochen. Es wurde nichts gesendet.",
     edit_: "Der Text steht im Nachrichtenfeld. Bearbeiten Sie ihn und drücken Sie auf Senden.",
     consent: "Sprachgespräch beendet: Bitte beantworten Sie zuerst die Frage zu Gesundheitsdaten auf dem Bildschirm.",
-    searchChoice:
-      "Sprachgespräch beendet: Diese Frage betrifft aktuelle Fakten oder deutsche Regeln. Sie steht im Nachrichtenfeld, damit Sie wählen können, ob zuerst gesucht wird.",
     sendFailed: "Die Antwort ist nicht angekommen. Die Meldungszeile nennt den Grund.",
     offline: "Sie sind offline. Drücken Sie auf Fortsetzen, wenn Sie wieder online sind.",
     verifyWait: "Die Verbindungsprüfung ist ausgelastet. Warten Sie den Countdown ab und drücken Sie dann auf Fortsetzen.",

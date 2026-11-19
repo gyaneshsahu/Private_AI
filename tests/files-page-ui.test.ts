@@ -123,12 +123,12 @@ for (const lang of ["en", "de"] as const)
         await ui(tools(page).getByRole("button", { name: t.attachFile, exact: true })).toHaveAccessibleDescription(al.fileLimit(5));
         await noSidewaysScroll(page);
 
-        // A web search is still added: searches do not count toward the five files.
-        await tools(page).getByRole("button", { name: t.tabResearch, exact: true }).click();
-        await page.getByLabel(t.exactQuery).fill("synthetic public query");
-        await page.getByRole("button", { name: t.reviewDisclosure }).click();
-        await page.getByRole("button", { name: t.approve }).click();
-        await page.getByRole("button", { name: t.prepareQuestion }).click();
+        // A web search is still added: searches do not count toward the five files. Search is automatic
+        // (owner, 19 November): a question that asks for it is searched on Send.
+        await tools(page).locator("summary").click();
+        await page.getByLabel(t.messageInput).fill("search the web for synthetic public query");
+        await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
+        await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer.");
         await menu(page, t.conversationFiles);
         await ui(page.locator(".content-view .panel label").filter({ hasText: t.searchResultsName })).toBeVisible();
       } finally {

@@ -38,20 +38,12 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
-import {
-  editedSearchText,
-  readAutoSearch,
-  RULES_KEY,
-  saveAutoSearch,
-  searchSuggestion,
-  WHEN_TO_SEARCH,
-} from "./when-to-search";
+import { readLookUp, saveLookUp, searchSuggestion, WHEN_TO_SEARCH } from "./when-to-search";
 import {
   checkArithmetic,
 } from "./arithmetic/check";
 import { checkAnswerCompleteness } from "./arithmetic/completeness";
 import {
-  asksBeforeSending,
   checkUncheckedFigures,
   checkNoOfficialSource,
 } from "./german-rules";
@@ -132,7 +124,6 @@ import { useShortcuts } from "./use-shortcuts";
 import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
 import { shortcutsText } from "./text/shortcuts";
 import { skipLinkText } from "./text/skip-link";
-import { searchNextText } from "./text/search-next";
 import { researchNextText } from "./text/research-next";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
@@ -181,11 +172,10 @@ import type { ScheduledTask } from "../shared/scheduled-tasks";
 import {
   parseResearchResult,
   researchSourceUrl,
-  topPageNote,
+
 } from "./research-result";
 
-type Tab =
-  "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
+type Tab = "Conversation" | "Context" | "Saved" | "Account" | "Help";
 /** "Open CometRow in Secure Max" on this device; no content, only the choice. */
 // Rarely used screens load on demand (SS-13, docs/settings-structure-20261116.md); offline, a part
 // that was never loaded shows the retry line (src/LoadBoundary.tsx). The composer, the message list
@@ -222,7 +212,6 @@ export function App() {
   const tabName: Record<Tab, string> = {
     Conversation: t.tabConversation,
     Context: t.tabContext,
-    Research: t.tabResearch,
     Saved: t.tabSaved,
     Account: t.tabAccount,
     Help: t.tabHelp,
@@ -329,9 +318,6 @@ export function App() {
       ? "Account"
       : "Conversation",
   );
-  // Deep research loads when Research is first opened and then stays mounted (a run keeps going on other tabs).
-  const researchUsed = useRef(false);
-  if (tab === "Research") researchUsed.current = true;
   const [conversation, setConversation] =
     useState<Conversation>(emptyConversation);
   // The conversation as it is now, for a deep research run that outlives the render it started in.
@@ -384,78 +370,30 @@ export function App() {
   const chatFileInput = useRef<HTMLInputElement>(null);
   const contextFileInput = useRef<HTMLInputElement>(null);
   const al = attachLimitText[lang];
-  const [researchKind, setResearchKind] = useState<"search" | "page">("search");
-  const [query, setQuery] = useState("");
-  const [proposal, setProposal] = useState<Disclosure>();
-  // When to search (docs/when-to-search-20261112.md): device-only setting, and the
-  // exact text a suggestion tap or automatic search sent.
-  const [autoSearch, setAutoSearch] = useState(readAutoSearch);
-  const [autoSearchRules, setAutoSearchRules] = useState(() =>
-    readAutoSearch(RULES_KEY),
-  );
-  const chooseAutoSearchRules = (on: boolean) => {
-    setAutoSearchRules(on);
-    saveAutoSearch(on, RULES_KEY);
+  // Search is automatic (owner, 19 November; docs/owner-decisions.md): a question that needs current
+  // information is searched, unless "Look things up online" is off on this device.
+  const [lookUp, setLookUp] = useState(readLookUp);
+  const chooseLookUp = (on: boolean) => {
+    setLookUp(on);
+    saveLookUp(on);
   };
+  // Only when an automatic search failed: the answer then says nothing about the web.
   const [searchSent, setSearchSent] = useState("");
   useEffect(() => setSearchSent(""), [conversation.id]);
-  // "+" > "Search the web" arms the next Send (`searchNext`): that Send searches the web for the typed
-  // text (identifiers masked on this device) and answers. No approval card (owner, 18 November).
-  const [searchNext, setSearchNext] = useState(false);
-  // FE-07: "+" > "Deep research" arms the next Send the same way (`researchNext`); that Send opens
-  // the deep research card in the conversation for this text (`researchFor`), drawn into
-  // `researchSlot`. Nothing is planned before its button, nothing searched before the approval.
+  // "+" > "Deep research" arms the next Send (`researchNext`); that Send starts the run in the
+  // conversation for this text (`researchFor`), drawn into `researchSlot`.
   const [researchNext, setResearchNext] = useState(false);
   const [researchFor, setResearchFor] = useState<string>();
   const [researchSlot, setResearchSlot] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
-    setSearchNext(false);
     setResearchNext(false);
     setResearchFor(undefined);
   }, [conversation.id]);
   const researchReady =
     !!status?.research && !!status.search && !!status.inference.ready;
-  const suggestion = useMemo(() => {
-    if (!status?.search || !status.inference.ready) return undefined;
-    if (input.trim()) {
-      const draft = searchSuggestion(input);
-      return draft && { ...draft, again: false };
-    }
-    // After an answer to a time-sensitive question given without web results: offer to check
-    // it with the same one-tap search (the exact text is shown, so the tap is the approval).
-    const last = conversation.messages.at(-1);
-    const question = [...conversation.messages]
-      .reverse()
-      .find((m) => m.role === "user");
-    if (
-      last?.role !== "assistant" ||
-      last.status !== "complete" ||
-      !question ||
-      selectedSources(conversation).some((source) => !!source.url)
-    )
-      return undefined;
-    // Also when the answer-side check flagged unchecked rules the question detector missed.
-    const again = searchSuggestion(
-      question.text,
-      undefined,
-      !!last.uncheckedFigures,
-    );
-    return again && { ...again, again: true };
-  }, [status?.search, status?.inference.ready, input, conversation]);
-  // German rules, fees and deadlines (docs/german-rules-20261113.md): a question where the app used to ask
-  // "search first?". Now nothing asks: with the setting below it is searched, otherwise sent as it is.
-  const askFirst = asksBeforeSending(
-    suggestion,
-    autoSearch,
-    selectedSources(conversation).some((source) => !!source.url),
-  );
-  // "Always search for rules, fees and deadlines".
-  const autoRules = autoSearchRules && askFirst;
-  const sn = searchNextText[lang];
-  const [proposalNote, setProposalNote] = useState<{
-    note: string;
-    warning: boolean;
-  }>();
+  // The search text for a question, when the app searches for it (also German rules, fees and deadlines).
+  const searchFor = (text: string) =>
+    lookUp && status?.search && status.inference.ready ? searchSuggestion(text) : undefined;
   const [passphrase, setPassphrase] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   // The new-device sync screen, until the user picks Not now (docs/vault-sync-screens-20261115.md).
@@ -759,8 +697,6 @@ export function App() {
       setProjects([]);
       setUnreadableSnapshots(0);
       setInput("");
-      setQuery("");
-      setProposal(undefined);
       setEditId(undefined);
       setOperandA("");
       setOperandB("");
@@ -846,8 +782,6 @@ export function App() {
     setConversation(emptyConversation());
     setSource(undefined);
     setInput("");
-    setQuery("");
-    setProposal(undefined);
     setEditId(undefined);
     setOperandA("");
     setOperandB("");
@@ -1181,6 +1115,8 @@ export function App() {
     research?: { note: string; abort: AbortController },
     // A voice conversation's answer: the recording it answers, already admitted (owner, 18 November).
     voiceTurn?: string,
+    // The text an automatic search just searched for this question: shown as "Searched the web".
+    searchedFor?: string,
   ): Promise<boolean | void> {
     // A picture goes with a message typed in the composer only, never with "ask again".
     // The whiteboard goes as a picture the same way when it changed since it last went.
@@ -1238,6 +1174,16 @@ export function App() {
       ...newMessage("assistant", ""),
       status: "partial" as const,
       sourceSnapshot: structuredClone(selectedSources(next)),
+      ...(searchedFor
+        ? {
+            searchedFor,
+            searchedSources: next.attachments
+              .filter((a) => a.researchQuery === searchedFor)
+              .at(-1)
+              ?.sources.map((source) => source.id)
+              .slice(0, 50),
+          }
+        : {}),
       // Large documents: which passages this answer was given, and that the rest was not sent.
       // Memory: the ids of the notes that go with this question (the same choice composeContext makes).
       ...(memoriesFor(next).length ? { memoriesUsed: memoriesFor(next).map((m) => m.id) } : {}),
@@ -1497,8 +1443,7 @@ export function App() {
     return completed;
   }
   // Live voice (docs/live-voice-20261114.md): one spoken question through send(), in Fast unless
-  // the user chose Thinking. A question that would ask "search first?" or the health consent is
-  // handed to the screen instead: nothing is searched or sent without that choice.
+  // the user chose Thinking. It searches the web by itself like a typed question (owner, 19 November).
   const liveMode: AnswerMode | undefined = qualified?.modes
     ? modeChoice === "thinking" ? "thinking" : "fast"
     : undefined;
@@ -1508,7 +1453,10 @@ export function App() {
   if (status?.voice) voiceSettings.current = status.voice;
   const liveVoiceOn = liveVoiceEnabled() && readAloudEnabled() && !!voiceSettings.current;
   async function liveSend(text: string, signal: AbortSignal, turn?: string) {
-    const sent = send(conversationNow.current, text, false, liveMode, undefined, turn);
+    const search = searchFor(text);
+    const sent = search
+      ? searchThenAnswer(search.value, false, { base: conversationNow.current, text, mode: liveMode, voiceTurn: turn })
+      : send(conversationNow.current, text, false, liveMode, undefined, turn);
     const running = controller.current;
     signal.addEventListener("abort", () => running?.abort(), { once: true });
     return (await sent) ? ("answered" as const) : ("failed" as const);
@@ -1615,13 +1563,11 @@ export function App() {
       }
     }
   }
-  // `how` is set when a suggestion tap or the automatic setting approved the search.
+  // One automatic search: its masked text goes to the server, its results join the chat.
   async function research(
-    approved = proposal,
-    how?: "tap" | "auto",
-  ): Promise<{ attachment?: Attachment; note: string } | "failed" | undefined> {
-    if (!approved || busy) return;
-    setProposal(undefined);
+    approved: Disclosure,
+  ): Promise<{ attachment?: Attachment } | "failed" | undefined> {
+    if (busy) return;
     setSearchSent("");
     setBusy(t.retrieving);
     const current = epoch.current;
@@ -1669,17 +1615,7 @@ export function App() {
             temporarySearch: c.temporarySearch || approved.kind === "search",
             attachments: withResearch(c.attachments, attachment),
           }));
-        if (how)
-          return {
-            attachment,
-            note: `${how === "auto" ? WHEN_TO_SEARCH.searchedAutomatically(approved.value) : WHEN_TO_SEARCH.searched(approved.value)} ${topPageNote(result)}`.trim(),
-          };
-        setNotice(
-          sources.length
-            ? approved.kind === "search"
-              ? t.searchAdded(topPageNote(result))              : t.pageAdded
-            : t.noSources,
-        );
+        return { attachment };
       }
     } catch (e) {
       if (current === epoch.current && !abort.signal.aborted) {
@@ -1693,15 +1629,15 @@ export function App() {
       }
     }
   }
-  // The tap (or the opt-in setting) approves exactly the shown text; then the draft is sent.
+  // Automatic search (owner, 19 November): the masked text is searched, then the question is answered
+  // and the answer keeps what was searched ("Searched the web"). A failed search still answers.
   // `again`: search for the last question and answer it again (the old answer is replaced the
   // same way "Retry last response" replaces it).
   async function searchThenAnswer(
     value: string,
-    how: "tap" | "auto",
     again = false,
-    // A scheduled task's run: its own question and mode, not the draft.
-    asked?: { base: Conversation; text: string; mode?: AnswerMode },
+    // A scheduled task's run or a voice turn: its own question and mode, not the draft.
+    asked?: { base: Conversation; text: string; mode?: AnswerMode; voiceTurn?: string },
   ) {
     const retry = again ? lastQuestion() : undefined;
     if (again && !retry) return;
@@ -1709,14 +1645,15 @@ export function App() {
     const base = asked?.base ?? retry?.base ?? conversation;
     const draft = !again && !asked;
     // Search and answer are one start (owner, 18 November): with no allowance left, nothing is searched.
-    const limit = limitAtStart(status?.requestAllowance, lang);
+    // A voice turn was already admitted when its recording started.
+    const limit = asked?.voiceTurn ? undefined : limitAtStart(status?.requestAllowance, lang);
     if (limit) return void setNotice(limit);
-    const outcome = await research({ kind: "search", value }, how);
-    if (!outcome || (outcome === "failed" && how === "tap")) return;
+    const outcome = await research({ kind: "search", value });
+    if (!outcome) return;
     if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed);      return send(base, text, draft, asked?.mode);
+      setSearchSent(WHEN_TO_SEARCH.automaticFailed);
+      return send(base, text, draft, asked?.mode, undefined, asked?.voiceTurn);
     }
-    setSearchSent(outcome.note);
     return send(
       outcome.attachment
         ? {
@@ -1728,6 +1665,9 @@ export function App() {
       text,
       draft,
       asked?.mode,
+      undefined,
+      asked?.voiceTurn,
+      value,
     );
   }
   // The composer's Send. `asIs`: the user chose "Just send" on the scheduled-task card.
@@ -1739,12 +1679,6 @@ export function App() {
       setResearchNext(false);
       setResearchFor(input.trim());
       return;
-    }
-    // Armed from the "+" menu: this message searches the web first (masked here), then answers.
-    if (searchNext && status?.search && status.inference.ready && !picture && !busy) {
-      setSearchNext(false);
-      const query = prepareSearchQuery(input.replace(/\s+/g, " "));
-      if (!editedSearchText(query.value).problem) return void searchThenAnswer(query.value, "tap");
     }
     // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
     const wanted =
@@ -1760,27 +1694,25 @@ export function App() {
     else if (planned) setScheduleCard({ text: input, found: planned });
     // A picture question goes straight to the model: no search step in between.
     else if (picture && status?.images) void send();
-    else if ((autoSearch || autoRules) && suggestion)
-      void searchThenAnswer(suggestion.value, "auto");
-    else void send();
+    else {
+      const search = picture ? undefined : searchFor(input);
+      void (search ? searchThenAnswer(search.value) : send());
+    }
   }
   // "Run now" of a scheduled task: a new conversation with the instruction as its first message,
-  // through send() like any message. A task with a search text searches it first, without asking (owner,
-  // 18 November). Only an answered run moves the task on; a refusal leaves it due.
-  async function runTask(task: ScheduledTask, search?: boolean) {
+  // answered like a chat message, so it searches when the instruction needs current information
+  // (owner, 19 November). Only an answered run moves the task on; a refusal leaves it due.
+  async function runTask(task: ScheduledTask) {
     if (busy || !status?.inference.ready) return;
-    if (search === undefined) {
-      if (!(await allowReplace())) return;
-      reset();
-      setTab("Conversation");
-      setScheduledOpen(undefined);
-      setNavigationOpen(false);
-      // The search text was set when the task was made: it runs without asking again (owner, 18 November).
-      search = !!(task.useSearch && task.searchText && status.search);
-    }
+    if (!(await allowReplace())) return;
+    reset();
+    setTab("Conversation");
+    setScheduledOpen(undefined);
+    setNavigationOpen(false);
     const asked = { base: emptyConversation(), text: task.instruction, mode: runMode(task, status) };
+    const search = searchFor(task.instruction);
     const run = search
-      ? searchThenAnswer(task.searchText!, "tap", false, asked)
+      ? searchThenAnswer(search.value, false, asked)
       : send(asked.base, asked.text, false, asked.mode);
     void run.then((answered) => {
       if (answered && heldVault?.unlocked) changeTasks(heldVault, markRun(task.id)).catch(() => {});
@@ -2363,7 +2295,7 @@ export function App() {
       </div>
     </details>
   );
-  // Deep research's ways out, shared by the Research page and the card in the chat (FE-07).
+  // Deep research's ways out, for the run in the chat (FE-07).
   const researchProps = !researchReady ? undefined : {
     limits: status!.research!,
     busy: !!busy,
@@ -2752,6 +2684,8 @@ export function App() {
         </div>
         {settingsUsed.current && (
           <SettingsBody
+            lookUp={status?.search ? lookUp : undefined}
+            onLookUp={chooseLookUp}
             section={settingsSection}
             onSection={setSettingsSection}
             appearance={appearance}
@@ -3133,14 +3067,6 @@ export function App() {
                   ↓
                 </button>
               )}
-              {searchNext && !busy && (
-                <div className="notice composer-note search-next">
-                  <span>{sn.armed}</span>
-                  <button type="button" className="text-button" onClick={() => setSearchNext(false)}>
-                    {sn.cancel}
-                  </button>
-                </div>
-              )}
               {researchNext && researchFor === undefined && !busy && status?.research && (
                 <div className="notice composer-note search-next">
                   <span>{researchNextText[lang].armed(status.research.cost)}</span>
@@ -3376,23 +3302,6 @@ export function App() {
                           </span>
                         )}
                       </button>
-                      {status?.search && status.inference.ready && (
-                        <button
-                          type="button"
-                          className="text-button"
-                          aria-pressed={searchNext}
-                          disabled={!!busy}
-                          onClick={() => {
-                            setSearchNext((on) => !on);
-                            setResearchNext(false);
-                            // The menu closes on the click (closeMenus); typing goes on in the message box.
-                            requestAnimationFrame(() => document.getElementById("message-input")?.focus());
-                          }}
-                        >
-                          <Icon name="globe" />
-                          {sn.menu}
-                        </button>
-                      )}
                       {researchReady && (
                         <button
                           type="button"
@@ -3401,7 +3310,7 @@ export function App() {
                           disabled={!!busy || researchFor !== undefined}
                           onClick={() => {
                             setResearchNext((on) => !on);
-                            setSearchNext(false);
+                            // The menu closes on the click (closeMenus); typing goes on in the message box.
                             requestAnimationFrame(() => document.getElementById("message-input")?.focus());
                           }}
                         >
@@ -3409,14 +3318,6 @@ export function App() {
                           {deepResearchText[lang].heading}
                         </button>
                       )}
-                      <button
-                        type="button"
-                        className="text-button"
-                        onClick={() => setTab("Research")}
-                      >
-                        <Icon name="compass" />
-                        {t.tabResearch}
-                      </button>
                       <button
                         type="button"
                         className="text-button"
@@ -3713,21 +3614,10 @@ export function App() {
                       </p>
                       <button
                         type="button"
-                        disabled={!!busy}
+                        disabled={!!busy || !status?.search || !status.inference.ready}
                         onClick={() => {
-                          const text = attachment.researchQuery ?? "";
-                          const prepared = prepareSearchQuery(text);
-                          setResearchKind("search");
-                          setQuery(text);
-                          setProposalNote({
-                            note: prepared.note,
-                            warning: prepared.warning,
-                          });
-                          setProposal({
-                            kind: "search",
-                            value: prepared.value,
-                          });
-                          setTab("Research");
+                          const value = prepareSearchQuery(attachment.researchQuery ?? "").value;
+                          if (value.length >= 2) void searchThenAnswer(value, true);
                         }}
                       >
                         {t.searchAgain}
@@ -3761,19 +3651,6 @@ export function App() {
                     <button onClick={() => setSource({ ...s })}>
                       {t.inspectSource}
                     </button>
-                    {s.url && (
-                      <button
-                        disabled={!!busy}
-                        onClick={() => {
-                          setResearchKind("page");
-                          setQuery(s.url!);
-                          setProposal(undefined);
-                          setTab("Research");
-                        }}
-                      >
-                        {t.reviewPage}
-                      </button>
-                    )}
                     <label>
                       {t.correctText}
                       {s.userEdited && (
@@ -3798,182 +3675,6 @@ export function App() {
               </div>
             ))}
             <p className="muted">{t.removeNote}</p>
-          </section>
-        )}
-        {tab === "Research" && (
-          <section className="content-view">
-            <h2>
-              {t.researchHeadA}
-              <br />
-              <em>{t.researchHeadB}</em>
-            </h2>
-            <p className="intro">
-              {WHEN_TO_SEARCH.researchIntro}
-            </p>
-            <div className="panel">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={autoSearch}
-                  onChange={(e) => {
-                    setAutoSearch(e.target.checked);
-                    saveAutoSearch(e.target.checked);
-                  }}
-                />{" "}
-                {WHEN_TO_SEARCH.settingLabel}
-              </label>
-              <p className="muted">{WHEN_TO_SEARCH.settingHelp}</p>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={autoSearchRules}
-                  onChange={(e) => chooseAutoSearchRules(e.target.checked)}
-                />{" "}
-                {WHEN_TO_SEARCH.rulesSettingLabel}
-              </label>
-              <p className="muted">{WHEN_TO_SEARCH.rulesSettingHelp}</p>
-            </div>
-            {conversation.attachments.some(
-              (a) => a.kind === "research" && a.selected,
-            ) && (
-              <div className="panel">
-                <button
-                  onClick={() => {
-                    if (!input.trim()) {
-                      const question = [...conversation.attachments]
-                        .reverse()
-                        .find(
-                          (a) => a.selected && a.researchQuery,
-                        )?.researchQuery;
-                      setInput(t.sourcesQuestion(question));
-                    }
-                    setTab("Conversation");
-                  }}
-                >
-                  {t.prepareQuestion}
-                </button>
-                <p className="muted">
-                  {t.prepareNote}
-                  {!status?.inference.ready && t.answersUnavailable}
-                </p>
-              </div>
-            )}
-            <div className="panel">
-              <label>
-                {t.researchMethod}
-                <select
-                  value={researchKind}
-                  onChange={(e) => {
-                    setResearchKind(e.target.value as "search" | "page");
-                    setProposal(undefined);
-                  }}
-                >
-                  <option value="search">{t.publicSearch}</option>
-                  <option value="page">{t.readPage}</option>
-                </select>
-              </label>
-              <label>
-                {researchKind === "search" ? t.exactQuery : t.exactUrl}
-                <textarea
-                  value={query}
-                  maxLength={researchKind === "search" ? 400 : 2000}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setProposal(undefined);
-                  }}
-                  rows={3}
-                />
-              </label>
-              {researchKind === "search" && !status?.search && (
-                <p className="muted">{t.searchNeedsAccess}</p>
-              )}
-              {researchKind === "page" && status?.publicPageHosts && (
-                <p className="muted">
-                  {t.pageDomains(
-                    status.publicPageHosts.length
-                      ? status.publicPageHosts.join(", ")
-                      : t.noneConfigured,
-                  )}
-                </p>
-              )}
-              <button
-                className="primary"
-                disabled={
-                  !!busy ||
-                  !query.trim() ||
-                  (researchKind === "search" && !status?.search)
-                }
-                onClick={() => {
-                  try {
-                    if (
-                      researchKind === "page" &&
-                      new URL(query).protocol !== "https:"
-                    )
-                      throw new Error();
-                    if (researchKind === "search") {
-                      const prepared = prepareSearchQuery(query.trim());
-                      if (!prepared.value) {
-                        fail(t.nothingLeft);
-                        return;
-                      }
-                      setProposalNote({
-                        note: prepared.note,
-                        warning: prepared.warning,
-                      });
-                      setProposal({
-                        kind: researchKind,
-                        value: prepared.value,
-                      });
-                    } else {
-                      setProposalNote(undefined);
-                      setProposal({ kind: researchKind, value: query.trim() });
-                    }
-                  } catch {
-                    fail(t.enterHttps);
-                  }
-                }}
-              >
-                {t.reviewDisclosure}
-              </button>
-            </div>
-            {proposal && (
-              <div
-                className="approval"
-                role="region"
-                aria-label={t.confirmDisclosure}
-              >
-                <p className="eyebrow">{t.approvalEyebrow}</p>
-                <h3>{t.shareOnly(proposal.kind === "search")}</h3>
-                <pre>{proposal.value}</pre>
-                {proposalNote?.note && (
-                  <p className="muted kept-on-device">
-                    {proposalNote.note} {t.editAbove}
-                  </p>
-                )}
-                {proposalNote?.warning && (
-                  <p className="warning" role="alert">
-                    {WHEN_TO_SEARCH.warning}
-                  </p>
-                )}
-                <p>
-                  {t.recipient(
-                    proposal.kind === "search"
-                      ? "Brave Search API"
-                      : new URL(proposal.value).hostname,
-                  )}
-                  {proposal.kind === "search" && ` ${researchText[lang].approval}`}
-                  {proposal.kind === "page" && t.pageExact}
-                </p>
-                <button
-                  className="primary"
-                  disabled={!!busy}
-                  onClick={() => void research()}
-                >
-                  {t.approve}
-                </button>
-                <button onClick={() => setProposal(undefined)}>{t.cancel}</button>
-              </div>
-            )}
           </section>
         )}
         {tab === "Help" && (
@@ -4017,7 +3718,6 @@ export function App() {
             }}
           />
         )}
-        {researchUsed.current && researchReady && <DeepResearch {...researchProps!} hidden={tab !== "Research"} />}
         {tab === "Account" && (
           <>
             {status?.accountId && !status.consumerWorkspace && (

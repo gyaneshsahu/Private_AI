@@ -30,7 +30,7 @@ import {
 import { calendarFile, downloadCalendar } from "./scheduled-ics";
 import { forStorage, type Storage } from "./text/mode-copy";
 import { RESULT_RETENTION_DAYS, scheduledText } from "./text/scheduled";
-import { editedSearchText } from "./when-to-search";
+import { searchSuggestion } from "./when-to-search";
 import type { Vault } from "./vault";
 import { changeTasks, costOf, fieldsOf, useScheduledTasks, when, type FormExtra, type TaskDraft } from "./ScheduledPanel";
 
@@ -443,8 +443,6 @@ function TaskForm({
   const [calendar, setCalendar] = useState(start.notify.calendar);
   const autoOn = !!status?.backgroundTasks;
   const [mode, setMode] = useState(autoOn ? start.mode : "manual");
-  const [useSearch, setUseSearch] = useState(!!status?.search && start.useSearch);
-  const [searchText, setSearchText] = useState(start.searchText ?? "");
   // Consent is given at the choice, for this task: an existing background task already has it.
   // No consent boxes (owner, 18 November): the acceptance at sign-up covers background tasks; the
   // server's per-task consent record is filled in with the server's current version and the time.
@@ -462,13 +460,21 @@ function TaskForm({
     return () => element?.close();
   }, []);
   const auto = mode === "auto";
-  const search = useMemo(() => editedSearchText(searchText, {}, lang), [searchText, lang]);
-  const sensitive = looksSensitive(`${name}\n${instruction}\n${useSearch ? searchText : ""}\n${document?.text ?? ""}`);
+  // Whether a run searches is decided here, once, from the instruction (owner, 19 November): no
+  // checkbox. A template's own search text stays while its instruction is unchanged. A background
+  // task runs on the server, so this is what it uses; a Manual run decides again like a chat message.
+  const searchValue = useMemo(() => {
+    if (!status?.search) return undefined;
+    if (start.searchText && instruction.trim() === start.instruction.trim()) return start.searchText;
+    return searchSuggestion(instruction.trim(), undefined, false, lang)?.value;
+  }, [status?.search, instruction, lang]);
+  const useSearch = !!searchValue;
+  const sensitive = looksSensitive(`${name}\n${instruction}\n${searchValue ?? ""}\n${document?.text ?? ""}`);
   const asksDocument = auto && !!document;
   const asksCv = auto && !document && sensitive.cv;
   const asksHealth = auto && sensitive.health;
   // The server refuses identifiers in these fields; the document is masked by itself.
-  const identifiers = auto && findIdentifiers(`${name}\n${instruction}\n${useSearch ? search.value : ""}`).length > 0;
+  const identifiers = auto && findIdentifiers(`${name}\n${instruction}`).length > 0;
   // On the server "Auto" runs as Fast; a search adds 1 unit and a document 2 (Agent A's weights).
   const cost = auto
     ? (() => {
@@ -508,7 +514,6 @@ function TaskForm({
         : "",
     every: Number.isInteger(everyNumber) && everyNumber >= 1 && everyNumber <= 31 ? "" : t.errorEvery,
     time: /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? "" : t.errorTime,
-    search: useSearch && search.problem ? (search.problem === "long" ? t.errorSearchLong : t.errorSearch) : "",
     identifiers: identifiers ? t.errorIdentifiers : "",
   };
   const shown = (key: keyof typeof errors) => (tried ? errors[key] : "");
@@ -560,7 +565,7 @@ function TaskForm({
               notify: { inApp, calendar },
               answerMode,
               useSearch,
-              ...(useSearch ? { searchText: search.value } : {}),
+              ...(searchValue ? { searchText: searchValue } : {}),
               ...(existing?.paused ? { paused: true } : {}),
             },
             {
@@ -751,31 +756,6 @@ function TaskForm({
               {t.notifyPush} <em>({t.later})</em>
             </label>
           </fieldset>
-          {status?.search ? (
-            <div>
-              <label className="scheduled-check">
-                <input type="checkbox" checked={useSearch} onChange={(event) => setUseSearch(event.target.checked)} />
-                {t.search}
-              </label>
-              {useSearch && (
-                <>
-                  <p className="muted">{t.searchNote}</p>
-                  <label htmlFor={`${id}-search`}>{t.searchText}</label>
-                  <input
-                    id={`${id}-search`}
-                    value={searchText}
-                    maxLength={400}
-                    onChange={(event) => setSearchText(event.target.value)}
-                    {...described("search")}
-                  />
-                  {search.value !== searchText.trim() && search.value && <p className="muted">{t.searchSent(search.value)}</p>}
-                  {error("search")}
-                </>
-              )}
-            </div>
-          ) : (
-            <p className="muted">{t.searchUnavailable}</p>
-          )}
         </details>
         <p className="scheduled-cost">{cost !== undefined ? t.cost(cost) : t.costUnknown}</p>
         <div className="confirm-actions">

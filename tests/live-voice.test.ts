@@ -258,17 +258,13 @@ describe("interruptions", () => {
     expect(t.deps.send).not.toHaveBeenCalled();
   });
 
-  it("health consent and the search-first choice end the session; nothing counts as sent", async () => {
-    for (const [outcome, key] of [
-      ["consent", "consent"],
-      ["choice", "searchChoice"],
-    ] as const) {
-      const s = setup();
-      s.deps.send.mockResolvedValueOnce(outcome);
-      await reach(s, "speaking");
-      expect(s.live.snapshot()).toMatchObject({ phase: "ended", reason: { key }, turns: 0, units: 1 });
-      expect(s.deps.speaker.speak).not.toHaveBeenCalled();
-    }
+  // There is no search choice any more (owner, 19 November): a question that needs the web is searched.
+  it("health consent ends the session; nothing counts as sent", async () => {
+    const s = setup();
+    s.deps.send.mockResolvedValueOnce("consent");
+    await reach(s, "speaking");
+    expect(s.live.snapshot()).toMatchObject({ phase: "ended", reason: { key: "consent" }, turns: 0, units: 1 });
+    expect(s.deps.speaker.speak).not.toHaveBeenCalled();
   });
 
   it("a failed answer pauses and counts as a request", async () => {

@@ -69,8 +69,10 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
         return route.fulfill({
           json: {
             csrf: "TEST_ONLY",
-            inference: { ready: false, reason: "TEST offline" },
-            search: false,
+            // Ready with search, so a question that asks for one is searched on Send (owner,
+            // 19 November); no answer request is reached in this test.
+            inference: { ready: true, reason: "TEST offline" },
+            search: true,
           },
         });
       return route.continue();
@@ -132,13 +134,11 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
           );
         };
       }, delayedStage);
-      await tab("Research").click();
-      await page.getByLabel("Research method").selectOption("page");
+      await tab("Conversation").click();
       await page
-        .getByLabel("Exact HTTPS URL")
-        .fill("https://example.com/synthetic");
-      await page.getByRole("button", { name: "Review disclosure" }).click();
-      await page.getByRole("button", { name: "Approve and retrieve" }).click();
+        .getByLabel("Message CometRow")
+        .fill("search the web for synthetic public page");
+      await page.getByRole("button", { name: "Send message", exact: true }).click();
       await page.waitForFunction(
         (stage) =>
           (window as unknown as Fixture).researchCalls.includes(
@@ -158,8 +158,12 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       await tab("Context").click();
       await ui(page.locator(".content-view details summary")).toHaveCount(0);
       await ui(
-        page.getByText("Public sources added", { exact: false }),
+        page.getByText("Public search results", { exact: false }),
       ).toHaveCount(0);
+      // The discarded search never answers in the new conversation.
+      await tab("Conversation").click();
+      await ui(page.locator("article.message")).toHaveCount(0);
+      await ui(page.getByText("TEST_STALE_RESEARCH")).toHaveCount(0);
       expect(
         await page.evaluate(() => (window as unknown as Fixture).researchCalls),
       ).toEqual(

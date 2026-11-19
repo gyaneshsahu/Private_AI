@@ -708,6 +708,32 @@
   cursor: pointer;
   color: var(--muted);
 }
+/* "Searched the web" under an answer: one quiet line; opened, the searched text and the sources. */
+.chat-design .searched-web:not([open]) {
+  width: fit-content;
+  max-width: 100%;
+}
+.chat-design .searched-web summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+}
+.chat-design .searched-web summary svg {
+  width: 14px;
+  height: 14px;
+}
+.chat-design .searched-web p,
+.chat-design .searched-web ol {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .searched-web ol {
+  padding-left: 20px;
+}
+.chat-design .searched-web a {
+  color: var(--accent);
+}
 .chat-design .composer-dock {
   position: sticky;
   bottom: 0;
@@ -3397,7 +3423,8 @@
   margin: 0 0 8px;
   font-weight: 600;
 }
-.chat-design .secure-max-start label {
+.chat-design .secure-max-start label,
+.chat-design .settings-switch label {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -3405,6 +3432,7 @@
   cursor: pointer;
 }
 .chat-design .secure-max-start input,
+.chat-design .settings-switch input,
 .chat-design .secure-max-understand input {
   flex: none;
   width: 18px;
@@ -3414,6 +3442,7 @@
   accent-color: var(--accent);
 }
 .chat-design .secure-max-start p,
+.chat-design .settings-switch p,
 .chat-design .secure-max-reset p {
   margin: 4px 0 8px;
   max-width: 60ch;
@@ -3453,7 +3482,9 @@
   .chat-design .secure-max-locked button,
   .chat-design .secure-max-reset .danger-button,
   .chat-design .secure-max-understand,
-  .chat-design .secure-max-start label {
+  .chat-design .secure-max-start label,
+  .chat-design .settings-switch label,
+  .chat-design .searched-web summary {
     min-height: 44px;
   }
 }

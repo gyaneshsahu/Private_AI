@@ -32,13 +32,8 @@ const searchKey = process.env.BRAVE_SEARCH_API_KEY;
 if (!apiKey) throw Error("Load TINFOIL_API_KEY or PRIVATEMODE_API_KEY (and BRAVE_SEARCH_API_KEY for research) with scripts/WindowsSecrets.psm1");
 const MODES = (arg("modes") ?? "auto,fast,thinking").split(",") as ("auto" | "fast" | "thinking")[];
 const only = arg("only")?.split(",");
-// --tap-suggestion-all: tap the one-tap search suggestion on the first turn whenever it appears.
-const tapAll = process.argv.includes("--tap-suggestion-all");
-// --choice search|without: what to pick when Send on a German-rules question asks first
-// ("Search and answer" or "Answer without checking", decided 13 November). Default: without,
-// which is what Send did before, so older prompt sets keep their meaning.
-const choice = arg("choice") ?? "without";
-if (choice !== "search" && choice !== "without") throw Error("--choice must be search or without");
+// Search is automatic (owner, 19 November): the app searches by itself when a question needs current
+// information, so nothing is tapped or chosen here. The run records whether and what it searched.
 // --goggles: the server flag for the Brave Goggle on German-rules searches (default off).
 const goggles = process.argv.includes("--goggles");
 // --code: code execution on the device switched on (docs/code-execution-20261114.md), as
@@ -55,7 +50,7 @@ const deepResearch = process.argv.includes("--research");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
 // BENCH_OUT writes elsewhere, so a measurement run does not overwrite earlier evidence.
-const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}${code ? "-code" : ""}${deepResearch ? "-research" : ""}`;
+const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${code ? "-code" : ""}${deepResearch ? "-research" : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
 // Each prompt also opens a fresh page, so it verifies again, and the relay gives one session 10
@@ -102,9 +97,6 @@ const NOTICES = [
 // Controls are found by the app's own English and German labels, so --locale de-DE works too.
 const either = (en: string, de: string) => new RegExp(`^(${[en, de].map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`);
 const uiLabel = (key: keyof typeof appText.en) => either(appText.en[key] as string, appText.de[key] as string);
-const searchName = either(WHEN_TO_SEARCH_TEXT.en.button, WHEN_TO_SEARCH_TEXT.de.button);
-const searchAgainName = either(WHEN_TO_SEARCH_TEXT.en.againButton, WHEN_TO_SEARCH_TEXT.de.againButton);
-const withoutName = either(GERMAN_RULES_TEXT.en.without, GERMAN_RULES_TEXT.de.without);
 type Prompt = { id: string; level: number | string; prompt: string | string[]; attachments?: { path: string }[]; searchExpected?: boolean; searchQuery?: string };
 const prompts = (
   casesFile
@@ -205,18 +197,11 @@ const answer = (page: Page) => page.locator("article.assistant").last();
 const answerText = async (page: Page) => (await answer(page).innerText().catch(() => "")).trim();
 const busy = (page: Page) => page.getByRole("button", { name: uiLabel("stopResponse") });
 
-// The when-to-search suggestion (src/when-to-search.ts) is decided on the device from the draft.
-const suggestionBox = (page: Page) => page.getByRole("region", { name: uiLabel("searchSuggestion") });
-
-async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolean } = {}) {
+async function sendTurn(page: Page, text: string) {
   const before = await page.locator("article.assistant").count();
   await page.getByLabel(uiLabel("messageInput")).fill(text);
   await page.waitForFunction(() => !document.querySelector("button[aria-label='Send message']")?.hasAttribute("disabled"), null, { timeout: 60_000 });
   await page.waitForTimeout(300);
-  const suggestionShown = await suggestionBox(page).isVisible().catch(() => false);
-  const suggestedQuery = suggestionShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;
-  const suggestionHeading = suggestionShown ? ((await suggestionBox(page).locator("strong").innerText().catch(() => "")) || undefined) : undefined;
-  const tapped = !!(opts.tapSuggestion && suggestionShown);
   // Privatemode limits attestations per organisation (12 Nov probe: 10/min passes, 20/min gets
   // HTTP 429). The app now verifies once per session and at least every 10 minutes, but every new
   // session (every 15 prompts) and every failure verifies again: keep message starts spaced out.
@@ -224,24 +209,8 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   if (wait > 0) await page.waitForTimeout(wait);
   lastSend = Date.now();
   maxGapMs = 0;
-  let started = Date.now();
-  if (tapped) await suggestionBox(page).getByRole("button", { name: searchName }).click();
-  else await page.getByRole("button", { name: uiLabel("sendLabel") }).click();
-  // Search first: Send on a German-rules question shows the choice instead of answering.
-  const withoutButton = suggestionBox(page).getByRole("button", { name: withoutName });
-  const choiceShown =
-    !tapped &&
-    (await Promise.race([
-      withoutButton.waitFor({ timeout: 5000 }).then(() => true),
-      page.locator("article.assistant").nth(before).waitFor({ timeout: 5000 }).then(() => false),
-    ]).catch(() => false));
-  const choiceHeading = choiceShown ? ((await suggestionBox(page).locator("strong").innerText().catch(() => "")) || undefined) : undefined;
-  const choiceQuery = choiceShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;
-  if (choiceShown) {
-    // Timed from the choice, like a tapped suggestion.
-    started = Date.now();
-    await (choice === "search" ? suggestionBox(page).getByRole("button", { name: searchName }) : withoutButton).click();
-  }
+  const started = Date.now();
+  await page.getByRole("button", { name: uiLabel("sendLabel") }).click();
   let ttftMs: number | undefined;
   let baseline = "";
   while (Date.now() - started < 300_000) {
@@ -254,26 +223,25 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   }
   const totalMs = Date.now() - started;
   const tokens = Number(/Reported inference: (\d+) tokens/.exec(await page.locator("main").innerText().catch(() => ""))?.[1]) || undefined;
-  // The after-answer "Search and answer again" box (shown when the answer used no web results).
-  await page.waitForTimeout(300);
-  const againShown = await suggestionBox(page).getByRole("button", { name: searchAgainName }).isVisible().catch(() => false);
-  return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, choiceShown, choiceHeading, choiceQuery, chose: choiceShown ? choice : undefined, againShown, maxGapMs, tokens };
+  // The quiet "Searched the web" line under the answer: present only when the app searched.
+  const searched = await answer(page).locator(".searched-web").isVisible().catch(() => false);
+  return { ttftMs, totalMs, text: await answerText(page), searched, maxGapMs, tokens };
 }
 
-// One deep research run through the panel in Research: it starts at once and sends the masked
+// One deep research run from "+" > Deep research: it starts at once in the chat and sends the masked
 // search texts the plan proposed. Records what was searched and read, the outcome and the answer.
-const researchLabel = (key: "question" | "start") => either(deepResearchText.en[key], deepResearchText.de[key]);
 async function runResearchCase(page: Page, question: string) {
   const sent: { kind: string; value: string }[] = [];
   page.on("request", (r) => {
     if (r.method() === "POST" && new URL(r.url()).pathname === "/api/research/prepare") sent.push(r.postDataJSON());
   });
-  await workspaceControl(page, "Research").click();
+  await page.getByLabel(either("Attachments and tools", "Anhänge und Werkzeuge"), { exact: true }).click();
+  await page.locator(".tools-menu").getByRole("button", { name: either(deepResearchText.en.heading, deepResearchText.de.heading) }).click();
   const wait = lastSend + PACE_MS - Date.now();
   if (wait > 0) await page.waitForTimeout(wait);
   const started = (lastSend = Date.now());
-  await page.getByLabel(researchLabel("question")).fill(question);
-  await page.getByRole("button", { name: researchLabel("start") }).click();
+  await page.getByLabel(uiLabel("messageInput")).fill(question);
+  await page.getByRole("button", { name: uiLabel("sendLabel") }).click();
   const ended = page.locator(".research-result h4");
   let planMs: number | undefined;
   page.on("request", (r) => {
@@ -329,38 +297,25 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       await page.getByLabel(uiLabel("attachFiles")).setInputFiles({ name: a.path.split("/").pop()!, mimeType: "text/markdown", buffer: body });
       await page.getByRole("region", { name: uiLabel("importResults") }).filter({ hasText: "added" }).waitFor({ timeout: 30_000 });
     }
-    let searched = false;
     const turns = Array.isArray(p.prompt) ? p.prompt : [p.prompt];
-    // Level-4/research prompts: tap the one-tap suggestion when it appears; otherwise approve the
-    // written query in the Research tab first (the old path).
-    const query = p.searchQuery ?? SEARCH_QUERIES[p.id];
-    let probe = { suggestionShown: false, suggestedQuery: undefined as string | undefined };
-    if (query && searchKey) {
-      await page.getByLabel(uiLabel("messageInput")).fill(turns[0]);
-      await page.waitForTimeout(300);
-      probe = { suggestionShown: await suggestionBox(page).isVisible().catch(() => false), suggestedQuery: undefined };
-      await page.getByLabel(uiLabel("messageInput")).fill("");
-    }
-    if (query && searchKey && !probe.suggestionShown) {
-      await workspaceControl(page, "Research").click();
-      await page.getByLabel(uiLabel("exactQuery")).fill(query);
-      await page.getByRole("button", { name: uiLabel("reviewDisclosure") }).click();
-      await page.getByRole("button", { name: uiLabel("approve") }).click();
-      await page.getByRole("status").filter({ hasText: "Search results added" }).waitFor({ timeout: 60_000 });
-      await workspaceControl(page, "Conversation").click();
-      searched = true;
-    }
-    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, suggestionHeading: undefined as string | undefined, tapped: false, choiceShown: false, choiceHeading: undefined as string | undefined, choiceQuery: undefined as string | undefined, chose: undefined as string | undefined, againShown: false, maxGapMs: 0, tokens: undefined as number | undefined };
+    const searchTexts: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() === "POST" && new URL(r.url()).pathname === "/api/research/prepare") {
+        const body = r.postDataJSON() as { kind?: string; value?: string } | undefined;
+        if (body?.kind === "search" && body.value) searchTexts.push(body.value);
+      }
+    });
+    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", searched: false, maxGapMs: 0, tokens: undefined as number | undefined };
     const all: { ttftMs?: number; totalMs: number; maxGapMs: number; tokens?: number }[] = [];
     let first: typeof last | undefined;
     const rawTexts: string[] = [];
     for (const t of turns) {
-      last = await sendTurn(page, t, { tapSuggestion: (tapAll || !!(query && searchKey && probe.suggestionShown)) && !first });
+      last = await sendTurn(page, t);
       rawTexts.push(last.text);
       first ??= last;
       all.push({ ttftMs: last.ttftMs, totalMs: last.totalMs, maxGapMs: last.maxGapMs, tokens: last.tokens });
     }
-    if (first?.tapped || first?.chose === "search") searched = true;
+    const searched = !!first?.searched || searchTexts.length > 0;
     const mainText = await page.locator("main").innerText().catch(() => "");
     // Citations render as site-name links, so innerText hides the address: keep the hrefs.
     const links = await answer(page).locator("a[href^='http']").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href)).catch(() => [] as string[]);
@@ -372,7 +327,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     const topPageNote = new RegExp(String.raw`(${opened}[^\n]*|The top result \([^)]*\)[^\n]*)`).exec(mainText)?.[1];
     const noOfficialNote = /No official source was found in the search results\. Check the responsible authority/.test(last.text);
     const uncheckedWarning = /This answer gives figures or deadlines that were not checked/.test(last.text);
-    const searchedQuery = /Searched the web(?: automatically)? for: "([^"]*)"/.exec(mainText)?.[1] ?? (searched ? query : undefined);
+    const searchedQuery = searchTexts[0];
     // Strip UI chrome: the "CometRow" heading line and the copy button text.
     const lines = last.text.split("\n").filter((l) => l.trim() && !/^(CometRow|Copy answer)$/.test(l.trim()));
     const label = lines.find((l) => /^(Auto|Fast|Thinking)( ·|$)/.test(l.trim())) ?? "";
@@ -396,7 +351,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       : undefined;
     return {
       text, turnTexts, ...(code ? { codeMarks, codeRuns } : {}), notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
-      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, noOfficialNote, uncheckedWarning, links, citations, research: await research,
+      searchedQuery, searchTexts, pageRead, topPageNote, noOfficialNote, uncheckedWarning, links, citations, research: await research,
     };
   } finally {
     // LINGER_MS keeps the page open after the answer, as a user who goes on reading would (14 November:
@@ -443,6 +398,6 @@ try {
   await vite.close();
   listener.close();
 }
-await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles, code, deepResearch }, null, 2));
+await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, goggles, code, deepResearch }, null, 2));
 // The relay's own content-free counts (chat outcomes, attestation calls): shows a run that verified too often.
 console.log(`done: ${relayRequests} relay requests; counts ${JSON.stringify((await import("../../server/counters")).takeCounts())}`);

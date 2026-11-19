@@ -40,7 +40,7 @@ it("prepares a search query by removing identifiers and warning about remaining 
   );
   expect(prepared.removed).toEqual({ IBAN: 1 });
   expect(prepared.note).toBe(
-    "Removed from the search text before approval: 1 bank account.",
+    "Removed from the search text before the search: 1 bank account.",
   );
   expect(prepared.warning).toBe(true);
   const plain = prepareSearchQuery("library opening hours berlin");

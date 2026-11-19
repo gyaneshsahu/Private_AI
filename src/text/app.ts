@@ -23,7 +23,7 @@ const guideEn = {
   saveSecure:
     "Your chats are saved automatically. They are saved to your account, encrypted while stored, and are on all your devices after sign-in. CometRow holds the key. Incognito chats are never saved. If your sidebar shows Secure Max, you can keep chats there with their own key and recovery key, which you keep yourself. Its rules are shown before you start.",
   search:
-    "Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Search results and source links are not saved.",
+    "Current information. When a question needs it, CometRow looks it up online and shows the sources under the answer. Personal details such as email addresses and bank numbers are removed before the search. You can turn this off in Settings, General, \u201cLook things up online\u201d.",
   control:
     "Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard.",
   deleteLocal:
@@ -44,7 +44,7 @@ const guideDe = {
   saveSecure:
     "Ihre Chats werden automatisch gespeichert. Sie werden in Ihrem Konto gespeichert, verschlüsselt abgelegt, und sind nach der Anmeldung auf allen Ihren Geräten. CometRow verwahrt den Schlüssel. Inkognito-Chats werden nie gespeichert. Wenn Ihre Seitenleiste Secure Max zeigt, können Sie Chats dort mit einem eigenen Schlüssel und einem eigenen Wiederherstellungsschlüssel aufbewahren, die Sie selbst verwahren. Die Regeln dafür sehen Sie, bevor Sie beginnen.",
   search:
-    "Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Suchergebnisse und Quellenlinks werden nicht gespeichert.",
+    "Aktuelle Informationen. Wenn eine Frage sie braucht, schlägt CometRow online nach und zeigt die Quellen unter der Antwort. Persönliche Angaben wie E-Mail-Adressen und Kontonummern werden vor der Suche entfernt. Sie können das unter Einstellungen, Allgemein, \u201eOnline nachschlagen\u201c ausschalten.",
   control:
     "Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage.",
   deleteLocal:
@@ -60,7 +60,6 @@ export const appText = defineText({
     // Tabs (the heading shows the open tab)
     tabConversation: "Conversation",
     tabContext: "Context",
-    tabResearch: "Research",
     tabSaved: "Saved",
     tabAccount: "Account",
     tabHelp: "Help",
@@ -102,14 +101,9 @@ export const appText = defineText({
     extractionFailed: "Extraction failed.",
     researchLimit:
       "Remove an attachment before adding more research context (five-item limit).",
-    retrieving: "Retrieving the approved public information…",
+    retrieving: "Searching the web…",
     searchResultsName: "Public search results",
     publicPageName: "Public page",
-    searchAdded: (note: string) =>
-      `Search results added to context. Return to Conversation to ask about them. Search results and source links are never saved; if you save this conversation, only your written answers and the approved query are kept, and you can search again later. ${note}`.trim(),
-    pageAdded:
-      "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval.",
-    noSources: "The search returned no sources.",
     researchFailed: "Research failed.",
     waitForAccess: "Wait for service access before opening saved history.",
     unlocking: "Unlocking encrypted history…",
@@ -169,9 +163,6 @@ export const appText = defineText({
     incognitoTitle: "Incognito chat",
     branchOpened:
       "Branch opened locally. No request was sent. Save again to keep these changes.",
-    nothingLeft:
-      "Nothing is left of the search text after removing personal details.",
-    enterHttps: "Enter a public HTTPS URL.",
     deletingSnapshot: "Deleting encrypted snapshot…",
     snapshotDeleted:
       "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
@@ -284,7 +275,6 @@ export const appText = defineText({
     cancel: "Cancel",
 
     // Composer
-    searchSuggestion: "Search suggestion",
     messageInput: "Message CometRow",
     placeholder: "Ask anything",
     attachFiles: "Attach files to this conversation",
@@ -350,12 +340,11 @@ export const appText = defineText({
     contextEmpty: "Your context is empty. Files are read on your device.",
     fromLiveSearch: "From a live search",
     liveSearchNote: (date: string) =>
-      `From a live search on ${date}. Results and links were not kept; search again to see current sources. The search needs your approval again.`,
+      `From a live search on ${date}. Results and links were not kept; search again to see current sources.`,
     searchAgain: "Search again",
     remove: "Remove",
     pageSuffix: (page: number) => ` · page ${page}`,
     inspectSource: "Inspect source",
-    reviewPage: "Review page retrieval",
     correctText: "Review or correct extracted text",
     userEditedShort:
       "User-edited text. This is not an unmodified extraction or verified quotation from the original source.",
@@ -363,40 +352,6 @@ export const appText = defineText({
       `Text for ${title}${page ? ` page ${page}` : ""}`,
     removeNote:
       "Removing context affects future requests. It cannot retract prior processing or information already present in earlier messages.",
-
-    // Research tab
-    researchHeadA: "Explore the public web.",
-    researchHeadB: "Keep the choice yours.",
-    researchNote:
-      "Search results and source links are shown only during this session and are never saved. Saving keeps your written answers and the approved search text. Use public, non-sensitive queries only.",
-    sourcesQuestion: (question?: string) =>
-      `Using the selected web sources, answer: ${question ?? "What do these sources establish?"} Cite evidence beside each factual claim and explain missing or conflicting evidence.`,
-    prepareQuestion: "Prepare a question about these sources",
-    prepareNote:
-      "Opens your existing draft, or prepares an editable question. Nothing is sent automatically.",
-    answersUnavailable:
-      " AI answers are currently unavailable while provider verification is incomplete.",
-    researchMethod: "Research method",
-    publicSearch: "Public search",
-    readPage: "Read a public page",
-    exactQuery: "Exact search query",
-    exactUrl: "Exact HTTPS URL",
-    searchNeedsAccess:
-      "Search needs service access. No search request can be sent yet.",
-    pageDomains: (hosts: string) =>
-      `Available page domains in this workspace: ${hosts}. Other domains remain blocked.`,
-    noneConfigured: "none configured yet",
-    reviewDisclosure: "Review disclosure",
-    confirmDisclosure: "Confirm external disclosure",
-    approvalEyebrow: "YOUR APPROVAL IS REQUIRED",
-    shareOnly: (search: boolean) =>
-      `Share only this ${search ? "query" : "URL"}?`,
-    editAbove: "Edit the search text above if you need something else searched.",
-    recipient: (who: string) =>
-      `Recipient: ${who}, through CometRow’s research service. Their retention policies apply. No private chat or attachment is included automatically.`,
-    pageExact:
-      " The page address is sent exactly as shown; personal details in it are not removed.",
-    approve: "Approve and retrieve",
 
     // Account tab
     changePassword: "Change sign-in password",
@@ -422,7 +377,7 @@ export const appText = defineText({
     saveSnapshot: "Save encrypted snapshot",
     saveAsNew: "Save as new conversation",
     researchNotSaved:
-      "Search results and source links are never saved. Saving keeps your written answers and the approved search text; the reopened conversation says it came from a live search and offers to search again for current sources.",
+      "Search results and source links are never saved. Saving keeps your written answers and what was searched; the reopened conversation says it came from a live search and offers to search again for current sources.",
     lockAndClear: "Lock and clear workspace",
     deleteAll: "Delete everything on this device",
     deleteAllText:
@@ -448,7 +403,6 @@ export const appText = defineText({
   de: {
     tabConversation: "Unterhaltung",
     tabContext: "Kontext",
-    tabResearch: "Recherche",
     tabSaved: "Gespeichert",
     tabAccount: "Konto",
     tabHelp: "Hilfe",
@@ -490,14 +444,9 @@ export const appText = defineText({
     extractionFailed: "Das Auslesen ist fehlgeschlagen.",
     researchLimit:
       "Entfernen Sie einen Anhang, bevor Sie weitere Rechercheergebnisse hinzufügen (höchstens fünf).",
-    retrieving: "Die freigegebenen öffentlichen Informationen werden abgerufen …",
+    retrieving: "Suche im Web …",
     searchResultsName: "Öffentliche Suchergebnisse",
     publicPageName: "Öffentliche Seite",
-    searchAdded: (note: string) =>
-      `Suchergebnisse wurden dem Kontext hinzugefügt. Kehren Sie zur Unterhaltung zurück, um Fragen dazu zu stellen. Suchergebnisse und Quellenlinks werden nie gespeichert; wenn Sie diese Unterhaltung speichern, bleiben nur Ihre geschriebenen Antworten und die freigegebene Suchanfrage erhalten, und Sie können später erneut suchen. ${note}`.trim(),
-    pageAdded:
-      "Öffentliche Quellen wurden Ihrem ausgewählten Kontext hinzugefügt. Auszüge aus der Suche sind gekennzeichnet; Seiten werden nur mit Ihrer Freigabe abgerufen.",
-    noSources: "Die Suche hat keine Quellen ergeben.",
     researchFailed: "Die Recherche ist fehlgeschlagen.",
     waitForAccess:
       "Warten Sie auf den Zugang zum Dienst, bevor Sie den gespeicherten Verlauf öffnen.",
@@ -560,9 +509,6 @@ export const appText = defineText({
     incognitoTitle: "Inkognito-Chat",
     branchOpened:
       "Zweig lokal geöffnet. Es wurde keine Anfrage gesendet. Speichern Sie erneut, um diese Änderungen zu behalten.",
-    nothingLeft:
-      "Nach dem Entfernen persönlicher Angaben bleibt vom Suchtext nichts übrig.",
-    enterHttps: "Geben Sie eine öffentliche HTTPS-Adresse ein.",
     deletingSnapshot: "Verschlüsselter Speicherstand wird gelöscht …",
     snapshotDeleted:
       "Verschlüsselte Einträge und der zugehörige Schlüssel wurden gelöscht. Sicherungen des Geräts und exportierte Kopien sind davon nicht betroffen.",
@@ -669,7 +615,6 @@ export const appText = defineText({
     editedMessage: "Bearbeitete Nachricht",
     cancel: "Abbrechen",
 
-    searchSuggestion: "Suchvorschlag",
     messageInput: "Nachricht an CometRow",
     placeholder: "Fragen Sie etwas",
     attachFiles: "Dateien an diese Unterhaltung anhängen",
@@ -734,12 +679,11 @@ export const appText = defineText({
     contextEmpty: "Ihr Kontext ist leer. Dateien werden auf Ihrem Gerät gelesen.",
     fromLiveSearch: "Aus einer Websuche",
     liveSearchNote: (date: string) =>
-      `Aus einer Websuche am ${date}. Ergebnisse und Links wurden nicht behalten; suchen Sie erneut, um aktuelle Quellen zu sehen. Die Suche braucht erneut Ihre Freigabe.`,
+      `Aus einer Websuche am ${date}. Ergebnisse und Links wurden nicht behalten; suchen Sie erneut, um aktuelle Quellen zu sehen.`,
     searchAgain: "Erneut suchen",
     remove: "Entfernen",
     pageSuffix: (page: number) => ` · Seite ${page}`,
     inspectSource: "Quelle ansehen",
-    reviewPage: "Abruf der Seite prüfen",
     correctText: "Ausgelesenen Text prüfen oder korrigieren",
     userEditedShort:
       "Von Ihnen bearbeiteter Text. Das ist keine unveränderte Auslesung und kein geprüftes Zitat aus der Originalquelle.",
@@ -747,40 +691,6 @@ export const appText = defineText({
       `Text für ${title}${page ? ` Seite ${page}` : ""}`,
     removeNote:
       "Das Entfernen von Kontext wirkt sich auf künftige Anfragen aus. Bereits erfolgte Verarbeitung oder Informationen in früheren Nachrichten lassen sich damit nicht zurücknehmen.",
-
-    researchHeadA: "Das öffentliche Web erkunden.",
-    researchHeadB: "Die Entscheidung bleibt bei Ihnen.",
-    researchNote:
-      "Suchergebnisse und Quellenlinks werden nur in dieser Sitzung angezeigt und nie gespeichert. Beim Speichern bleiben Ihre geschriebenen Antworten und der freigegebene Suchtext erhalten. Verwenden Sie nur öffentliche, nicht sensible Suchanfragen.",
-    sourcesQuestion: (question?: string) =>
-      `Antwort anhand der ausgewählten Webquellen auf: ${question ?? "Was belegen diese Quellen?"} Bitte bei jeder Tatsachenbehauptung den Beleg nennen und fehlende oder widersprüchliche Belege erklären.`,
-    prepareQuestion: "Eine Frage zu diesen Quellen vorbereiten",
-    prepareNote:
-      "Öffnet Ihren vorhandenen Entwurf oder bereitet eine bearbeitbare Frage vor. Es wird nichts automatisch gesendet.",
-    answersUnavailable:
-      " KI-Antworten sind derzeit nicht verfügbar, solange die Überprüfung des Anbieters nicht abgeschlossen ist.",
-    researchMethod: "Art der Recherche",
-    publicSearch: "Öffentliche Suche",
-    readPage: "Eine öffentliche Seite lesen",
-    exactQuery: "Genaue Suchanfrage",
-    exactUrl: "Genaue HTTPS-Adresse",
-    searchNeedsAccess:
-      "Die Suche braucht Zugang zum Dienst. Es kann noch keine Suchanfrage gesendet werden.",
-    pageDomains: (hosts: string) =>
-      `Verfügbare Domains für Seiten in diesem Arbeitsbereich: ${hosts}. Andere Domains bleiben gesperrt.`,
-    noneConfigured: "noch keine eingerichtet",
-    reviewDisclosure: "Weitergabe prüfen",
-    confirmDisclosure: "Weitergabe nach außen bestätigen",
-    approvalEyebrow: "IHRE FREIGABE IST ERFORDERLICH",
-    shareOnly: (search: boolean) =>
-      `Nur diese ${search ? "Suchanfrage" : "Adresse"} weitergeben?`,
-    editAbove:
-      "Bearbeiten Sie den Suchtext oben, wenn etwas anderes gesucht werden soll.",
-    recipient: (who: string) =>
-      `Empfänger: ${who}, über den Recherchedienst von CometRow. Es gelten die Aufbewahrungsregeln des Empfängers. Kein privater Chat und kein Anhang wird automatisch mitgesendet.`,
-    pageExact:
-      " Die Seitenadresse wird genau wie angezeigt gesendet; persönliche Angaben darin werden nicht entfernt.",
-    approve: "Freigeben und abrufen",
 
     changePassword: "Anmeldepasswort ändern",
     signOut: "Abmelden",
@@ -804,7 +714,7 @@ export const appText = defineText({
     saveSnapshot: "Verschlüsselt speichern",
     saveAsNew: "Als neue Unterhaltung speichern",
     researchNotSaved:
-      "Suchergebnisse und Quellenlinks werden nie gespeichert. Beim Speichern bleiben Ihre geschriebenen Antworten und der freigegebene Suchtext erhalten; die wieder geöffnete Unterhaltung zeigt an, dass sie aus einer Websuche stammt, und bietet an, erneut nach aktuellen Quellen zu suchen.",
+      "Suchergebnisse und Quellenlinks werden nie gespeichert. Beim Speichern bleiben Ihre geschriebenen Antworten und der Suchtext erhalten; die wieder geöffnete Unterhaltung zeigt an, dass sie aus einer Websuche stammt, und bietet an, erneut nach aktuellen Quellen zu suchen.",
     lockAndClear: "Sperren und Arbeitsbereich leeren",
     deleteAll: "Alles auf diesem Gerät löschen",
     deleteAllText:

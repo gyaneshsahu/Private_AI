@@ -233,7 +233,7 @@ export function createResponder() {
           sse(
             cite.length
               ? `## Synthetic findings\n\nThe notice period is three months [${cite[0]}].${cite[1] ? ` A second source agrees [${cite[1]}].` : ""}\n\n- Point one [${cite[0]}]\n- Point two`
-              : "No sources were attached to this conversation, so there is nothing to cite. Approve a web search first.",
+              : "No sources were attached to this conversation, so there is nothing to cite.",
           ),
         );
       case "long":

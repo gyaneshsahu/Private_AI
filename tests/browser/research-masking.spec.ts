@@ -1,12 +1,15 @@
-import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
-test("identifiers are removed from the search text before approval, the user is warned about names, and only the cleaned text leaves", async ({
+test("identifiers are removed from the search text on the device, only the cleaned text leaves, and the answer shows what was searched", async ({
   page,
 }) => {
+  // Search is automatic (owner, 19 November): it needs search and a ready model. No answer is
+  // stubbed here, so the answer after the search fails; only the search is under test.
   await page.route("**/api/status", async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({ json: { ...(await response.json()), search: true } });
+    const status = await (await route.fetch()).json();
+    await route.fulfill({
+      json: { ...status, search: true, inference: { ...status.inference, ready: true } },
+    });
   });
   const prepared: string[] = [];
   await page.route("**/api/research/prepare", async (route) => {
@@ -29,35 +32,29 @@ test("identifiers are removed from the search text before approval, the user is 
     });
   });
   await page.goto("/");
-  await workspaceControl(page, "Research").click();
   await page
-    .getByLabel("Exact search query")
-    .fill("home office tax rules DE89 3704 0044 0532 0130 00 for Anna Weber");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  const approval = page.getByRole("region", {
-    name: "Confirm external disclosure",
-  });
-  await expect(approval.locator("pre")).toHaveText(
-    "home office tax rules [bank account removed] for Anna Weber",
-  );
-  await expect(approval).toContainText(
-    "Removed from the search text before approval: 1 bank account.",
-  );
-  await expect(approval.getByRole("alert")).toContainText(
-    "may still contain personal details",
-  );
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Search results added" }),
-  ).toBeVisible();
+    .getByLabel("Message CometRow")
+    .fill("current home office tax rules DE89 3704 0044 0532 0130 00 for Anna Weber");
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  const searched = page.locator("details.searched-web");
+  await expect(searched).toContainText("Searched the web");
   expect(prepared).toHaveLength(1);
-  expect(prepared[0]).toContain("[bank account removed]");
+  const sent = JSON.parse(prepared[0]) as { kind: string; value: string };
+  expect(sent.kind).toBe("search");
+  expect(sent.value).toContain(
+    "current home office tax rules [bank account removed] for Anna Weber",
+  );
   expect(prepared[0]).not.toContain("0532 0130");
-  // A plain query shows neither the note nor the warning.
-  await workspaceControl(page, "Research").click();
-  await page.getByLabel("Exact search query").fill("library opening hours");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  await expect(approval.locator("pre")).toHaveText("library opening hours");
-  await expect(approval).not.toContainText("Removed from the search text");
-  await expect(approval.getByRole("alert")).toHaveCount(0);
+  // Opened, the note shows exactly the text that left the device, and the source.
+  await searched.locator("summary").click();
+  await expect(searched).toContainText(`Searched for: “${sent.value}”`);
+  await expect(searched.getByRole("link", { name: "Synthetic result" })).toHaveAttribute(
+    "href",
+    "https://example.com/tax",
+  );
+  // A question that needs no current information is not searched.
+  await page.getByLabel("Message CometRow").fill("Explain how a library catalogue works");
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await expect(page.locator("article.user")).toHaveCount(2);
+  expect(prepared).toHaveLength(1);
 });

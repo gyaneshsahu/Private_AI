@@ -536,7 +536,7 @@ export class Vault {
   }
   save(conversation: Conversation, basedOn?: Conversation | null) {
     // Live search results and links never reach storage: the snapshot keeps the
-    // written answers and the approved query, marked as from a live search.
+    // written answers and the searched query, marked as from a live search.
     conversation = stripLiveSearch(conversation);
     if (containsTemporaryResearch(conversation))
       return Promise.reject(

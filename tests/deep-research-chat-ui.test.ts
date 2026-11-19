@@ -265,12 +265,16 @@ it("a question longer than a research question may be is refused with the reason
   }
 }, 120_000);
 
-it("without the deep research switch the menu has no Deep research", async () => {
+it("without the deep research switch the menu has no Deep research, and never Search the web or Research", async () => {
   const { context, page } = await open("en", 768, false);
   try {
     await page.getByLabel(appText.en.tools, { exact: true }).click();
-    await ui(page.locator(".tools-menu").getByRole("button", { name: appText.en.tabResearch, exact: true })).toBeVisible();
-    await ui(page.locator(".tools-menu").getByRole("button", { name: deepResearchText.en.heading, exact: true })).toHaveCount(0);
+    const menu = page.locator(".tools-menu");
+    await ui(menu.getByRole("button", { name: appText.en.attachFile, exact: true })).toBeVisible();
+    await ui(menu.getByRole("button", { name: deepResearchText.en.heading, exact: true })).toHaveCount(0);
+    // Web search is automatic (19 November): the old "+" items are gone.
+    await ui(menu.getByRole("button", { name: "Search the web", exact: true })).toHaveCount(0);
+    await ui(menu.getByRole("button", { name: "Research", exact: true })).toHaveCount(0);
   } finally {
     await context.close();
   }

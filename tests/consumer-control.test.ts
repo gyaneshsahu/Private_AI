@@ -338,7 +338,7 @@ it.skipIf(!enabled)(
 );
 
 it.skipIf(!enabled)(
-  "uses the actual account and research UI with durable consent, temporary sources and no extra disclosure",
+  "uses the actual account and automatic search with durable consent, temporary sources and no extra disclosure",
   async () => {
     const h = await setup();
     search.mockResolvedValue([
@@ -361,6 +361,17 @@ it.skipIf(!enabled)(
           ? route.continue()
           : route.abort(),
       );
+      // Search is automatic (owner, 19 November): it needs a ready model. No answer is stubbed,
+      // so the answer after the search fails; only the search is under test.
+      await context.route("**/api/status", async (route) => {
+        const response = await route.fetch();
+        if (!response.ok()) return route.fulfill({ response });
+        const status = await response.json();
+        await route.fulfill({
+          response,
+          json: { ...status, inference: { ...status.inference, ready: true } },
+        });
+      });
       const page = await context.newPage();
       await page.goto(h.origin + "/?account-lab=1");
       await page.getByLabel("Test email address").fill("browser@example.test");
@@ -377,33 +388,24 @@ it.skipIf(!enabled)(
       ).toBeVisible();
       h.switchReplica();
       await page.getByRole("link", { name: "Open test workspace" }).click();
-      await page
-        .getByLabel("Message CometRow")
-        .fill("SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER");
-      await workspaceControl(page, "Research").click();
-      await page.getByLabel("Exact search query").fill(query.value);
-      await page.getByRole("button", { name: "Review disclosure" }).click();
+      const question = `What is the current ${query.value}?`;
+      await page.getByLabel("Message CometRow").fill(question);
       const delivered = page.waitForResponse((r) =>
         r.url().endsWith("/api/research/execute"),
       );
-      await page.getByRole("button", { name: "Approve and retrieve" }).click();
+      await page.getByRole("button", { name: "Send message", exact: true }).click();
       const researchResponse = await delivered;
       expect(await researchResponse.text()).toContain(
         "Synthetic public source",
       );
       expect(researchResponse.status()).toBe(200);
-      await browserExpect(
-        page.getByRole("status").filter({ hasText: "Search results added" }),
-      ).toBeVisible();
+      await browserExpect(page.locator("details.searched-web")).toBeVisible();
+      // Only the question was searched: nothing else from the chat went with it.
       expect(search).toHaveBeenCalledTimes(1);
-      expect(search.mock.calls[0][0]).toBe(query.value);
+      expect(search.mock.calls[0][0]).toBe(question);
       expect(
         (await h.db.pool.query("SELECT * FROM research_consent")).rows,
       ).toHaveLength(0);
-      await workspaceControl(page, "Conversation").click();
-      await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
-        "SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER",
-      );
       await answerQuestions(page);
       await page.reload();
       await browserExpect(

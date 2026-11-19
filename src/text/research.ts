@@ -3,8 +3,6 @@ import { defineText } from "./core";
 
 export const researchText = defineText({
   en: {
-    approval:
-      "Our server will also open the top result page, preferring an official site, and read its text for this answer. That site sees our server's address, not yours.",
     official: "an official source",
     publicInterest: "a public-interest page (not an official source)",
     other: "a non-official page",
@@ -19,8 +17,6 @@ export const researchText = defineText({
       `The top result (${host}) could not be opened. The answer uses the search excerpts only.`,
   },
   de: {
-    approval:
-      "Unser Server öffnet außerdem die Seite des obersten Treffers, bevorzugt eine offizielle Website, und liest ihren Text für diese Antwort. Diese Website sieht die Adresse unseres Servers, nicht Ihre.",
     official: "eine offizielle Quelle",
     publicInterest: "eine Seite von öffentlichem Interesse (keine offizielle Quelle)",
     other: "eine nicht offizielle Seite",

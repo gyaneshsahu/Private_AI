@@ -42,7 +42,7 @@ export function sendBlocked(state: {
   busy: boolean;
   text: string;
   ready: boolean;
-  /** A choice on screen needs an answer first (search first, health data). Enter only. */
+  /** A choice on screen needs an answer first. Enter only. */
   waiting?: boolean;
 }): boolean {
   return state.busy || !state.ready || !state.text.trim() || !!state.waiting;

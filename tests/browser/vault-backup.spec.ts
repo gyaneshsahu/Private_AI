@@ -196,9 +196,13 @@ test("wrong password and corrupt backup preserve saved history; restore requires
 test("current temporary research never enters a backup of earlier saved history", async ({
   page,
 }) => {
+  // Search is automatic (owner, 19 November): it needs search and a ready model. No answer is
+  // stubbed here, so the answer after the search fails; only the search is under test.
   await page.route("**/api/status", async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({ json: { ...(await response.json()), search: true } });
+    const status = await (await route.fetch()).json();
+    await route.fulfill({
+      json: { ...status, search: true, inference: { ...status.inference, ready: true } },
+    });
   });
   await page.route("**/api/research/execute", (route) =>
     route.fulfill({
@@ -222,15 +226,14 @@ test("current temporary research never enters a backup of earlier saved history"
   await unlock(page);
   await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
   await expect(page.getByRole("article")).toHaveCount(1);
-  await tab(page, "Research").click();
+  await tab(page, "Conversation").click();
   await page
-    .getByLabel("Exact search query")
-    .fill("synthetic research query canary");
-  await page.getByRole("button", { name: "Review disclosure" }).click();
-  await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Search results added" }),
-  ).toBeVisible();
+    .getByLabel("Message CometRow")
+    .fill("search the web for synthetic research query canary");
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await expect(page.locator("details.searched-web")).toContainText(
+    "Searched the web",
+  );
   await tab(page, "Saved").click();
   // Unsaved live research never enters a backup of the earlier snapshot.
   const backup = await download(page);
@@ -240,8 +243,8 @@ test("current temporary research never enters a backup of earlier saved history"
   expect(JSON.stringify(decoded)).not.toMatch(
     /TEMPORARY|CANARY|canary|example\.test/,
   );
-  // Saving is allowed since 22 October: the snapshot keeps the approved query
-  // and the written draft, never the result title, excerpt or link.
+  // Saving is allowed since 22 October: the snapshot keeps the searched query
+  // and the question, never the result title, excerpt or link.
   await expect(
     page.getByRole("button", { name: "Save encrypted snapshot" }),
   ).toBeEnabled();

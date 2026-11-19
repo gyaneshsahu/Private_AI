@@ -359,7 +359,7 @@ export function LiveVoice(props: {
   // Endings that hand over to the screen close the panel; the notice line says why.
   useEffect(() => {
     if (snap.phase !== "ended" || !snap.reason) return;
-    if (!["consent", "searchChoice", "edit"].includes(snap.reason.key)) return;
+    if (!["consent", "edit"].includes(snap.reason.key)) return;
     setOpen(false);
     props.notify(reasonText());
   }, [snap]); // eslint-disable-line react-hooks/exhaustive-deps

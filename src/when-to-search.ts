@@ -1,5 +1,6 @@
-// When to search (docs/when-to-search-20261112.md): on-device rules that spot a question
-// needing current information, the masked search text, and the opt-in automatic setting.
+// When to search (docs/when-to-search-20261112.md): on-device rules that spot a question needing
+// current information, and the masked search text. Search is automatic (owner, 19 November): the
+// app searches when these rules say so, unless the user switched off "Look things up online".
 import { germanRulesQuestion, interfaceLanguage, liveText, namesCountry, textBlock } from "./german-rules";
 import { describeKept, prepareSearchQuery, type IdentifierKind } from "./identifier-masking";
 import { disclosureSchema } from "../shared/contracts";
@@ -37,8 +38,18 @@ const EXPLAIN = [
   /(?<!\p{L})(erkläre|erklär|definiere|definition|was bedeutet|wie funktioniert|warum)(?!\p{L})/iu,
 ];
 
+// The user asks for a look-up in words (owner, 19 November: search is automatic, so asking is enough).
+const ASKED = [
+  /\b(search (the )?(web|internet|online)|look (it|this|that) up|look up online|google (it|this|that)|find (it |this )?online|check online|browse (the web|online))\b/i,
+  /(?<!\p{L})(such\p{L}* (im|in dem) (web|internet)|im (web|internet) (nach)?such\p{L}*|online (nach)?such\p{L}*|schlag\p{L}* (das |es )?(online )?nach|recherchier\p{L}*|googl\p{L}*)(?!\p{L})/iu,
+];
+
+// The words of an explicit request at the start of a message, left out of the search text.
+const ASK_PHRASE =
+  /^\s*(?:please\s+|bitte\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?|kannst du\s+(?:bitte\s+)?|können sie\s+(?:bitte\s+)?)?(?:search (?:the )?(?:web|internet|online) for|look (?:this|it|that) up(?: online)?|look up online|google|find online|such(?:e|en sie)? (?:im|in dem) (?:web|internet) nach|recherchier(?:e|en sie)?(?: bitte)?|schlag(?:e)? (?:das |es )?(?:online )?nach)\s*[:,-]?\s*/iu;
+
 export function needsCurrentInformation(text: string, now = new Date()): boolean {
-  if (TIME.some((rule) => rule.test(text))) return true;
+  if (TIME.some((rule) => rule.test(text)) || ASKED.some((rule) => rule.test(text))) return true;
   // A recent year, but not a number inside a calculation ("2025 * 3").
   const years =
     text.match(/(?<![\d.,+\-*/×=] ?)\b20\d{2}\b(?! ?[\d.,+\-*/×=%])/g) ?? [];
@@ -50,14 +61,12 @@ export function needsCurrentInformation(text: string, now = new Date()): boolean
 }
 
 /**
- * The exact search text to show, identifiers removed; undefined when not suggested. Also for
- * German rules, fees and deadlines (src/german-rules.ts), flagged `rules` for their heading.
- * `rulesAnswer`: the answer to this question stated unchecked rules (the answer-side check), so
- * the search-again box is offered even when the question itself was not recognised.
+ * The search text for a question, identifiers removed; undefined when the question needs no
+ * search. Also for German rules, fees and deadlines (src/german-rules.ts), flagged `rules`.
+ * `rulesAnswer`: the answer to this question stated unchecked rules (the answer-side check).
  * A rules question that names no country gets "Germany" ("Deutschland" for a German interface or
- * a German question) at the end of the shown text (owner decision of 14 November 2026), so the
- * results are not another country's rules. The word is part of the text the user sees and
- * approves; the server adds nothing.
+ * a German question) at the end (owner decision of 14 November 2026), so the results are not
+ * another country's rules. The server adds nothing.
  */
 export function searchSuggestion(
   text: string,
@@ -67,8 +76,10 @@ export function searchSuggestion(
 ) {
   const rules = rulesAnswer || germanRulesQuestion(text);
   if (!rules && !needsCurrentInformation(text, now)) return undefined;
+  // "Search the web for X" searches X: the request words themselves are left out.
+  const asked = text.replace(ASK_PHRASE, "").trim();
   // Identifiers are removed first; the country goes on the masked text.
-  const prepared = prepareSearchQuery(text);
+  const prepared = prepareSearchQuery(asked.length >= 2 ? asked : text);
   const country =
     rules && !namesCountry(text) ? (lang === "de" || GERMAN_TEXT.test(text) ? " Deutschland" : " Germany") : "";
   // The country is left off rather than losing the suggestion to the length limit.
@@ -80,8 +91,8 @@ const GERMAN_TEXT =
   /[äöüß]|(?<!\p{L})(ich|wie|wann|welche\p{L}*|der|das|und|ist|mein\p{L}*|muss|darf|kostet|eine[mnr]?|fuer|bei|gibt)(?!\p{L})/iu;
 
 /**
- * A search text the user typed into the suggestion box (14 November 2026). It is masked again by
- * the same function as the suggestion and the Research tab, and the server's own rule for a
+ * A search text from a deep research plan or a scheduled task. It is masked again by the same
+ * function as an automatic search, and the server's own rule for a
  * search (shared/contracts.ts: 2 to 400 characters after trimming) is checked here, so an edited
  * text is never refused silently. `value` is what the tap sends. `removed` and `note` also count
  * what the suggestion had already removed from the question. Line breaks become spaces.
@@ -106,91 +117,45 @@ export function editedSearchText(
   return { ...prepared, removed, note: describeKept(removed, lang, "removed"), problem };
 }
 
-const key = "privateai.autoSearch";
-// The narrower setting (13 November): only German rules, fees and deadlines are searched without
-// asking. Same storage rules: this browser only, off unless switched on.
-export const RULES_KEY = "privateai.autoSearchRules";
-/** Off unless the user switched it on on this device. */
-export function readAutoSearch(name = key): boolean {
+// "Look things up online" (owner, 19 November): on unless the user switched it off on this device.
+const LOOK_UP_KEY = "privateai.lookUpOnline";
+export function readLookUp(): boolean {
   try {
-    return localStorage.getItem(name) === "on";
+    return localStorage.getItem(LOOK_UP_KEY) !== "off";
   } catch {
-    return false;
+    return true;
   }
 }
-export function saveAutoSearch(on: boolean, name = key): void {
+export function saveLookUp(on: boolean): void {
   try {
-    if (on) localStorage.setItem(name, "on");
-    else localStorage.removeItem(name);
+    if (on) localStorage.removeItem(LOOK_UP_KEY);
+    else localStorage.setItem(LOOK_UP_KEY, "off");
   } catch {
-    // Restricted storage still allows the choice for this session.
+    // Restricted storage still keeps the choice for this session.
   }
 }
 
 export const WHEN_TO_SEARCH_TEXT = textBlock({
   en: {
-    heading: "This question may need current information.",
-    label: "Search the web for:",
-    explanation:
-      "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
-    button: "Search and answer",
-    // The editable search text (14 November): shown only when they apply.
-    willBeSent: "This text will be sent:",
-    tooShort: "The search text needs at least 2 characters.",
-    tooLong: "The search text is too long. The limit is 400 characters.",
-    // After an answer given without web results (routing design of 12 November).
-    againHeading: "This answer did not use current information.",
-    againExplanation:
-      "One tap sends exactly this text to Brave Search through our server, our server opens the top result page, preferring an official site, and the question is answered again from the results. Nothing else from your conversation is sent.",
-    againButton: "Search and answer again",
-    // Unchanged wording, shared with the Research tab's approval.
-    warning:
-      "This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine.",
-    researchIntro:
-      "Nothing from your conversation goes into a search unless you search the exact text here, choose Search the web in the + menu, or switch on automatic search below.",
-    settingLabel: "Search automatically when a question needs current information",
-    settingHelp:
-      "Off unless you switch it on. When it is on, a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
-    // The narrower setting, in the search-first choice and in the Research tab.
-    rulesSettingLabel: "Always search for rules, fees and deadlines",
-    rulesSettingNote: "Kept only on this device. You can switch it off in Research.",
-    rulesSettingHelp:
-      "Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions are sent without a search. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
-    searched: (query: string) => `Searched the web for: "${query}"`,
-    searchedAutomatically: (query: string) =>
-      `Searched the web automatically for: "${query}"`,
+    lookUpLabel: "Look things up online",
+    lookUpHelp:
+      "CometRow searches the web when a question needs current information. Personal details such as email addresses and bank numbers are removed first. Turn this off to get answers without a web search.",
+    // Under an answer that used a search: a short line that opens to the searched text and the sources.
+    searchedWeb: "Searched the web",
+    searchedFor: (query: string) => `Searched for: “${query}”`,
+    sourcesNotKept: "The search results are not kept with a saved chat.",
     automaticFailed:
-      "The automatic search did not complete, so this answer does not use web results.",
+      "The web search did not complete, so this answer does not use web results.",
   },
   de: {
-    heading: "Diese Frage braucht möglicherweise aktuelle Informationen.",
-    label: "Im Web suchen nach:",
-    explanation:
-      "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, und unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website. Sonst wird nichts aus Ihrer Unterhaltung gesendet. Tippen Sie stattdessen auf Senden, um ohne Websuche eine Antwort zu erhalten.",
-    button: "Suchen und antworten",
-    willBeSent: "Dieser Text wird gesendet:",
-    tooShort: "Der Suchtext braucht mindestens 2 Zeichen.",
-    tooLong: "Der Suchtext ist zu lang. Die Grenze liegt bei 400 Zeichen.",
-    againHeading: "Diese Antwort hat keine aktuellen Informationen verwendet.",
-    againExplanation:
-      "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website, und die Frage wird anhand der Ergebnisse neu beantwortet. Sonst wird nichts aus Ihrer Unterhaltung gesendet.",
-    againButton: "Suchen und neu antworten",
-    warning:
-      "Dieser Suchtext kann noch persönliche Angaben enthalten, etwa einen Namen oder eine lange Nummer, die nicht automatisch erkannt werden. Der Suchanbieter sieht genau diesen Text. Geben Sie ihn nur frei, wenn das für Sie in Ordnung ist.",
-    researchIntro:
-      "Aus Ihrer Unterhaltung geht nichts in eine Suche, außer Sie suchen hier den genauen Text, wählen im +-Menü „Im Web suchen“ oder schalten unten die automatische Suche ein.",
-    settingLabel: "Automatisch suchen, wenn eine Frage aktuelle Informationen braucht",
-    settingHelp:
-      "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage, die zeitabhängig wirkt oder Regeln, Gebühren oder Fristen betrifft, vor der Antwort gesucht, ohne jedes Mal zu fragen. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
-    rulesSettingLabel: "Bei Regeln, Gebühren und Fristen immer suchen",
-    rulesSettingNote: "Nur auf diesem Gerät gespeichert. Sie können es unter Recherche ausschalten.",
-    rulesSettingHelp:
-      "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage zu Regeln, Gebühren oder Fristen vor der Antwort gesucht, ohne jedes Mal zu fragen; andere Fragen werden ohne Suche gesendet. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
-    searched: (query: string) => `Im Web gesucht nach: „${query}“`,
-    searchedAutomatically: (query: string) =>
-      `Automatisch im Web gesucht nach: „${query}“`,
+    lookUpLabel: "Online nachschlagen",
+    lookUpHelp:
+      "CometRow sucht im Web, wenn eine Frage aktuelle Informationen braucht. Persönliche Angaben wie E-Mail-Adressen und Kontonummern werden vorher entfernt. Schalten Sie das aus, um Antworten ohne Websuche zu erhalten.",
+    searchedWeb: "Im Web gesucht",
+    searchedFor: (query: string) => `Gesucht nach: „${query}“`,
+    sourcesNotKept: "Die Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt.",
     automaticFailed:
-      "Die automatische Suche wurde nicht abgeschlossen, daher nutzt diese Antwort keine Ergebnisse aus der Websuche.",
+      "Die Websuche wurde nicht abgeschlossen, daher nutzt diese Antwort keine Ergebnisse aus der Websuche.",
   },
 });
 /** The block in the current interface language, read at each use. */
