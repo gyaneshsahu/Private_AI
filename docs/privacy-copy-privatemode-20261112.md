@@ -27,7 +27,13 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 ## When you search the web
 
-A web search happens only when you choose “Search the web” in the + menu for a message, search a text yourself on the Research page, have switched on automatic search, or start a deep research. Recognised identifiers are removed from each search text on your device first; names and other details written in your own words are not removed. After a search, the exact text that was searched is shown to you. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added. Our server also opens the top result page, preferring an official site, and reads its text; a deep research opens several pages this way. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. Automatic search covers questions that look time-sensitive or are about rules, fees or deadlines; if you switch on only “Always search for rules, fees and deadlines”, just those questions are searched. These settings are off until you switch them on and are kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is saved with the chat; a reopened conversation says it came from a live search and offers to search again for current sources.
+CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+Under the answer, “Searched the web” shows the exact text that was searched and the sources.
+Search results are not kept with a saved chat; the written answer is.
+You can switch this off in Settings, General, “Look things up online”. It is on until you switch it off, and the choice is kept only on this device.
 
 ## What we cannot promise yet
 

@@ -68,17 +68,19 @@ it("keeps the approved Tinfoil statement as the default and mirrors the Privatem
   // The five provider sentences (four sections) and, since 13 November, the automatic-search
   // sentence change; every other section is shared.
   const changed = pm.filter((s, i) => s.text !== PRIVACY_COPY[i].text).map((s) => s.id);
-  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research", "notyet"]);
+  // The search section is shared since 19 November (search is automatic for both providers).
+  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "notyet"]);
   const text = privacyText("privatemode").toLowerCase();
-  // 18 November: no approval step; automatic search covers time-sensitive and rules questions.
-  expect(text).toContain("automatic search covers questions that look time-sensitive or are about rules, fees or deadlines");
-  expect(text).not.toContain("approve the exact search text");
-  // The narrower "always search" setting and the Goggles ranking hint (13 November, proposed).
-  expect(text).toContain("if you switch on only “always search for rules, fees and deadlines”, just those questions are searched");
-  expect(text).toContain("these settings are off until you switch them on");
-  expect(text).toContain("rank official sites first, by sending a fixed list of those sites; nothing from you is added");
-  expect(privacyText("tinfoil")).not.toContain("rank official sites first");
-  expect(privacyText("tinfoil")).toContain("a question that looks time-sensitive is searched");
+  // 19 November: search is automatic, identifiers are removed first, one switch turns it off.
+  for (const provider of ["privatemode", "tinfoil"] as const) {
+    const statement = privacyText(provider).toLowerCase();
+    expect(statement).toContain("cometrow looks things up online by itself when a question needs current information");
+    expect(statement).toContain("are removed from the search text on your device");
+    expect(statement).toContain("“searched the web” shows the exact text that was searched and the sources");
+    expect(statement).toContain("you can switch this off in settings, general, “look things up online”");
+    for (const old of ["you approve", "approve the exact", "search suggestion", "always search for rules", "off until you switch"])
+      expect(statement, old).not.toContain(old);
+  }
   for (const tinfoilOnly of [
     "spending limits on the secure server are soft",
     "does not plan to add one",

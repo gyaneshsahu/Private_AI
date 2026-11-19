@@ -2,24 +2,24 @@
   "note": "SHA-256 of each English and German legal text. tests/legal-text-pairs.test.ts fails when a text no longer matches; check the other language, then re-record with node --import tsx scripts/record-legal-pairs.ts.",
   "texts": {
     "policy": {
-      "en": "024987deb8c306efee34cc796d1c9df712f229dc23b261f93609ebae5943ebdf",
-      "de": "e5c3673146017aeeb0329570a40fd634459d2c9f49d51c1d6f4d37cdd9c87aaf"
+      "en": "3de6a37851e1b2987de7d6fd93c6b3550f4d706f852907961241a36e3d0c6668",
+      "de": "eef8491170fde81c9b98bd6eb2985262195d3f34d48475e61a500397b9f42400"
     },
     "policy.tinfoil": {
-      "en": "6f68b6e8a493e205ac2b49659dc14c0918edd38a493c5ed406821af244ab8525",
-      "de": "a22b7cec26a4a24cbc0704d15d9053b0fb9eb727ccfbbf2e96f0be0d775067bf"
+      "en": "39754c8beb51040f186169216aaa11faeb58af4f704b84d5579e3f8f841adfa1",
+      "de": "5ba1d003af36aafaa43d2d781e5fb5240d44fddd13b72567e63fe09955bf1739"
     },
     "policy.privatemode": {
-      "en": "e899a82dc2f653ff4366540ddcd92a28a4be27d3a643be33625f3bbcfe5da749",
-      "de": "5ceef841699a23cbdf49fe18c3d1c9a38d155e1114b3b01761df5d15b187b8d4"
+      "en": "ceebb8b9f33d6bda7d01a83ed2675d4cf14153ec015d95b84d921b75e593ba42",
+      "de": "85b122125c8ee4809b44d748268c7317817ae30098f812effb578f91ffd62b6d"
     },
     "privacyCopy.tinfoil": {
-      "en": "5125ab1c1d598a59dbed22fba15b96b4edc0ddbe0766673d5274cc4036d7bd25",
-      "de": "80600cd2ebb9c2464da0c08d362ac5c6339011b4093d9ce109fd4600941a652a"
+      "en": "95e07e60c821150e1efef288391afb2556c8c86f798a901e88cfd4da8be56e51",
+      "de": "6f2e65c3a41a14fb5f74aeea415d7f603ddadfd5f9892cb412949bc1a6c11b73"
     },
     "privacyCopy.privatemode": {
-      "en": "dafacd77519a2dac5965a6d120e980f13c8cf4b42ba2c795fb75ff5221942dfb",
-      "de": "4794815e93c66fc022ed4731f8e37f9e8993c447c96fea3cf9fa7abdf5911ec0"
+      "en": "539ec59542316cb673bb0d3fca79cd80ed86e79b8b11fee80172acbe9b65f0ee",
+      "de": "f6011fc5eed2a6afee83605f2bdc0945bec77499af1d9ecaf1b2527ec8a39eb9"
     },
     "privacySummary": {
       "en": "8861d0ba275149cd9c656424afea896f102b94c4672ad2ba0efe7d6d6af90414",

@@ -1,4 +1,4 @@
-# Privacy statement for Secure mode: applied wording, for the legal read (18 November 2026)
+# Privacy statement for Secure mode and automatic search: applied wording, for the legal read (18 and 19 November 2026)
 
 **Status:** the owner chose the wording on 18 November, and it is **applied in the app**: `shared/privacy-copy.ts`, the Privatemode sections, English and German. The lawyer reads it later with the other texts. German is binding once approved.
 
@@ -15,7 +15,7 @@
 - Section 1: the long version, split into four short lines.
 - The promise is narrowed to "we never use your saved chats to train AI or for advertising". The image provider and the open Privatemode statement mean nothing wider can be promised.
 - Section 2: yes.
-- Section 3: rewritten, because the search approval step was removed on 18 November.
+- Section 3: rewritten again on 19 November. Search is automatic (`docs/owner-decisions.md`, top block): approval before search is removed, identifiers are masked first, and one setting switches it off. Short lines, no jargon.
 
 **For the lawyer:**
 - Is "our systems can technically open them" clear enough under GDPR Art. 13?
@@ -48,22 +48,41 @@ Only the third and fourth sentences changed: "If you lose your password…" and 
 **Deutsch:**
 > Der private Chat wird erst eingeschaltet, nachdem unsere Prüfungen des sicheren Servers bestanden sind. Ihr Browser, Ihr Gerät und alle, die Ihren Bildschirm lesen können, können Ihre Unterhaltungen sehen. Ihre gespeicherten Chats sind wieder da, wenn Sie sich auf einem beliebigen Gerät erneut anmelden. In Secure Max gilt: Wenn Sie alle Geräte und Ihren Wiederherstellungsschlüssel verlieren, kann niemand diese Chats wiederherstellen, auch CometRow nicht. Es gibt keinen anonymen Modus: Wir wissen, welches Konto gefragt hat. Ein fehlerhaftes oder bösartiges Update dieser App könnte Inhalte lesen, bevor sie versiegelt werden; deshalb werden Updates mit ihrer genauen Version veröffentlicht.
 
-## 3. When you search the web / Wenn Sie im Web suchen
+## 3. When you search the web / Wenn Sie im Web suchen (19 November: automatic)
 
-Checked against the app on 18 November:
-- the "+" menu search;
-- the Research page;
-- the two automatic settings, kept in this browser only;
-- deep research;
-- identifiers masked on the device before every search text;
-- the "Searched the web for: …" line;
-- search results stripped when a chat is saved.
+The same text for both providers (Privatemode and the Tinfoil backup), shown on the Help and Privacy pages. It was checked against the app on 19 November:
+- the app searches by itself when a question needs current information, including when the user asks in words ("search the web for…");
+- identifiers are masked on the device before the search text leaves it;
+- the "Searched the web" line under the answer opens to the searched text and the sources;
+- the "Look things up online" switch in Settings, General is on by default and kept only on the device;
+- search results are stripped when a chat is saved.
 
-**English:**
-> A web search happens only when you choose “Search the web” in the + menu for a message, search a text yourself on the Research page, have switched on automatic search, or start a deep research. Recognised identifiers are removed from each search text on your device first; names and other details written in your own words are not removed. After a search, the exact text that was searched is shown to you. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added. Our server also opens the top result page, preferring an official site, and reads its text; a deep research opens several pages this way. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. Automatic search covers questions that look time-sensitive or are about rules, fees or deadlines; if you switch on only “Always search for rules, fees and deadlines”, just those questions are searched. These settings are off until you switch them on and are kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is saved with the chat; a reopened conversation says it came from a live search and offers to search again for current sources.
+**English (seven short lines):**
+> CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+> Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+> Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+> Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+> Under the answer, "Searched the web" shows the exact text that was searched and the sources.
+> Search results are not kept with a saved chat; the written answer is.
+> You can switch this off in Settings, General, "Look things up online". It is on until you switch it off, and the choice is kept only on this device.
 
-**Deutsch:**
-> Eine Websuche findet nur statt, wenn Sie für eine Nachricht im +-Menü „Im Web suchen“ wählen, auf der Seite „Recherche“ selbst einen Text suchen, die automatische Suche eingeschaltet haben oder eine Tiefenrecherche starten. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus jedem Suchtext entfernt; Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt. Nach einer Suche wird Ihnen der genau gesuchte Text angezeigt. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Bei einer Frage zu Regeln, Gebühren oder Fristen kann unser Server den Suchanbieter außerdem bitten, offizielle Websites zuerst einzuordnen, indem er eine feste Liste dieser Websites sendet; nichts von Ihnen wird hinzugefügt. Unser Server öffnet außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text; eine Tiefenrecherche öffnet auf diese Weise mehrere Seiten. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Wenn die Seitenadresse eine erkannte persönliche Angabe enthält, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Die automatische Suche gilt für Fragen, die zeitabhängig wirken oder Regeln, Gebühren oder Fristen betreffen; wenn Sie nur „Bei Regeln, Gebühren und Fristen immer suchen“ einschalten, werden nur diese Fragen gesucht. Diese Einstellungen sind ausgeschaltet, bis Sie sie einschalten, und werden nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die darauf aufgebaute schriftliche Antwort wird mit dem Chat gespeichert; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, für aktuelle Quellen erneut zu suchen.
+**Deutsch (sieben kurze Zeilen):**
+> CometRow schlägt von selbst online nach, wenn eine Frage aktuelle Informationen braucht, zum Beispiel Nachrichten, Preise, Öffnungszeiten oder deutsche Regeln, Gebühren und Fristen.
+> Vor der Suche werden E-Mail-Adressen, Telefonnummern, Bank- und Ausweisnummern auf Ihrem Gerät aus dem Suchtext entfernt. Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt.
+> Unser Server sendet den Suchtext an den Suchanbieter Brave, der ihn lesen und bis zu 90 Tage aufbewahren kann. Ihre eigene Internetadresse wird nicht gesendet.
+> Unser Server kann außerdem die Seite des obersten Treffers öffnen, um sie zu lesen; diese Website sieht die Adresse unseres Servers, nicht Ihre. Eine Tiefenrecherche öffnet so mehrere Seiten. Enthält eine Seitenadresse eine erkannte persönliche Angabe, wird die Seite ohne diesen Teil geöffnet oder gar nicht. Der Seitentext wird nur für diese Antwort verwendet und nicht gespeichert.
+> Unter der Antwort zeigt „Im Web gesucht" den genau gesuchten Text und die Quellen.
+> Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt; die geschriebene Antwort schon.
+> Sie können das unter Einstellungen, Allgemein, „Online nachschlagen" ausschalten. Es ist eingeschaltet, bis Sie es ausschalten, und die Wahl wird nur auf diesem Gerät gespeichert.
+
+**Also changed for the search decision (19 November, both languages):**
+- **Policy line "Web search and research":** "the search text CometRow makes when a question needs current information, after identifiers were removed on your device…" (was "only the search text you approved").
+- **Data export text:** "a search text passes through it on the way to the search provider" (was "search text you approve").
+- **Background task text:** "if it searches the web, its search text… that text was set when the task was created, with personal details removed" (was "if you approved one").
+
+**For the lawyer, on search:**
+- Is automatic search with an opt-out switch, on by default, acceptable under the GDPR, given masking first and the transfer to Brave in the USA? The previous design asked before each search.
+- Brave's transfer basis is still "to confirm".
 
 ---
 

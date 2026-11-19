@@ -44,7 +44,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 
 • Read aloud, photo to text, code runs, search within your chats: on your device only; nothing is sent.
 
-• Web search and research: only the search text you approved, after identifiers were replaced on your device; from our server to Brave Search in the USA; our server also opens the top result page or a page address you approved, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
+• Web search and research: the search text CometRow makes when a question needs current information, after identifiers were removed on your device; from our server to Brave Search in the USA; our server may also open the top result page, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
 
 • Image creation (when switched on): only the description you typed, with identifiers masked on your device, never your chats or photos; to the image provider [to confirm: name and region]; CometRow keeps neither the description nor the image on its server, the image is saved in your chat; the provider can read the description [to confirm: its retention and training terms].
 
@@ -66,7 +66,7 @@ Most of CometRow runs in the EU: our servers and database are at Render in Frank
 
 • AI answers: Privatemode (Edgeless Systems GmbH, Germany) processes your messages only in the EU and the European Economic Area; there is no transfer.
 
-• Web search and research: Brave Search, USA. Only the search text you approved is sent, after identifiers were replaced on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
+• Web search and research: Brave Search, USA. Only the search text is sent, after identifiers were removed on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
 
 • Sign-in with Google: Google, a US company, handles the sign-in on its own page. [To confirm: which Google company is responsible for users in the EU, where it processes the sign-in, and on which transfer basis.]
 
@@ -122,7 +122,7 @@ In your browser, CometRow stores only what it needs to work:
 
 • Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 
-• Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
+• Settings in local storage (localStorage): your language, the appearance, the answer mode, the “Look things up online” switch, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 
 • Saved chats and keys in IndexedDB: the encrypted store for Secure and Secure Max and, when sync is switched on, this device's key and its sealed token. The language files for reading text in photos also stay in this browser's storage after the first use.
 
@@ -166,7 +166,19 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 **When you search the web**
 
-A web search only happens when you approve the exact search text shown to you, in Research or by tapping a search suggestion, or when you have switched on automatic search. Recognised identifiers are removed from that text on your device first; names and other details written in your own words are not removed. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Under the same approval, our server also opens the top result page, preferring an official site, and reads its text. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. If you switch on automatic search, a question that looks time-sensitive is searched without asking each time: recognised identifiers are removed on your device first and the exact text sent is shown to you. The setting is off until you switch it on and is kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is kept in your saved history on this device; a reopened conversation says it came from a live search and offers to search again for current sources, which needs your approval again.
+CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+
+Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+
+Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+
+Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+
+Under the answer, “Searched the web” shows the exact text that was searched and the sources.
+
+Search results are not kept with a saved chat; the written answer is.
+
+You can switch this off in Settings, General, “Look things up online”. It is on until you switch it off, and the choice is kept only on this device.
 
 **What we cannot promise yet**
 
@@ -178,7 +190,7 @@ One saved conversation: open Saved and choose Delete next to it. Everything save
 
 **What we cannot delete for you**
 
-The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; we keep them for 90 days and then delete them. Search-provider records of search text you approved, kept under that provider's policy.
+The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; we keep them for 90 days and then delete them. Search-provider records of the search texts CometRow sent, kept under that provider's policy.
 
 **Questions, requests and incidents**
 
@@ -228,7 +240,7 @@ Für jede Funktion: was gesendet wird; an wen und wohin; wie lange es aufbewahrt
 
 • Vorlesen, Foto zu Text, Code ausführen, Suche in Ihren Chats: nur auf Ihrem Gerät; nichts wird gesendet.
 
-• Websuche und Recherche: nur der Suchtext, den Sie freigegeben haben, nachdem Kennungen auf Ihrem Gerät ersetzt wurden; von unserem Server an Brave Search in den USA; unser Server öffnet außerdem die oberste Ergebnisseite oder eine Seitenadresse, die Sie freigegeben haben, und diese Website sieht die Adresse unseres Servers, nicht Ihre; Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren, der Seitentext wird nicht gespeichert; Brave kann den Suchtext lesen.
+• Websuche und Recherche: der Suchtext, den CometRow bildet, wenn eine Frage aktuelle Informationen braucht, nachdem Kennungen auf Ihrem Gerät entfernt wurden; von unserem Server an Brave Search in den USA; unser Server kann außerdem die oberste Ergebnisseite öffnen, und diese Website sieht die Adresse unseres Servers, nicht Ihre; Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren, der Seitentext wird nicht gespeichert; Brave kann den Suchtext lesen.
 
 • Bilderstellung (wenn eingeschaltet): nur die Beschreibung, die Sie getippt haben, mit auf Ihrem Gerät maskierten Kennungen, nie Ihre Chats oder Fotos; an den Bildanbieter [zu bestätigen: Name und Region]; CometRow bewahrt weder Beschreibung noch Bild auf seinem Server auf, das Bild wird in Ihrem Chat gespeichert; der Anbieter kann die Beschreibung lesen [zu bestätigen: seine Aufbewahrung und seine Bedingungen zum Training].
 
@@ -250,7 +262,7 @@ Der größte Teil von CometRow läuft in der EU: Unsere Server und unsere Datenb
 
 • KI-Antworten: Privatemode (Edgeless Systems GmbH, Deutschland) verarbeitet Ihre Nachrichten nur in der EU und im Europäischen Wirtschaftsraum; es findet keine Übermittlung statt.
 
-• Websuche und Recherche: Brave Search, USA. Gesendet wird nur der Suchtext, den Sie freigegeben haben, nachdem Kennungen auf Ihrem Gerät ersetzt wurden, und zwar von unserem Server, nicht von Ihrem Browser. Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren. [Zu bestätigen: die Übermittlungsgrundlage von Brave (Zertifizierung nach dem Datenschutzrahmen oder Standardvertragsklauseln); Brave erklärt, dass sein Auftragsverarbeitungsvertrag Suchanfragen nicht abdeckt.]
+• Websuche und Recherche: Brave Search, USA. Gesendet wird nur der Suchtext, nachdem Kennungen auf Ihrem Gerät entfernt wurden, und zwar von unserem Server, nicht von Ihrem Browser. Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren. [Zu bestätigen: die Übermittlungsgrundlage von Brave (Zertifizierung nach dem Datenschutzrahmen oder Standardvertragsklauseln); Brave erklärt, dass sein Auftragsverarbeitungsvertrag Suchanfragen nicht abdeckt.]
 
 • Anmeldung mit Google: Google, ein US-Unternehmen, wickelt die Anmeldung auf seiner eigenen Seite ab. [Zu bestätigen: welches Google-Unternehmen für Nutzer in der EU verantwortlich ist, wo es die Anmeldung verarbeitet und auf welcher Übermittlungsgrundlage.]
 
@@ -306,7 +318,7 @@ CometRow speichert in Ihrem Browser nur, was es zum Funktionieren braucht:
 
 • Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
 
-• Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, die Schalter für die automatische Suche, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
+• Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, der Schalter „Online nachschlagen“, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
 
 • Gespeicherte Chats und Schlüssel in IndexedDB: der verschlüsselte Speicher für Secure und Secure Max und, wenn die Synchronisierung eingeschaltet ist, der Schlüssel dieses Geräts und sein versiegeltes Token. Die Sprachdateien für die Texterkennung in Fotos bleiben nach der ersten Nutzung ebenfalls im Speicher dieses Browsers.
 
@@ -350,7 +362,19 @@ Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer
 
 **Wenn Sie im Web suchen**
 
-Eine Websuche findet nur statt, wenn Sie den genauen Suchtext freigeben, der Ihnen angezeigt wird, in der Recherche oder durch Tippen auf einen Suchvorschlag, oder wenn Sie die automatische Suche eingeschaltet haben. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus diesem Text entfernt; Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen kann und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Mit derselben Freigabe öffnet unser Server außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Enthält die Adresse der Seite eine erkannte persönliche Angabe, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Wenn Sie die automatische Suche einschalten, wird für eine Frage, die zeitabhängig wirkt, gesucht, ohne jedes Mal nachzufragen: Erkannte Kennungen werden zuerst auf Ihrem Gerät entfernt, und der genaue gesendete Text wird Ihnen angezeigt. Die Einstellung ist ausgeschaltet, bis Sie sie einschalten, und wird nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die geschriebene Antwort, die darauf beruht, wird in Ihrem gespeicherten Verlauf auf diesem Gerät behalten; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, erneut nach aktuellen Quellen zu suchen, wofür wieder Ihre Freigabe nötig ist.
+CometRow schlägt von selbst online nach, wenn eine Frage aktuelle Informationen braucht, zum Beispiel Nachrichten, Preise, Öffnungszeiten oder deutsche Regeln, Gebühren und Fristen.
+
+Vor der Suche werden E-Mail-Adressen, Telefonnummern, Bank- und Ausweisnummern auf Ihrem Gerät aus dem Suchtext entfernt. Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt.
+
+Unser Server sendet den Suchtext an den Suchanbieter Brave, der ihn lesen und bis zu 90 Tage aufbewahren kann. Ihre eigene Internetadresse wird nicht gesendet.
+
+Unser Server kann außerdem die Seite des obersten Treffers öffnen, um sie zu lesen; diese Website sieht die Adresse unseres Servers, nicht Ihre. Eine Tiefenrecherche öffnet so mehrere Seiten. Enthält eine Seitenadresse eine erkannte persönliche Angabe, wird die Seite ohne diesen Teil geöffnet oder gar nicht. Der Seitentext wird nur für diese Antwort verwendet und nicht gespeichert.
+
+Unter der Antwort zeigt „Im Web gesucht“ den genau gesuchten Text und die Quellen.
+
+Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt; die geschriebene Antwort schon.
+
+Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. Es ist eingeschaltet, bis Sie es ausschalten, und die Wahl wird nur auf diesem Gerät gespeichert.
 
 **Was wir noch nicht versprechen können**
 
@@ -362,7 +386,7 @@ Eine gespeicherte Unterhaltung: Öffnen Sie „Gespeichert“ und wählen Sie da
 
 **Was wir nicht für Sie löschen können**
 
-Den Kurzzeitspeicher des sicheren Servers, der sich innerhalb von Minuten bis zu einigen Stunden von selbst leert und keine Schaltfläche zum Löschen hat. Die Aufzeichnungen des Anbieters über Zeitpunkt, Modell und Tokenzahlen, die der Anbieter nach eigenen Angaben 90 Tage aufbewahrt. Unsere eigenen Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft, welches Modell und die veröffentlichten Kosten; wir bewahren sie 90 Tage auf und löschen sie dann. Aufzeichnungen des Suchanbieters über Suchtexte, die Sie freigegeben haben, aufbewahrt nach den Richtlinien dieses Anbieters.
+Den Kurzzeitspeicher des sicheren Servers, der sich innerhalb von Minuten bis zu einigen Stunden von selbst leert und keine Schaltfläche zum Löschen hat. Die Aufzeichnungen des Anbieters über Zeitpunkt, Modell und Tokenzahlen, die der Anbieter nach eigenen Angaben 90 Tage aufbewahrt. Unsere eigenen Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft, welches Modell und die veröffentlichten Kosten; wir bewahren sie 90 Tage auf und löschen sie dann. Aufzeichnungen des Suchanbieters über die Suchtexte, die CometRow gesendet hat, aufbewahrt nach den Richtlinien dieses Anbieters.
 
 **Fragen, Anfragen und Vorfälle**
 
@@ -418,7 +442,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 
 • Read aloud, photo to text, code runs, search within your chats: on your device only; nothing is sent.
 
-• Web search and research: only the search text you approved, after identifiers were replaced on your device; from our server to Brave Search in the USA; our server also opens the top result page or a page address you approved, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
+• Web search and research: the search text CometRow makes when a question needs current information, after identifiers were removed on your device; from our server to Brave Search in the USA; our server may also open the top result page, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
 
 • Image creation (when switched on): only the description you typed, with identifiers masked on your device, never your chats or photos; to the image provider [to confirm: name and region]; CometRow keeps neither the description nor the image on its server, the image is saved in your chat; the provider can read the description [to confirm: its retention and training terms].
 
@@ -440,7 +464,7 @@ Most of CometRow runs in the EU: our servers and database are at Render in Frank
 
 • AI answers: Tinfoil, Inc. (USA) processes your messages in the USA, under the standard contractual clauses in its data processing agreement.
 
-• Web search and research: Brave Search, USA. Only the search text you approved is sent, after identifiers were replaced on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
+• Web search and research: Brave Search, USA. Only the search text is sent, after identifiers were removed on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
 
 • Sign-in with Google: Google, a US company, handles the sign-in on its own page. [To confirm: which Google company is responsible for users in the EU, where it processes the sign-in, and on which transfer basis.]
 
@@ -496,7 +520,7 @@ In your browser, CometRow stores only what it needs to work:
 
 • Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 
-• Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
+• Settings in local storage (localStorage): your language, the appearance, the answer mode, the “Look things up online” switch, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 
 • Saved chats and keys in IndexedDB: the encrypted store for Secure and Secure Max and, when sync is switched on, this device's key and its sealed token. The language files for reading text in photos also stay in this browser's storage after the first use.
 
@@ -540,7 +564,19 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 **When you search the web**
 
-A web search only happens when you approve the exact search text shown to you, in Research or by tapping a search suggestion, or when you have switched on automatic search. Recognised identifiers are removed from that text on your device first; names and other details written in your own words are not removed. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Under the same approval, our server also opens the top result page, preferring an official site, and reads its text. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. If you switch on automatic search, a question that looks time-sensitive is searched without asking each time: recognised identifiers are removed on your device first and the exact text sent is shown to you. The setting is off until you switch it on and is kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is kept in your saved history on this device; a reopened conversation says it came from a live search and offers to search again for current sources, which needs your approval again.
+CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+
+Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+
+Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+
+Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+
+Under the answer, “Searched the web” shows the exact text that was searched and the sources.
+
+Search results are not kept with a saved chat; the written answer is.
+
+You can switch this off in Settings, General, “Look things up online”. It is on until you switch it off, and the choice is kept only on this device.
 
 **What we cannot promise yet**
 
@@ -552,7 +588,7 @@ One saved conversation: open Saved and choose Delete next to it. Everything save
 
 **What we cannot delete for you**
 
-The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; we keep them for 90 days and then delete them. Search-provider records of search text you approved, kept under that provider's policy.
+The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; we keep them for 90 days and then delete them. Search-provider records of the search texts CometRow sent, kept under that provider's policy.
 
 **Questions, requests and incidents**
 
@@ -606,7 +642,7 @@ Für jede Funktion: was gesendet wird; an wen und wohin; wie lange es aufbewahrt
 
 • Vorlesen, Foto zu Text, Code ausführen, Suche in Ihren Chats: nur auf Ihrem Gerät; nichts wird gesendet.
 
-• Websuche und Recherche: nur der Suchtext, den Sie freigegeben haben, nachdem Kennungen auf Ihrem Gerät ersetzt wurden; von unserem Server an Brave Search in den USA; unser Server öffnet außerdem die oberste Ergebnisseite oder eine Seitenadresse, die Sie freigegeben haben, und diese Website sieht die Adresse unseres Servers, nicht Ihre; Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren, der Seitentext wird nicht gespeichert; Brave kann den Suchtext lesen.
+• Websuche und Recherche: der Suchtext, den CometRow bildet, wenn eine Frage aktuelle Informationen braucht, nachdem Kennungen auf Ihrem Gerät entfernt wurden; von unserem Server an Brave Search in den USA; unser Server kann außerdem die oberste Ergebnisseite öffnen, und diese Website sieht die Adresse unseres Servers, nicht Ihre; Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren, der Seitentext wird nicht gespeichert; Brave kann den Suchtext lesen.
 
 • Bilderstellung (wenn eingeschaltet): nur die Beschreibung, die Sie getippt haben, mit auf Ihrem Gerät maskierten Kennungen, nie Ihre Chats oder Fotos; an den Bildanbieter [zu bestätigen: Name und Region]; CometRow bewahrt weder Beschreibung noch Bild auf seinem Server auf, das Bild wird in Ihrem Chat gespeichert; der Anbieter kann die Beschreibung lesen [zu bestätigen: seine Aufbewahrung und seine Bedingungen zum Training].
 
@@ -628,7 +664,7 @@ Der größte Teil von CometRow läuft in der EU: Unsere Server und unsere Datenb
 
 • KI-Antworten: Tinfoil, Inc. (USA) verarbeitet Ihre Nachrichten in den USA, auf Grundlage der Standardvertragsklauseln in seinem Auftragsverarbeitungsvertrag.
 
-• Websuche und Recherche: Brave Search, USA. Gesendet wird nur der Suchtext, den Sie freigegeben haben, nachdem Kennungen auf Ihrem Gerät ersetzt wurden, und zwar von unserem Server, nicht von Ihrem Browser. Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren. [Zu bestätigen: die Übermittlungsgrundlage von Brave (Zertifizierung nach dem Datenschutzrahmen oder Standardvertragsklauseln); Brave erklärt, dass sein Auftragsverarbeitungsvertrag Suchanfragen nicht abdeckt.]
+• Websuche und Recherche: Brave Search, USA. Gesendet wird nur der Suchtext, nachdem Kennungen auf Ihrem Gerät entfernt wurden, und zwar von unserem Server, nicht von Ihrem Browser. Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren. [Zu bestätigen: die Übermittlungsgrundlage von Brave (Zertifizierung nach dem Datenschutzrahmen oder Standardvertragsklauseln); Brave erklärt, dass sein Auftragsverarbeitungsvertrag Suchanfragen nicht abdeckt.]
 
 • Anmeldung mit Google: Google, ein US-Unternehmen, wickelt die Anmeldung auf seiner eigenen Seite ab. [Zu bestätigen: welches Google-Unternehmen für Nutzer in der EU verantwortlich ist, wo es die Anmeldung verarbeitet und auf welcher Übermittlungsgrundlage.]
 
@@ -684,7 +720,7 @@ CometRow speichert in Ihrem Browser nur, was es zum Funktionieren braucht:
 
 • Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
 
-• Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, die Schalter für die automatische Suche, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
+• Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, der Schalter „Online nachschlagen“, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
 
 • Gespeicherte Chats und Schlüssel in IndexedDB: der verschlüsselte Speicher für Secure und Secure Max und, wenn die Synchronisierung eingeschaltet ist, der Schlüssel dieses Geräts und sein versiegeltes Token. Die Sprachdateien für die Texterkennung in Fotos bleiben nach der ersten Nutzung ebenfalls im Speicher dieses Browsers.
 
@@ -728,7 +764,19 @@ Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer
 
 **Wenn Sie im Web suchen**
 
-Eine Websuche findet nur statt, wenn Sie den genauen Suchtext freigeben, der Ihnen angezeigt wird, in der Recherche oder durch Tippen auf einen Suchvorschlag, oder wenn Sie die automatische Suche eingeschaltet haben. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus diesem Text entfernt; Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen kann und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Mit derselben Freigabe öffnet unser Server außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Enthält die Adresse der Seite eine erkannte persönliche Angabe, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Wenn Sie die automatische Suche einschalten, wird für eine Frage, die zeitabhängig wirkt, gesucht, ohne jedes Mal nachzufragen: Erkannte Kennungen werden zuerst auf Ihrem Gerät entfernt, und der genaue gesendete Text wird Ihnen angezeigt. Die Einstellung ist ausgeschaltet, bis Sie sie einschalten, und wird nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die geschriebene Antwort, die darauf beruht, wird in Ihrem gespeicherten Verlauf auf diesem Gerät behalten; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, erneut nach aktuellen Quellen zu suchen, wofür wieder Ihre Freigabe nötig ist.
+CometRow schlägt von selbst online nach, wenn eine Frage aktuelle Informationen braucht, zum Beispiel Nachrichten, Preise, Öffnungszeiten oder deutsche Regeln, Gebühren und Fristen.
+
+Vor der Suche werden E-Mail-Adressen, Telefonnummern, Bank- und Ausweisnummern auf Ihrem Gerät aus dem Suchtext entfernt. Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt.
+
+Unser Server sendet den Suchtext an den Suchanbieter Brave, der ihn lesen und bis zu 90 Tage aufbewahren kann. Ihre eigene Internetadresse wird nicht gesendet.
+
+Unser Server kann außerdem die Seite des obersten Treffers öffnen, um sie zu lesen; diese Website sieht die Adresse unseres Servers, nicht Ihre. Eine Tiefenrecherche öffnet so mehrere Seiten. Enthält eine Seitenadresse eine erkannte persönliche Angabe, wird die Seite ohne diesen Teil geöffnet oder gar nicht. Der Seitentext wird nur für diese Antwort verwendet und nicht gespeichert.
+
+Unter der Antwort zeigt „Im Web gesucht“ den genau gesuchten Text und die Quellen.
+
+Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt; die geschriebene Antwort schon.
+
+Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. Es ist eingeschaltet, bis Sie es ausschalten, und die Wahl wird nur auf diesem Gerät gespeichert.
 
 **Was wir noch nicht versprechen können**
 
@@ -740,7 +788,7 @@ Eine gespeicherte Unterhaltung: Öffnen Sie „Gespeichert“ und wählen Sie da
 
 **Was wir nicht für Sie löschen können**
 
-Den Kurzzeitspeicher des sicheren Servers, der sich innerhalb von Minuten bis zu einigen Stunden von selbst leert und keine Schaltfläche zum Löschen hat. Die Aufzeichnungen des Anbieters über Zeitpunkt, Modell und Tokenzahlen, die der Anbieter nach eigenen Angaben 90 Tage aufbewahrt. Unsere eigenen Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft, welches Modell und die veröffentlichten Kosten; wir bewahren sie 90 Tage auf und löschen sie dann. Aufzeichnungen des Suchanbieters über Suchtexte, die Sie freigegeben haben, aufbewahrt nach den Richtlinien dieses Anbieters.
+Den Kurzzeitspeicher des sicheren Servers, der sich innerhalb von Minuten bis zu einigen Stunden von selbst leert und keine Schaltfläche zum Löschen hat. Die Aufzeichnungen des Anbieters über Zeitpunkt, Modell und Tokenzahlen, die der Anbieter nach eigenen Angaben 90 Tage aufbewahrt. Unsere eigenen Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft, welches Modell und die veröffentlichten Kosten; wir bewahren sie 90 Tage auf und löschen sie dann. Aufzeichnungen des Suchanbieters über die Suchtexte, die CometRow gesendet hat, aufbewahrt nach den Richtlinien dieses Anbieters.
 
 **Fragen, Anfragen und Vorfälle**
 
@@ -796,7 +844,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 
 • Read aloud, photo to text, code runs, search within your chats: on your device only; nothing is sent.
 
-• Web search and research: only the search text you approved, after identifiers were replaced on your device; from our server to Brave Search in the USA; our server also opens the top result page or a page address you approved, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
+• Web search and research: the search text CometRow makes when a question needs current information, after identifiers were removed on your device; from our server to Brave Search in the USA; our server may also open the top result page, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
 
 • Image creation (when switched on): only the description you typed, with identifiers masked on your device, never your chats or photos; to the image provider [to confirm: name and region]; CometRow keeps neither the description nor the image on its server, the image is saved in your chat; the provider can read the description [to confirm: its retention and training terms].
 
@@ -818,7 +866,7 @@ Most of CometRow runs in the EU: our servers and database are at Render in Frank
 
 • AI answers: Privatemode (Edgeless Systems GmbH, Germany) processes your messages only in the EU and the European Economic Area; there is no transfer.
 
-• Web search and research: Brave Search, USA. Only the search text you approved is sent, after identifiers were replaced on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
+• Web search and research: Brave Search, USA. Only the search text is sent, after identifiers were removed on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
 
 • Sign-in with Google: Google, a US company, handles the sign-in on its own page. [To confirm: which Google company is responsible for users in the EU, where it processes the sign-in, and on which transfer basis.]
 
@@ -874,7 +922,7 @@ In your browser, CometRow stores only what it needs to work:
 
 • Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 
-• Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
+• Settings in local storage (localStorage): your language, the appearance, the answer mode, the “Look things up online” switch, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 
 • Saved chats and keys in IndexedDB: the encrypted store for Secure and Secure Max and, when sync is switched on, this device's key and its sealed token. The language files for reading text in photos also stay in this browser's storage after the first use.
 
@@ -924,7 +972,19 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 **When you search the web**
 
-A web search happens only when you choose “Search the web” in the + menu for a message, search a text yourself on the Research page, have switched on automatic search, or start a deep research. Recognised identifiers are removed from each search text on your device first; names and other details written in your own words are not removed. After a search, the exact text that was searched is shown to you. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added. Our server also opens the top result page, preferring an official site, and reads its text; a deep research opens several pages this way. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. Automatic search covers questions that look time-sensitive or are about rules, fees or deadlines; if you switch on only “Always search for rules, fees and deadlines”, just those questions are searched. These settings are off until you switch them on and are kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is saved with the chat; a reopened conversation says it came from a live search and offers to search again for current sources.
+CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+
+Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+
+Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+
+Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+
+Under the answer, “Searched the web” shows the exact text that was searched and the sources.
+
+Search results are not kept with a saved chat; the written answer is.
+
+You can switch this off in Settings, General, “Look things up online”. It is on until you switch it off, and the choice is kept only on this device.
 
 **What we cannot promise yet**
 
@@ -936,7 +996,7 @@ One saved conversation: open Saved and choose Delete next to it. Everything save
 
 **What we cannot delete for you**
 
-The secure server's short-term working memory, which is kept apart for each account and has no delete button. The provider's records of time and token counts, which the provider states it keeps for up to 90 days, and its token counts per key, which it keeps permanently for billing; we use one key for all accounts. Our own request records: which account asked, when, how many times and which model; we keep them for 90 days and then delete them. Search-provider records of search text you approved, kept under that provider's policy.
+The secure server's short-term working memory, which is kept apart for each account and has no delete button. The provider's records of time and token counts, which the provider states it keeps for up to 90 days, and its token counts per key, which it keeps permanently for billing; we use one key for all accounts. Our own request records: which account asked, when, how many times and which model; we keep them for 90 days and then delete them. Search-provider records of the search texts CometRow sent, kept under that provider's policy.
 
 **Questions, requests and incidents**
 
@@ -990,7 +1050,7 @@ Für jede Funktion: was gesendet wird; an wen und wohin; wie lange es aufbewahrt
 
 • Vorlesen, Foto zu Text, Code ausführen, Suche in Ihren Chats: nur auf Ihrem Gerät; nichts wird gesendet.
 
-• Websuche und Recherche: nur der Suchtext, den Sie freigegeben haben, nachdem Kennungen auf Ihrem Gerät ersetzt wurden; von unserem Server an Brave Search in den USA; unser Server öffnet außerdem die oberste Ergebnisseite oder eine Seitenadresse, die Sie freigegeben haben, und diese Website sieht die Adresse unseres Servers, nicht Ihre; Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren, der Seitentext wird nicht gespeichert; Brave kann den Suchtext lesen.
+• Websuche und Recherche: der Suchtext, den CometRow bildet, wenn eine Frage aktuelle Informationen braucht, nachdem Kennungen auf Ihrem Gerät entfernt wurden; von unserem Server an Brave Search in den USA; unser Server kann außerdem die oberste Ergebnisseite öffnen, und diese Website sieht die Adresse unseres Servers, nicht Ihre; Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren, der Seitentext wird nicht gespeichert; Brave kann den Suchtext lesen.
 
 • Bilderstellung (wenn eingeschaltet): nur die Beschreibung, die Sie getippt haben, mit auf Ihrem Gerät maskierten Kennungen, nie Ihre Chats oder Fotos; an den Bildanbieter [zu bestätigen: Name und Region]; CometRow bewahrt weder Beschreibung noch Bild auf seinem Server auf, das Bild wird in Ihrem Chat gespeichert; der Anbieter kann die Beschreibung lesen [zu bestätigen: seine Aufbewahrung und seine Bedingungen zum Training].
 
@@ -1012,7 +1072,7 @@ Der größte Teil von CometRow läuft in der EU: Unsere Server und unsere Datenb
 
 • KI-Antworten: Privatemode (Edgeless Systems GmbH, Deutschland) verarbeitet Ihre Nachrichten nur in der EU und im Europäischen Wirtschaftsraum; es findet keine Übermittlung statt.
 
-• Websuche und Recherche: Brave Search, USA. Gesendet wird nur der Suchtext, den Sie freigegeben haben, nachdem Kennungen auf Ihrem Gerät ersetzt wurden, und zwar von unserem Server, nicht von Ihrem Browser. Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren. [Zu bestätigen: die Übermittlungsgrundlage von Brave (Zertifizierung nach dem Datenschutzrahmen oder Standardvertragsklauseln); Brave erklärt, dass sein Auftragsverarbeitungsvertrag Suchanfragen nicht abdeckt.]
+• Websuche und Recherche: Brave Search, USA. Gesendet wird nur der Suchtext, nachdem Kennungen auf Ihrem Gerät entfernt wurden, und zwar von unserem Server, nicht von Ihrem Browser. Brave erklärt, Suchaufzeichnungen bis zu 90 Tage aufzubewahren. [Zu bestätigen: die Übermittlungsgrundlage von Brave (Zertifizierung nach dem Datenschutzrahmen oder Standardvertragsklauseln); Brave erklärt, dass sein Auftragsverarbeitungsvertrag Suchanfragen nicht abdeckt.]
 
 • Anmeldung mit Google: Google, ein US-Unternehmen, wickelt die Anmeldung auf seiner eigenen Seite ab. [Zu bestätigen: welches Google-Unternehmen für Nutzer in der EU verantwortlich ist, wo es die Anmeldung verarbeitet und auf welcher Übermittlungsgrundlage.]
 
@@ -1068,7 +1128,7 @@ CometRow speichert in Ihrem Browser nur, was es zum Funktionieren braucht:
 
 • Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
 
-• Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, die Schalter für die automatische Suche, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
+• Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, der Schalter „Online nachschlagen“, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
 
 • Gespeicherte Chats und Schlüssel in IndexedDB: der verschlüsselte Speicher für Secure und Secure Max und, wenn die Synchronisierung eingeschaltet ist, der Schlüssel dieses Geräts und sein versiegeltes Token. Die Sprachdateien für die Texterkennung in Fotos bleiben nach der ersten Nutzung ebenfalls im Speicher dieses Browsers.
 
@@ -1118,7 +1178,19 @@ Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer
 
 **Wenn Sie im Web suchen**
 
-Eine Websuche findet nur statt, wenn Sie für eine Nachricht im +-Menü „Im Web suchen“ wählen, auf der Seite „Recherche“ selbst einen Text suchen, die automatische Suche eingeschaltet haben oder eine Tiefenrecherche starten. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus jedem Suchtext entfernt; Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt. Nach einer Suche wird Ihnen der genau gesuchte Text angezeigt. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Bei einer Frage zu Regeln, Gebühren oder Fristen kann unser Server den Suchanbieter außerdem bitten, offizielle Websites zuerst einzuordnen, indem er eine feste Liste dieser Websites sendet; nichts von Ihnen wird hinzugefügt. Unser Server öffnet außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text; eine Tiefenrecherche öffnet auf diese Weise mehrere Seiten. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Wenn die Seitenadresse eine erkannte persönliche Angabe enthält, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Die automatische Suche gilt für Fragen, die zeitabhängig wirken oder Regeln, Gebühren oder Fristen betreffen; wenn Sie nur „Bei Regeln, Gebühren und Fristen immer suchen“ einschalten, werden nur diese Fragen gesucht. Diese Einstellungen sind ausgeschaltet, bis Sie sie einschalten, und werden nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die darauf aufgebaute schriftliche Antwort wird mit dem Chat gespeichert; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, für aktuelle Quellen erneut zu suchen.
+CometRow schlägt von selbst online nach, wenn eine Frage aktuelle Informationen braucht, zum Beispiel Nachrichten, Preise, Öffnungszeiten oder deutsche Regeln, Gebühren und Fristen.
+
+Vor der Suche werden E-Mail-Adressen, Telefonnummern, Bank- und Ausweisnummern auf Ihrem Gerät aus dem Suchtext entfernt. Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt.
+
+Unser Server sendet den Suchtext an den Suchanbieter Brave, der ihn lesen und bis zu 90 Tage aufbewahren kann. Ihre eigene Internetadresse wird nicht gesendet.
+
+Unser Server kann außerdem die Seite des obersten Treffers öffnen, um sie zu lesen; diese Website sieht die Adresse unseres Servers, nicht Ihre. Eine Tiefenrecherche öffnet so mehrere Seiten. Enthält eine Seitenadresse eine erkannte persönliche Angabe, wird die Seite ohne diesen Teil geöffnet oder gar nicht. Der Seitentext wird nur für diese Antwort verwendet und nicht gespeichert.
+
+Unter der Antwort zeigt „Im Web gesucht“ den genau gesuchten Text und die Quellen.
+
+Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt; die geschriebene Antwort schon.
+
+Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. Es ist eingeschaltet, bis Sie es ausschalten, und die Wahl wird nur auf diesem Gerät gespeichert.
 
 **Was wir noch nicht versprechen können**
 
@@ -1130,7 +1202,7 @@ Eine gespeicherte Unterhaltung: Öffnen Sie „Gespeichert“ und wählen Sie da
 
 **Was wir nicht für Sie löschen können**
 
-Den Kurzzeitspeicher des sicheren Servers, der für jedes Konto getrennt gehalten wird und keine Schaltfläche zum Löschen hat. Die Aufzeichnungen des Anbieters über Zeitpunkt und Tokenzahlen, die der Anbieter nach eigenen Angaben bis zu 90 Tage aufbewahrt, und seine Tokenzahlen pro Schlüssel, die er dauerhaft für die Abrechnung aufbewahrt; wir verwenden einen Schlüssel für alle Konten. Unsere eigenen Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft und welches Modell; wir bewahren sie 90 Tage auf und löschen sie dann. Aufzeichnungen des Suchanbieters über Suchtexte, die Sie freigegeben haben, aufbewahrt nach den Richtlinien dieses Anbieters.
+Den Kurzzeitspeicher des sicheren Servers, der für jedes Konto getrennt gehalten wird und keine Schaltfläche zum Löschen hat. Die Aufzeichnungen des Anbieters über Zeitpunkt und Tokenzahlen, die der Anbieter nach eigenen Angaben bis zu 90 Tage aufbewahrt, und seine Tokenzahlen pro Schlüssel, die er dauerhaft für die Abrechnung aufbewahrt; wir verwenden einen Schlüssel für alle Konten. Unsere eigenen Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft und welches Modell; wir bewahren sie 90 Tage auf und löschen sie dann. Aufzeichnungen des Suchanbieters über die Suchtexte, die CometRow gesendet hat, aufbewahrt nach den Richtlinien dieses Anbieters.
 
 **Fragen, Anfragen und Vorfälle**
 
@@ -1166,7 +1238,19 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 **When you search the web**
 
-A web search only happens when you approve the exact search text shown to you, in Research or by tapping a search suggestion, or when you have switched on automatic search. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Under the same approval, our server also opens the top result page, preferring an official site, and reads its text. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. If you switch on automatic search, a question that looks time-sensitive is searched without asking each time: recognised identifiers are removed on your device first and the exact text sent is shown to you. The setting is off until you switch it on and is kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is kept in your saved history on this device; a reopened conversation says it came from a live search and offers to search again for current sources, which needs your approval again.
+CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+
+Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+
+Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+
+Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+
+Under the answer, “Searched the web” shows the exact text that was searched and the sources.
+
+Search results are not kept with a saved chat; the written answer is.
+
+You can switch this off in Settings, General, “Look things up online”. It is on until you switch it off, and the choice is kept only on this device.
 
 **What we cannot promise yet**
 
@@ -1196,7 +1280,19 @@ Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer
 
 **Wenn Sie im Web suchen**
 
-Eine Websuche findet nur statt, wenn Sie den genauen Suchtext freigeben, der Ihnen angezeigt wird, in der Recherche oder durch Tippen auf einen Suchvorschlag, oder wenn Sie die automatische Suche eingeschaltet haben. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus diesem Text entfernt, und Sie werden gewarnt, wenn er noch einen Namen oder eine andere persönliche Angabe enthalten könnte. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen kann und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Mit derselben Freigabe öffnet unser Server außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Enthält die Adresse der Seite eine erkannte persönliche Angabe, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Wenn Sie die automatische Suche einschalten, wird für eine Frage, die zeitabhängig wirkt, gesucht, ohne jedes Mal nachzufragen: Erkannte Kennungen werden zuerst auf Ihrem Gerät entfernt, und der genaue gesendete Text wird Ihnen angezeigt. Die Einstellung ist ausgeschaltet, bis Sie sie einschalten, und wird nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die geschriebene Antwort, die darauf beruht, wird in Ihrem gespeicherten Verlauf auf diesem Gerät behalten; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, erneut nach aktuellen Quellen zu suchen, wofür wieder Ihre Freigabe nötig ist.
+CometRow schlägt von selbst online nach, wenn eine Frage aktuelle Informationen braucht, zum Beispiel Nachrichten, Preise, Öffnungszeiten oder deutsche Regeln, Gebühren und Fristen.
+
+Vor der Suche werden E-Mail-Adressen, Telefonnummern, Bank- und Ausweisnummern auf Ihrem Gerät aus dem Suchtext entfernt. Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt.
+
+Unser Server sendet den Suchtext an den Suchanbieter Brave, der ihn lesen und bis zu 90 Tage aufbewahren kann. Ihre eigene Internetadresse wird nicht gesendet.
+
+Unser Server kann außerdem die Seite des obersten Treffers öffnen, um sie zu lesen; diese Website sieht die Adresse unseres Servers, nicht Ihre. Eine Tiefenrecherche öffnet so mehrere Seiten. Enthält eine Seitenadresse eine erkannte persönliche Angabe, wird die Seite ohne diesen Teil geöffnet oder gar nicht. Der Seitentext wird nur für diese Antwort verwendet und nicht gespeichert.
+
+Unter der Antwort zeigt „Im Web gesucht“ den genau gesuchten Text und die Quellen.
+
+Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt; die geschriebene Antwort schon.
+
+Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. Es ist eingeschaltet, bis Sie es ausschalten, und die Wahl wird nur auf diesem Gerät gespeichert.
 
 **Was wir noch nicht versprechen können**
 
@@ -1234,7 +1330,19 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 **When you search the web**
 
-A web search happens only when you choose “Search the web” in the + menu for a message, search a text yourself on the Research page, have switched on automatic search, or start a deep research. Recognised identifiers are removed from each search text on your device first; names and other details written in your own words are not removed. After a search, the exact text that was searched is shown to you. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added. Our server also opens the top result page, preferring an official site, and reads its text; a deep research opens several pages this way. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. Automatic search covers questions that look time-sensitive or are about rules, fees or deadlines; if you switch on only “Always search for rules, fees and deadlines”, just those questions are searched. These settings are off until you switch them on and are kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is saved with the chat; a reopened conversation says it came from a live search and offers to search again for current sources.
+CometRow looks things up online by itself when a question needs current information, for example news, prices, opening hours, or German rules, fees and deadlines.
+
+Before the search, email addresses, phone numbers, bank and ID numbers are removed from the search text on your device. Names and other details in your own words are not removed.
+
+Our server sends the search text to the search provider, Brave, which can read it and may keep it for up to 90 days. Your own internet address is not sent.
+
+Our server may also open the top result page to read it; that website sees our server's address, not yours. Deep research opens several pages this way. If a page address contains a recognised personal detail, the page is opened without that part, or not at all. The page text is used only for that answer and is not saved.
+
+Under the answer, “Searched the web” shows the exact text that was searched and the sources.
+
+Search results are not kept with a saved chat; the written answer is.
+
+You can switch this off in Settings, General, “Look things up online”. It is on until you switch it off, and the choice is kept only on this device.
 
 **What we cannot promise yet**
 
@@ -1270,7 +1378,19 @@ Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer
 
 **Wenn Sie im Web suchen**
 
-Eine Websuche findet nur statt, wenn Sie für eine Nachricht im +-Menü „Im Web suchen“ wählen, auf der Seite „Recherche“ selbst einen Text suchen, die automatische Suche eingeschaltet haben oder eine Tiefenrecherche starten. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus jedem Suchtext entfernt; Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt. Nach einer Suche wird Ihnen der genau gesuchte Text angezeigt. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Bei einer Frage zu Regeln, Gebühren oder Fristen kann unser Server den Suchanbieter außerdem bitten, offizielle Websites zuerst einzuordnen, indem er eine feste Liste dieser Websites sendet; nichts von Ihnen wird hinzugefügt. Unser Server öffnet außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text; eine Tiefenrecherche öffnet auf diese Weise mehrere Seiten. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Wenn die Seitenadresse eine erkannte persönliche Angabe enthält, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Die automatische Suche gilt für Fragen, die zeitabhängig wirken oder Regeln, Gebühren oder Fristen betreffen; wenn Sie nur „Bei Regeln, Gebühren und Fristen immer suchen“ einschalten, werden nur diese Fragen gesucht. Diese Einstellungen sind ausgeschaltet, bis Sie sie einschalten, und werden nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die darauf aufgebaute schriftliche Antwort wird mit dem Chat gespeichert; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, für aktuelle Quellen erneut zu suchen.
+CometRow schlägt von selbst online nach, wenn eine Frage aktuelle Informationen braucht, zum Beispiel Nachrichten, Preise, Öffnungszeiten oder deutsche Regeln, Gebühren und Fristen.
+
+Vor der Suche werden E-Mail-Adressen, Telefonnummern, Bank- und Ausweisnummern auf Ihrem Gerät aus dem Suchtext entfernt. Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt.
+
+Unser Server sendet den Suchtext an den Suchanbieter Brave, der ihn lesen und bis zu 90 Tage aufbewahren kann. Ihre eigene Internetadresse wird nicht gesendet.
+
+Unser Server kann außerdem die Seite des obersten Treffers öffnen, um sie zu lesen; diese Website sieht die Adresse unseres Servers, nicht Ihre. Eine Tiefenrecherche öffnet so mehrere Seiten. Enthält eine Seitenadresse eine erkannte persönliche Angabe, wird die Seite ohne diesen Teil geöffnet oder gar nicht. Der Seitentext wird nur für diese Antwort verwendet und nicht gespeichert.
+
+Unter der Antwort zeigt „Im Web gesucht“ den genau gesuchten Text und die Quellen.
+
+Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt; die geschriebene Antwort schon.
+
+Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. Es ist eingeschaltet, bis Sie es ausschalten, und die Wahl wird nur auf diesem Gerät gespeichert.
 
 **Was wir noch nicht versprechen können**
 
