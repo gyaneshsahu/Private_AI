@@ -8,6 +8,44 @@
 
 ---
 
+## 18. Loading hang: a test and more investigation
+
+- **Date:** 26 November 2026.
+- **You asked:** add a test that fails if the chat list takes longer than 8 seconds, and keep investigating.
+- **Status:** open.
+
+## 17. Memory per project
+
+- **Date:** 26 November 2026.
+- **You asked:** yes, like ChatGPT projects, as its own module behind an off-switch. Project memories stay inside that project.
+- **Status:** open.
+
+## 16. Dark mode: the full pass
+
+- **Date:** 26 November 2026.
+- **You asked:** the full screen-by-screen pass over all earlier screens.
+- **Status:** open.
+
+## 15. Error states, like ChatGPT
+
+- **Date:** 26 November 2026.
+- **You asked:** when an answer fails or stops, one short friendly line with a soft red accent where the answer would be, with Retry; plain words, no codes; keep the partial answer and the message and say what was lost; "You're offline" until the connection is back; the same for a failed image; a failed search does not fail the answer; the usage limit stays the calm line, not red.
+- **Status:** open.
+
+## 14. Loading and progress states: one shared "activity" component
+
+- **Date:** 26 November 2026.
+- **You asked:** behind an off-switch: "Thinking…" with a softly pulsing dot in the brand gradient, collapsing to "Thought for N s", with the model's reasoning shown collapsed if Privatemode returns it, otherwise the steps (and tell you which it is); steps in the same line (searching, reading N sources, reading a file, calculating, deep research); an image placeholder in the final size with a soft shimmer, then a fade-in; skeleton rows for the chat list and app start.
+- **Status:** open.
+
+## 13. Answers stay inline; finish the inline answer design
+
+- **Date:** 26 November 2026.
+- **You asked:** answers stay inline, like ChatGPT. Document cards only for deep research reports and canvas documents. Finish the answer design for inline answers: the "Searched the web" block, and a before/after sheet of the sample answers to judge after your exams.
+- **Status:** open, in work. Decision recorded: no document cards for normal answers.
+
+**For entries 13 to 18 you also asked:** calm, not flashy; light and dark; respect "reduce motion"; no layout jumps; test at desktop and phone size in English and German; add rows to the owner-test additions; log each item here. At the end: full unit suite, all browser tests and the screen tour on `preview/all-tracks`, CI green there, the report updated; then stop and wait; no new features beyond the list.
+
 ## 12. Which in-chat research result you prefer (ChatGPT and Claude screenshots)
 
 - **Date:** 25 November 2026, evening.
