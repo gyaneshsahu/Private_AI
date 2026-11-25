@@ -12,6 +12,7 @@ import { isAccountPreview } from "../shared/account-design";
 import "./focus-origin"; // starts remembering focus before any on-demand dialog loads
 import "./styles.css";
 import "./chat-design.css";
+import "./InstallApp"; // hears the browser's install offer from the first moment (docs/pwa-20261125.md)
 const AccountLab = retryLazy(() => importFresh(() => import("./AccountLab")));
 const ShareViewer = React.lazy(() => import("./share/ShareViewer").then((m) => ({ default: m.ShareViewer })));
 const LoadingAccount = () => <p role="status">{useText(themeText).loadingAccount}</p>;

@@ -1,5 +1,8 @@
 {
+  "id": "/",
   "name": "CometRow",
+  "lang": "en",
+  "categories": ["productivity"],
   "short_name": "CometRow",
   "description": "A private AI assistant.",
   "start_url": "/",
