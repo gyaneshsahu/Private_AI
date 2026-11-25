@@ -73,6 +73,8 @@ describe.each([
       await ui(skeleton).toBeVisible();
       await ui(skeleton).toContainText(settingsText[lang].loadingChats); // for screen readers only
       await ui(page.locator(".history-locked p")).toHaveCount(0);
+      // The sentence is nowhere on the screen while the rows show, also not in the line under the account.
+      expect(await page.evaluate((words) => [...document.querySelectorAll("p")].filter((el) => !el.closest(".sr-only") && el.textContent?.includes(words)).length, settingsText[lang].loadingChats)).toBe(0);
       if (motion === "reduce") expect(await skeleton.locator("span[aria-hidden]").first().evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
       await ui(skeleton).toHaveCount(0, { timeout: 20_000 });
       if (phone) await page.keyboard.press("Escape");
