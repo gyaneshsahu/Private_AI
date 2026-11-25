@@ -30,26 +30,27 @@
 - **Date:** 25 November 2026, evening.
 - **You asked:** how answers are shown is very important: normal chat, search, deep research. More interactive and graphical where needed, organised and beautiful. We may not beat ChatGPT or Gemini on features, but we control how our platform answers. Example: a Claude answer with a file card, a short summary and bold-led points, and the 33-page question bank PDF it made. Can we reach that level or better. Give it real time and effort.
 - **What I did so far:** read your example (the PDF is a structured document: title, a "how to use" box, a tracker table, tagged questions, a formula sheet, answers). Looked at how our answers are drawn today: clean but plain Markdown; the canvas edits raw Markdown; the screen tour has only one dark screenshot, of an empty chat. Plan: (a) the report card of entry 6 first, as the general "document card"; (b) capture about 12 real answers from the live model as fixed examples, so every style change is judged on real text; (c) restyle what the model already writes (headings, lists, tables, quotes, bold lead-ins, code, charts) in light and dark; (d) at most one or two new answer blocks; (e) send you a before/after sheet early.
-- **Where:** will be branch `feat/answer-design`, on top of `feat/report-card`.
-- **Tests:** none yet.
-- **Status:** open, in work. Step (a) is being built now.
+- **Done since:** (a) the report card (entry 6). (b) 12 real answers captured from the live model for about EUR 0.04. (c) a first design pass that draws what the model already writes: the opening as a lead, "Total / Average" lines as tiles, a bold line before a list as its label, check-lists you can tick, tables with banded rows and "Copy table", clearer titles and sections, quoted lines as notes. No new instruction to the model. A before/after sample was sent to you.
+- **Where:** branch `feat/answer-design` (on top of `feat/report-card`), commit `04a733a`. Doc `docs/answer-design-20261125.md`, with the list "Still to do".
+- **Tests:** 5 browser tests green on the real answers (phone and desktop, light and dark; with the design off, none of it). The full local suite and CI for this branch had not finished when this was written.
+- **Status:** partly. **Open:** long document-like answers as a card (built for deep research only so far); the search answer block; a full before/after sheet; one or two new answer blocks; merging into `preview/all-tracks`. I would like your reaction to the two samples before going further in one direction.
 
 ## 7. Light and dark mode
 
 - **Date:** 25 November 2026, evening.
 - **You asked:** be careful about both dark and light mode in whatever I do.
-- **What I did:** taken as a standing rule (`docs/working-rules.md`). New screens use only the theme's colour variables, so both modes follow. **Not done yet:** the screens built earlier on 25 November were checked by the accessibility tool in light mode only; a dark pass over all of them is part of entry 8.
+- **What I did:** taken as a standing rule (`docs/working-rules.md`). New screens use only the theme's colour variables, so both modes follow. The report card and the answer design are tested and looked at in both. **Not done yet:** a dark pass over the screens built earlier on 25 November. Already found: the main buttons in the share, feedback and plans screens use white text on the accent colour, which is too pale in dark mode.
 - **Status:** partly. Rule in force; the dark pass over the earlier screens is open.
 
 ## 6. Deep research as a file in the chat, opening in the side panel
 
 - **Date:** 25 November 2026, evening.
 - **You asked:** deep research should appear in the chat just as a file, and the actual report should open in the canvas, the editable side panel, instead of in the chat. Like Claude and ChatGPT.
-- **What I am doing:** a report card in the chat (title, "Research report · sources · reading time", the report's own first paragraph, its sections as links). The report opens in the side panel with its source buttons working, and from there: **Edit in canvas**, Copy, Download, Share. On a wide screen the panel opens by itself while the report is written; on a phone only on a tap. Behind the switch `VITE_REPORT_CARD`; with it off everything is as today. A stopped or failed research stays as text in the chat.
+- **What I did:** a report card in the chat (title, "Research report · sources · reading time", the report's own first paragraph, its sections as links). The report opens in the side panel with its source buttons working, and from there: **Edit in canvas**, Copy, Download, Share. On a wide screen the panel opens by itself while the report is written; on a phone only on a tap. Behind the switch `VITE_REPORT_CARD`; with it off everything is as today. A stopped or failed research stays as text in the chat.
 - **Note on an older decision:** your decision of 16 to 18 November put deep research "in the chat". This changes only where the finished report is shown. I did not edit `docs/owner-decisions.md`.
-- **Where:** branch `feat/report-card` (on top of `feat/image-share`); not pushed yet.
-- **Tests:** being written.
-- **Status:** open, in work.
+- **Where:** branch `feat/report-card` (on top of `feat/image-share`), commit `84ce261`. Doc `docs/report-card-20261125.md`. Two screenshots sent to you on 25 November.
+- **Tests:** 5 logic tests and 4 browser tests green (phone and desktop, English and German, light and dark); accessibility check clean on the deep research screens; CI green (run 45651028776), database suite included. The full local run was still going when this was written.
+- **Status:** partly. Built and pushed. **Not yet in `preview/all-tracks`**, and the owner tests for it (a section 42) are not written. One thing differs from your words: the report opens in a reading panel with "Edit in canvas" as its first button, not straight in the canvas, because the canvas shows raw Markdown today (reason in the doc).
 
 ## 5. Projects and the chat menu
 
@@ -71,7 +72,7 @@
 
 - **Date:** 25 November 2026 (end of the first message).
 - **You asked:** the worktree box is ticked; keys in the credential manager may be used if needed; not more than EUR 3 to 5.
-- **What I did:** spent about USD 0.11 in total, on made-up pictures only: it showed that the image address in the app was wrong (your test would have failed) and that edits and erase work live. Entry 8 will need some live model answers; each spend goes into the Spend table of the run report.
+- **What I did:** spent about USD 0.11 in total, on made-up pictures only: it showed that the image address in the app was wrong (your test would have failed) and that edits and erase work live. Entry 8 added about EUR 0.04 for 12 live model answers. Total so far about EUR 0.14.
 - **Status:** done so far; the limit stays in force.
 
 ## 2. The combined branch, the new tests and the report

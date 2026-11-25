@@ -47,7 +47,7 @@ Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in
 - **To look at everything together:** branch `preview/all-tracks` (worktree `C:\Gyanesh\Startups\Private_AI-tracks\preview`). It combines the fix branch and every track. CI green on `f4c2185` (run 45646292812), database suite included; a later commit on it only adds this report.
 - **Your new tests:** `docs/owner-test-additions-20261125.md` on `preview/all-tracks` (sections 32 to 41, same format as your list).
 - **To take the work into your branch,** merge in this order, or simply merge `preview/all-tracks`, where the conflicts are already resolved: `fix/before-owner-test`, `feat/projects-ux`, `feat/image-editing`, `feat/image-share`, `feat/image-provider-eu`, `feat/analytics`, `feat/feedback`, `feat/pwa`, `feat/plans-checkout`. **Merging `preview/all-tracks` is the easy way.** One by one, you meet the conflicts again that are listed under "The combined build".
-- **If you say "continue":** nothing is open on my side. Next is whatever your owner test finds, and the numbers for the plans (Needs you, 17).
+- **If you say "continue":** the open work is the answer design (`feat/answer-design`, list "Still to do" in its doc `docs/answer-design-20261125.md`), then merging `feat/report-card` and `feat/answer-design` into `preview/all-tracks` with a full check there. Both branches are pushed; neither is in the preview yet. `docs/owner-requests-log.md` has the state of every request.
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
 
@@ -70,7 +70,8 @@ Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in
 | --- | --- | --- | --- |
 | 25 Nov | Black Forest Labs | One request to learn which model address exists (512 x 512, made-up prompt "A calm lake at sunrise"); the result was not downloaded | USD 0.014 |
 | 25 Nov | Black Forest Labs | Image editing live check: 1 created image, 5 edits (described edit, resize, erase twice, one area), made-up content (an apple and a cup on a table) | about USD 0.10 |
-| | | **Total so far** | **about USD 0.11 (about EUR 0.10)** of the EUR 3 to 5 you allowed |
+| 25 Nov | Privatemode | 12 made-up questions to the live model, once, to judge the answer design on real answers (`evaluation/answer-design/`) | EUR 0.04 (list price) |
+| | | **Total so far** | **about EUR 0.14** of the EUR 3 to 5 you allowed |
 
 ## Baseline (the tag, before any change)
 
