@@ -170,7 +170,7 @@
 | # | Do | Expect | P/F |
 | --- | --- | --- | --- |
 | 42.1 | PC, wide window: "+" > **Deep research**: "Compare heat pumps and gas heating for a German flat in 2026" | The progress line as before. When writing starts, the report opens **beside the chat** and is written there; the chat shows a card "Writing the report…" | |
-| 42.2 | When it is finished, look at the chat | A card with the report's title and "Research report · N sources · N min read", a short summary under it, and "In this report" with the sections. No long report text in the chat | |
+| 42.2 | When it is finished, look at the chat | The line "Research report · N sources · N min read", then a card: the report's title with Download and Open, and the beginning of the report inside it, fading out. Under it "In this report" with the sections. The whole report is not in the chat | |
 | 42.3 | Tap a section under "In this report" | The report jumps to that section | |
 | 42.4 | In the report, tap a source button | The source opens, as in a normal answer | |
 | 42.5 | **Edit in canvas** | The canvas opens with the report's text; "Ask for changes" works on it | |
