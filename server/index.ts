@@ -1,6 +1,7 @@
 import { bflImageProvider, mockImageProvider } from "./image-creation";
 import { bflImageEditor, mockImageEditor } from "./image-edit";
 import { MemoryShareStore } from "./share-links";
+import { foundryImages } from "./image-foundry";
 import { readFile } from "node:fs/promises";
 import { createServer as createHttpsServer } from "node:https";
 import { resolve } from "node:path";
@@ -42,6 +43,11 @@ if (privatemode)
     process.env.PRIVATEAI_PROVIDER_MANIFEST_FILE ?? ".local/privatemode-manifest.json",
   ).catch(() => undefined);
 const dev = process.argv.includes("--dev");
+// IMAGE_PROVIDER=foundry with IMAGE_ENDPOINT and IMAGE_API_KEY: Microsoft Foundry for creating and editing (docs/image-provider-eu-20261125.md).
+const devFoundry =
+  process.env.IMAGE_PROVIDER === "foundry" && process.env.IMAGE_ENDPOINT && process.env.IMAGE_API_KEY
+    ? foundryImages({ endpoint: process.env.IMAGE_ENDPOINT, apiKey: process.env.IMAGE_API_KEY, model: "flux-2-pro" })
+    : undefined;
 // Local TLS on loopback only: the Privatemode SDK always calls its base URL over HTTPS.
 const localTLS = process.env.PRIVATEAI_LOCAL_TLS === "1";
 const origin =
@@ -80,9 +86,11 @@ const app = createApp({
   ...(process.env.PRIVATEAI_IMAGE_CREATION === "1" && (process.env.IMAGE_API_KEY || dev)
     ? {
         imageCreation: {
-          provider: process.env.IMAGE_API_KEY
-            ? bflImageProvider({ apiKey: process.env.IMAGE_API_KEY, model: process.env.IMAGE_MODEL ?? "flux-2-klein" })
-            : mockImageProvider(),
+          provider: devFoundry
+            ? devFoundry
+            : process.env.IMAGE_API_KEY
+              ? bflImageProvider({ apiKey: process.env.IMAGE_API_KEY, model: process.env.IMAGE_MODEL ?? "flux-2-klein" })
+              : mockImageProvider(),
           dailyImages: Number(process.env.IMAGE_DAILY ?? 3),
         },
       }
@@ -94,9 +102,11 @@ const app = createApp({
   ...(process.env.PRIVATEAI_IMAGE_EDITING === "1" && process.env.PRIVATEAI_IMAGE_CREATION === "1" && (process.env.IMAGE_API_KEY || dev)
     ? {
         imageEditing: {
-          editor: process.env.IMAGE_API_KEY
-            ? bflImageEditor({ apiKey: process.env.IMAGE_API_KEY, model: process.env.IMAGE_MODEL ?? "flux-2-klein" })
-            : mockImageEditor(),
+          editor: devFoundry
+            ? devFoundry
+            : process.env.IMAGE_API_KEY
+              ? bflImageEditor({ apiKey: process.env.IMAGE_API_KEY, model: process.env.IMAGE_MODEL ?? "flux-2-klein" })
+              : mockImageEditor(),
           uploads: process.env.PRIVATEAI_IMAGE_UPLOAD_EDITING === "1",
         },
       }

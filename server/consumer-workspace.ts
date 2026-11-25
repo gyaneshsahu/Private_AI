@@ -12,6 +12,7 @@ import { createApp } from "./app";
 import { bflImageProvider } from "./image-creation";
 import { bflImageEditor } from "./image-edit";
 import { PostgresShareStore } from "./share-links";
+import { foundryImages } from "./image-foundry";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
@@ -87,9 +88,9 @@ export interface ProductionInferenceConfig {
   /** Code execution on the user's device; absent means off. */
   code?: boolean;
   /** Image creation with Black Forest Labs (EU endpoint); absent means off. */
-  imageCreation?: { apiKey: string; model: string; dailyImages: number };
   /** Encrypted share links (migration 0027); absent means off. */
   shareLinks?: true;
+  imageCreation?: { apiKey: string; model: string; dailyImages: number; provider?: "foundry"; endpoint?: string };
   /** Image editing with image creation's provider; absent means off. */
   imageEditing?: { uploads: boolean; providerMasks: boolean };
   /** Deep research cost, caps and optional account list; absent means off. */
@@ -134,6 +135,11 @@ export function createProductionConsumerCandidate(
   // This boundary also scopes getSession calls from workspace APIs to the current request.
   app.use(account.router);
   const inference = config.inference;
+  // One client for creating and editing when the config names Microsoft Foundry (docs/image-provider-eu-20261125.md).
+  const foundry =
+    inference?.imageCreation?.provider === "foundry" && inference.imageCreation.endpoint
+      ? foundryImages({ endpoint: inference.imageCreation.endpoint, apiKey: inference.imageCreation.apiKey, model: "flux-2-pro" })
+      : undefined;
   const workspace = createApp({
     origin: productionAccountTarget.origin,
     consumer: { ...control, mode: "production-candidate" },
@@ -154,7 +160,7 @@ export function createProductionConsumerCandidate(
           ...(inference.imageCreation
             ? {
                 imageCreation: {
-                  provider: bflImageProvider({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model }),
+                  provider: foundry ?? bflImageProvider({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model }),
                   dailyImages: inference.imageCreation.dailyImages,
                 },
               }
@@ -163,7 +169,8 @@ export function createProductionConsumerCandidate(
           ...(inference.imageCreation && inference.imageEditing
             ? {
                 imageEditing: {
-                  editor: bflImageEditor({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model, fill: inference.imageEditing.providerMasks }),
+                  // Foundry has no mask addresses: `providerMasks` applies to Black Forest Labs only.
+                  editor: foundry ?? bflImageEditor({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model, fill: inference.imageEditing.providerMasks }),
                   uploads: inference.imageEditing.uploads,
                 },
               }

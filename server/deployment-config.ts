@@ -120,8 +120,15 @@ const schema = z
             apiKeyFile: path,
             model: z.enum(["flux-2-klein", "flux-2-pro"]),
             dailyImages: z.number().int().min(1).max(50),
+            // The provider behind it (docs/image-provider-eu-20261125.md). "bfl": Black Forest Labs' own
+            // EU address (its terms allow training). "foundry": Microsoft Foundry, EU Data Zone, with a
+            // no-training statement; it needs the resource's address and offers FLUX.2 [pro] only.
+            provider: z.enum(["bfl", "foundry"]).default("bfl"),
+            endpoint: z.url().max(300).optional(),
           })
           .strict()
+          .refine((c) => c.provider !== "foundry" || (!!c.endpoint && /^https:\/\/[a-z0-9.-]+\/?$/i.test(c.endpoint) && c.model === "flux-2-pro"), "Foundry needs an https endpoint without a path and the model flux-2-pro.")
+          .refine((c) => c.provider === "foundry" || !c.endpoint, "Only Foundry takes an endpoint.")
           .optional(),
         /**
          * Image editing, its own switch, off unless enabled (docs/image-editing-20261125.md). It uses
@@ -482,6 +489,7 @@ export async function loadDeploymentConfig(file: string) {
                       apiKey: (await boundedFile(inference.imageCreation.apiKeyFile)).toString("utf8").trim(),
                       model: inference.imageCreation.model,
                       dailyImages: inference.imageCreation.dailyImages,
+                      ...(inference.imageCreation.provider === "foundry" ? { provider: "foundry" as const, endpoint: inference.imageCreation.endpoint! } : {}),
                     },
                   }
                 : {}),
