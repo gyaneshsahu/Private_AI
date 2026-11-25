@@ -18,6 +18,8 @@ import { AnswerChart, parseChart } from "./AnswerChart";
 import { useText } from "./i18n";
 import { answerText } from "./text/conversation-ui";
 
+const BLOCK_NAMES = new Set(["steps", "diagram", "quiz", "explore"]);
+
 /** A check-list line the reader can tick (answer design). Kept while the answer is on screen, not saved. */
 function Tick({ checked, label }: { checked: boolean; label: string }) {
   const [on, setOn] = useState(checked);
@@ -82,7 +84,15 @@ export function Answer({
         const chart =
           language === "chart" && complete ? parseChart(text) : undefined;
         if (chart) return <AnswerChart chart={chart} />;
-        // Answer blocks: a finished block that fits its shape is drawn; anything else stays code.
+        // Answer blocks: while the answer is still being written, a block's data is not shown as it arrives;
+        // a quiet line holds its place until it can be drawn.
+        if (!complete && answerBlocksEnabled() && BLOCK_NAMES.has(language))
+          return (
+            <div className="answer-block-pending" role="status">
+              {t.drawing}
+            </div>
+          );
+        // A finished block that fits its shape is drawn; anything else stays code.
         if (complete && answerBlocksEnabled()) {
           const steps = language === "steps" && parseSteps(text);
           if (steps) return <StepsBlock data={steps} />;
@@ -176,7 +186,8 @@ export function Answer({
     [complete, t, designed],
   );
   const audit = sources.some((source) => source.url)
-    ? auditResearchAnswer(text, sources)
+    ? // The data of a chart or an answer block is full of quoted words that are not quotations from a source.
+      auditResearchAnswer(text.replace(/```(?:chart|steps|diagram|quiz|explore)\s*\n[\s\S]*?(?:```|$)/g, ""), sources)
     : undefined;
   return (
     <div className={designed ? "message-text designed" : "message-text"}>

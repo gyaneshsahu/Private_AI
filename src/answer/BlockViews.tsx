@@ -72,7 +72,8 @@ function Flow({ data }: { data: FlowData }) {
   const label = new Map(data.nodes.map((node) => [node.id, node.label]));
   const name = data.title ?? t.diagram;
   return (
-    <figure className="answer-diagram">
+    // Focusable, so the keyboard can scroll it sideways on a phone.
+    <figure className="answer-diagram" tabIndex={0} role="group" aria-label={name}>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={name} style={{ maxWidth: width }}>
         <defs>
           <marker id={marker} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">

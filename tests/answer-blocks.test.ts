@@ -7,6 +7,7 @@ import { emptyConversation } from "../shared/contracts";
 import { calloutKind, flowLayout, parseDiagram, parseExplore, parseQuiz, parseSteps } from "../src/answer/blocks";
 import { answerBlockRules } from "../src/answer/rules";
 import { composeContext, newMessage } from "../src/conversation";
+import { findIdentifiers } from "../src/identifier-masking";
 
 afterEach(() => vi.unstubAllEnvs());
 const json = (value: unknown) => JSON.stringify(value);
@@ -77,6 +78,7 @@ it("the model is told about the blocks only while the switch is on; off, its ins
   // Each block has its "only when", and the rules stay small: about three hundred tokens.
   for (const word of ["never in a short answer", "not for instructions", "decision or a loop", "tested, quizzed or given exercises", "one at a time", "Never use images"]) expect(answerBlockRules).toContain(word);
   expect(answerBlockRules.length).toBeLessThan(1500);
-  // No run of eight or more digits: device masking would rewrite it as a phone number.
+  // Nothing in the rules looks like an identifier: device masking leaves them as they are.
   expect(answerBlockRules).not.toMatch(/\d{8,}/);
+  expect(findIdentifiers(answerBlockRules)).toEqual([]);
 });

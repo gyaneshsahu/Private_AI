@@ -87,7 +87,8 @@ export function spokenText(root: Element, words: SpokenWords): string {
     if (node.nodeType !== 1) return "";
     const element = node as Element;
     const tag = element.localName;
-    if (element.matches("button, .muted, [hidden], [aria-hidden='true'], script, style")) return "";
+    // A drawn diagram is read from its words for screen readers beside it, not from the labels inside the drawing.
+    if (element.matches("button, .muted, [hidden], [aria-hidden='true'], script, style, svg")) return "";
     if (element.matches(".code-block, pre")) return `\n${words.spokenCode}\n`;
     if (element.matches(".katex-display, .katex, .katex-error")) return ` ${words.spokenFormula} `;
     if (tag === "table")
