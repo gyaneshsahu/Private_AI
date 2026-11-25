@@ -4,6 +4,12 @@ This file is the single record of the autonomous run while the owner is in exams
 
 ## Needs you
 
+**Start here:** the run is finished. Look at `preview/all-tracks`, then do your owner test with `docs/owner-live-test-list-20261118.md` plus the new `docs/owner-test-additions-20261125.md`. Items 16 to 18 are the newest.
+
+16. **Database step when you take the new tables:** after merging, run the usual apply-pending step and the privileges SQL once. Test 26.1 then says `"applied":23` with all three new tables (0027 share links, 0028 analytics, 0029 feedback).
+17. **Plans (Free, Plus, Pro) and checkout are not built.** Your decision list says the free and premium numbers are proposals to review before launch, and the repo already has a provider-neutral billing workflow with a test provider. What is missing needs your numbers first: what Plus and Pro contain and cost, and whether a plan is per account (today one plan applies to the whole deployment). Give me those and it is a small track.
+18. **Three things I could not try and you can:** a real phone for the home-screen app (section 39), a real Azure resource for the no-training image provider (section 38), and the visitor-address check on Render (section 40).
+
 Every decision and every manual step only you can do. Nothing here was done by the agent.
 
 1. **Image creation would have failed in your test.** The app asked the image provider for `flux-2-klein`; that address does not exist there (one live request on 25 November answered 404; `flux-2-klein-4b` answered 200). Fixed on `fix/before-owner-test`. Nothing for you to do except deploy a build that contains the fix. Your config keeps `"model": "flux-2-klein"`.
@@ -24,16 +30,12 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 ## Next
 
-- Track 0 (`fix/before-owner-test`, head `7bb1478`): done, **CI green** (run 45591198070).
-- Track 1 (`feat/image-editing`, head `d4a74f9`): done, **CI green** (run 45590689598).
-- Projects and chat menu (`feat/projects-ux`, from `fix/before-owner-test`): done, pushed 25 November; read its CI run (`gh run list --branch feat/projects-ux`).
-- Track 1b (`feat/image-share`, from `feat/image-editing`): done, pushed 25 November; read its CI run.
-- Track 2 (`feat/analytics`, from the tag, head `1896ead`, worktree `...\Private_AI-tracks\analytics`): built, tests green, accessibility clean; **its full local check was running when this was written** (`Private_AI-tracks\an-*.log`). When green: push.
-- Track 3 (`feat/feedback`, **from `feat/analytics`**, head `c73eabf`, worktree `...\feedback`): built, server tests green. **To do: run `tests/feedback-ui.test.ts`, look at its screenshots, add a tour step with the accessibility check, full local check, push.**
-- Track 4 (`feat/image-provider-eu`, **from `feat/image-editing`**, head `da9b712`, worktree `...\image-provider`): built, tests green. **To do: full local check, push.**
-- Track 5 (`feat/pwa`, from the tag, head `49e6055`, worktree `...\pwa`): built, file checks green. **To do: run `tests/install-app-ui.test.ts`, full local check, push.**
-- **Then Track 6** (`feat/plans-checkout` from the tag; migration **0030** only if it needs a table), then `preview/all-tracks`, then `docs/owner-test-additions-20261125.md`.
-- Then Track 1b (`feat/image-share`): branch it **from `feat/image-editing`**, not from the tag (it builds on the image card and the editor; written down under Track 1b when started).
+**The run is finished except Track 6 (not built, see its section).** Everything is on GitHub; nothing is merged into your branch, nothing is deployed.
+
+- **To look at everything together:** branch `preview/all-tracks` (worktree `C:\Gyanesh\Startups\Private_AI-tracks\preview`). It combines the fix branch and every track. CI green on `5b11e66` (run 45631068237), database suite included.
+- **Your new tests:** `docs/owner-test-additions-20261125.md` on `preview/all-tracks` (sections 32 to 40, same format as your list).
+- **To take the work into your branch,** merge in this order, or simply merge `preview/all-tracks`, where the conflicts are already resolved: `fix/before-owner-test`, `feat/projects-ux`, `feat/image-editing`, `feat/image-share`, `feat/image-provider-eu`, `feat/analytics`, `feat/feedback`, `feat/pwa`. Merging one by one repeats the small "keep both" conflicts listed at the end of this file.
+- **If you say "continue":** the open work is Track 6, and whatever your owner test finds.
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
 
@@ -66,16 +68,16 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 
 | Track | Branch | State | CI |
 | --- | --- | --- | --- |
-| 0 Fixes | `fix/before-owner-test` | done, CI green. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `7bb1478` (run 45591198070) |
+| 0 Fixes | `fix/before-owner-test` | done, CI green. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `7bb1478` (run 45591198070) and, with the source-link fix, on `6b7a17e` (run 45628839792) |
 | 1 Image editing | `feat/image-editing` | done. Local full run on `d4a74f9`: build green, unit 2,393 passed and 1 failed (`invite-browser`, a 5-second wait; alone it passed 5 of 6 here and 4 of 4 on the fix branch: timing, not this change, but unproven), browser tests 64 of 64, evaluation checks and secret scan green | green on `d4a74f9` (run 45590689598), which includes that test |
-| P Projects and chat menu | `feat/projects-ux` (from the fix branch) | done. Local full run: build green, unit 2,381 passed, browser tests 64 of 64 after one test was updated for the new menu, evaluation checks and secret scan green; accessibility check clean on the changed screens | pushed 25 Nov, run to read |
-| 1b Placement and sharing | `feat/image-share` (from `feat/image-editing`) | done. Local full run: build green, unit all passed after one older check ("no Share button") was updated for the working Share, browser tests 64 of 64, evaluation checks and secret scan green; accessibility clean | pushed 25 Nov, run to read |
-| 2 Analytics | `feat/analytics` | built; 10 new tests green (4 server, 5 browser, 1 database test for CI); accessibility clean; full local check running | not pushed yet |
-| 3 Feedback | `feat/feedback` (from `feat/analytics`) | built; 3 server tests green, 1 database test for CI; browser test written, not run yet | not pushed yet |
-| 4 No-training image provider | `feat/image-provider-eu` (from `feat/image-editing`) | built; 6 new tests and the config rules green; full local check not run yet | not pushed yet |
-| 5 PWA | `feat/pwa` | built; 4 file checks green; browser test written, not run yet | not pushed yet |
-| 6 Plans and checkout | `feat/plans-checkout` | not started | |
-| All | `preview/all-tracks` | not started | |
+| P Projects and chat menu | `feat/projects-ux` (from the fix branch) | done. Local full run: build green, unit 2,381 passed, browser tests 64 of 64 after one test was updated for the new menu, evaluation checks and secret scan green; accessibility check clean on the changed screens. CI's database suite then found two steps of an older journey test that still used the old project picker; both updated | green on `697eafb` (run 45612666847) |
+| 1b Placement and sharing | `feat/image-share` (from `feat/image-editing`) | done. Local full run: build green, unit all passed after one older check ("no Share button") was updated for the working Share, browser tests 64 of 64, evaluation checks and secret scan green; accessibility clean. CI's database suite found one migration count I had missed; fixed | green on `dcb3946` (run 45610107261) |
+| 2 Analytics | `feat/analytics` | done. Local full run: build, unit, browser tests 64 of 64, evaluation checks and secret scan green; accessibility clean | green on `88c3506` (run 45610114451) |
+| 3 Feedback | `feat/feedback` (from `feat/analytics`) | done. Local full run: build green, unit 2,377 passed and 1 failed (a German sign-in heading not found within 5 seconds while another job was running on this machine; the same test passed in CI), browser tests 64 of 64, evaluation checks and secret scan green; accessibility clean | green on `b34bc47` (run 45613752559) |
+| 4 No-training image provider | `feat/image-provider-eu` (from `feat/image-editing`) | done. Local full run: build green, unit 2,400 passed and none failed, browser tests 64 of 64, evaluation checks and secret scan green. No live request (no Microsoft account) | green on `da9b712` (run 45617889804) |
+| 5 PWA | `feat/pwa` | done. **Its browser test found a real bug before you could:** the Install row never appeared when the browser's offer arrived while Settings was still loading, and the "CometRow was added" line was never shown. Both fixed. CI also found that the two build files must carry the switch identically; fixed. Local full run on the earlier commit: build, browser tests 64 of 64, evaluation checks, secret scan green; unit: the install test failed (the bug above) and one image test timed out while I was running other tests beside it. Not tried on a real phone | green on `b344983` (run 45617883708), which has the fixes |
+| 6 Plans and checkout | none | **not built**, on purpose: see "Track 6" below | |
+| All | `preview/all-tracks` | done. Local full run on `195dcf4`: build green, unit 2,465 passed and none failed, browser tests 64 of 64, evaluation checks and secret scan green. **Screen tour with all features on** (phone and desktop, English and German): 387 screens, no request left the machine. Two steps out of about 400 timed out on Send while the chat list was still loading (once in each of two runs, different screens); both passed when run again, and 60 reloads in a row showed no slow load. **Accessibility check:** it found the source links under "Searched the web" smaller than 24 px, a fault older than this run; fixed on the fix branch and clean afterwards. One finding is left and is not a real one: on the deep-research progress screen the check sometimes catches the answer's citation chips while they fade in; the finished answer passes. After the fix (one CSS rule) only the touched screens were run again locally; CI ran everything | green on `5b11e66` (run 45631068237): unit, database suite, offline check |
 
 ## Research notes the tracks build on (looked up 25 November 2026, official docs; no live call made)
 
@@ -175,6 +177,19 @@ Everything is in `docs/projects-ux-20261125.md` on the branch: what was there be
 - **Found and fixed:** renaming the chat that is open did not change its title on screen.
 - **Not built:** memory per project (about two to three days, and one decision from you first: should a project chat still see your general memories?); dragging a chat onto a project; the project as a page of its own instead of a sheet.
 - **This branch starts from the fix branch, not from the tag,** because it changes the same project screen. Merging it brings the fixes with it.
+
+## Track 6: plans and checkout (not built)
+
+- **What exists already:** `shared/usage-plans.json` with the plans alpha, free and premium (free and premium marked as proposals), and a provider-neutral billing workflow (`server/billing-provider.ts`, `billing-workflow.ts`, `billing-entitlement.ts`) with a test provider and no live payment code.
+- **Why I stopped:** adding Plus and Pro means inventing prices and limits, and `docs/owner-decisions.md` says the plan values are yours to review before launch. One plan also applies to the whole deployment today; a plan per account changes where limits are read in many places, which is not a change to make unasked right before your test.
+- **What it would take:** your numbers for the three plans, one table for the account's plan (migration 0030 is reserved), reading the plan per account in the metering, and a plan screen on the existing checkout interface with the test provider.
+
+## The combined build (`preview/all-tracks`)
+
+- Made from the tag by merging `fix/before-owner-test`, `feat/projects-ux`, `feat/image-share` (contains image editing), `feat/image-provider-eu`, `feat/feedback` (contains analytics) and `feat/pwa`. Every conflict was "both sides added a line at the same place"; both were kept. The migration list is 0027, 0028, 0029 in that order; 23 migrations in all.
+- The all-features test build now switches the Install row on too.
+- `docs/owner-test-additions-20261125.md` lives here.
+- Never merged into your branch, never deployed.
 
 ## Files touched by more than one branch
 
