@@ -228,3 +228,7 @@
     --canvas-panel-width: clamp(360px, 32vw, 520px);
   }
 }
+.share-viewer header .brand-logo img {
+  height: 28px;
+  width: auto;
+}

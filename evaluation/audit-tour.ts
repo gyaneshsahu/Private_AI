@@ -383,6 +383,18 @@ const STEPS: Step[] = [
     await c.shot("image-editor-select-area");
     await c.click("Back");
   }, "on"],
+  // Sharing (docs/sharing-20261125.md): the dialog on an answer, with a link made.
+  ["share", async (c) => {
+    await c.fresh();
+    await c.send("Something to share. audit:plain", undefined, true);
+    await vis(c.page.locator("article.assistant").last().getByRole("button", { name: c.tr("Share"), exact: true })).click();
+    await pause(c.page, 500);
+    await c.shot("share-dialog");
+    await c.click("Create link");
+    await pause(c.page, 800);
+    await c.shot("share-link");
+    await c.page.keyboard.press("Escape");
+  }, "on"],
   ["incognito", async (c) => { await c.fresh(); await c.nav(); await c.click("New incognito chat"); await pause(c.page, 600); await c.shot("incognito-chat"); }],
   ["search-chats", async (c) => {
     await c.fresh();
