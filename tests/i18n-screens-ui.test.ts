@@ -263,7 +263,7 @@ it("navigation drawer is German", async () => {
     await ui(drawer.getByRole("button", { name: "Archiviert" })).toBeVisible();
     await drawer.getByLabel("Aktionen für Synthetic tax question").click();
     await ui(drawer.getByRole("button", { name: "Lösen" })).toBeVisible();
-    await ui(drawer.getByLabel("Projekt für Synthetic tax question")).toContainText("Kein Projekt");
+    await ui(drawer.getByRole("button", { name: "Zu Projekt hinzufügen", exact: true })).toBeVisible();
     await drawer.getByLabel("Kontomenü").click();
     await ui(drawer.getByRole("button", { name: "Konto und Nutzung" })).toBeVisible();
     await ui(drawer.getByRole("button", { name: "Einstellungen" })).toBeVisible();
