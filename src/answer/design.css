@@ -1,0 +1,182 @@
+/* Answer design (docs/answer-design-20261125.md). Everything is under `.designed`, which the
+   answer carries only while the switch is on; colours are the theme's variables, so light and
+   dark follow without rules of their own. */
+.chat-design .message-text.designed {
+  line-height: 1.65;
+}
+/* The opening: the answer in one or two sentences, a little larger than what explains it. */
+.chat-design .message-text.designed > p.answer-lead {
+  margin-bottom: 16px;
+  font-size: 1.07em;
+  line-height: 1.6;
+}
+/* Headings: a title with a rule under it, sections with air above them. */
+.chat-design .message-text.designed h1 {
+  margin: 4px 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.chat-design .message-text.designed h2 {
+  margin: 30px 0 10px;
+  font-size: 1.22em;
+  font-weight: 680;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+.chat-design .message-text.designed :is(h3, h4) {
+  margin: 22px 0 6px;
+  font-size: 1.04em;
+  font-weight: 650;
+}
+.chat-design .message-text.designed > :first-child {
+  margin-top: 0;
+}
+.chat-design .message-text.designed strong {
+  font-weight: 650;
+}
+/* A bold line before a list is that list's label. */
+.chat-design .message-text.designed p.answer-label {
+  margin: 18px 0 6px;
+  color: var(--ink2);
+  font-size: 0.93em;
+}
+.chat-design .message-text.designed p.answer-label + :is(ul, ol) {
+  margin-top: 0;
+}
+/* Lists: coloured markers, a little more room between points. */
+.chat-design .message-text.designed :is(ul, ol) {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+.chat-design .message-text.designed li {
+  margin: 6px 0;
+  padding-left: 2px;
+}
+.chat-design .message-text.designed ul > li::marker {
+  color: var(--accent);
+}
+.chat-design .message-text.designed ol > li::marker {
+  color: var(--accent);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+/* Check-lists the reader can tick. */
+.chat-design .message-text.designed ul.contains-task-list {
+  padding-left: 2px;
+  list-style: none;
+}
+.chat-design .message-text.designed li.task-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-left: 0;
+}
+.chat-design .message-text.designed li.task-list-item > input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 4px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.chat-design .message-text.designed li.task-list-item:has(> input:checked) {
+  color: var(--ink3);
+  text-decoration: line-through;
+}
+/* Key figures as tiles. */
+.chat-design .message-text.designed dl.answer-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 8px 0 18px;
+}
+.chat-design .message-text.designed dl.answer-facts > div {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .message-text.designed dl.answer-facts dt {
+  color: var(--ink2);
+  font-size: 0.82em;
+}
+.chat-design .message-text.designed dl.answer-facts dd {
+  margin: 2px 0 0;
+  font-size: 1.22em;
+  font-weight: 650;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+/* A quoted line is a note set apart. */
+.chat-design .message-text.designed blockquote {
+  margin: 4px 0 16px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: var(--subtle);
+  color: var(--ink);
+}
+.chat-design .message-text.designed blockquote > :last-child {
+  margin-bottom: 0;
+}
+.chat-design .message-text.designed hr {
+  margin: 26px 0;
+}
+/* Tables: a quiet header, banded rows, and "Copy table" within reach. */
+.chat-design .message-text.designed .answer-table-block {
+  position: relative;
+  margin: 8px 0 18px;
+}
+.chat-design .message-text.designed .answer-table {
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .message-text.designed .answer-table :is(th, td) {
+  padding: 10px 14px;
+  vertical-align: top;
+}
+.chat-design .message-text.designed .answer-table th {
+  background: var(--subtle);
+  color: var(--ink2);
+  font-size: 0.86em;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.chat-design .message-text.designed .answer-table tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--subtle) 55%, transparent);
+}
+.chat-design .message-text.designed .answer-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.chat-design .message-text.designed .answer-table-copy {
+  display: block;
+  min-height: 28px;
+  margin: 0 0 4px auto;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink2);
+  font-size: 12.5px;
+}
+.chat-design .message-text.designed .answer-table-copy:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+@media (max-width: 760px) {
+  .chat-design .message-text.designed h1 {
+    font-size: 1.36em;
+  }
+  .chat-design .message-text.designed .answer-table-copy {
+    min-height: 36px;
+  }
+  .chat-design .message-text.designed li.task-list-item > input {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+  }
+}

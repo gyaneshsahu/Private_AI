@@ -39,7 +39,7 @@ import { AUDIT_ACCOUNT, createResponder, fakeStatus, type AuditConfig, type Fake
 export const VITE_SWITCHES = [
   "VITE_GERMAN_UI", "VITE_READ_ALOUD", "VITE_PDF_EXPORT", "VITE_MEMORY", "VITE_CANVAS",
   "VITE_LIVE_VOICE", "VITE_PROJECTS", "VITE_SCHEDULED", "VITE_WHITEBOARD",
-  "VITE_REPORT_CARD",
+  "VITE_REPORT_CARD", "VITE_ANSWER_DESIGN",
 ] as const;
 
 export async function buildClient(config: AuditConfig): Promise<string> {

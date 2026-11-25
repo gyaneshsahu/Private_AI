@@ -6,22 +6,56 @@ import "katex/dist/katex.min.css";
 import type { Source } from "../shared/contracts";
 import { displayMath, sourceCitations } from "./answer-format";
 import { auditResearchAnswer } from "./research-audit";
-import { isValidElement, useMemo, useRef, type ReactNode } from "react";
+import { isValidElement, useMemo, useRef, useState, type ReactNode } from "react";
+import { answerStructure, tableText } from "./answer/structure";
+import { answerDesignEnabled } from "./device-features";
+import "./answer/design.css";
 import { CodeBlock } from "./CodeBlock";
 import { AnswerChart, parseChart } from "./AnswerChart";
 import { useText } from "./i18n";
 import { answerText } from "./text/conversation-ui";
+
+/** A check-list line the reader can tick (answer design). Kept while the answer is on screen, not saved. */
+function Tick({ checked, label }: { checked: boolean; label: string }) {
+  const [on, setOn] = useState(checked);
+  return <input type="checkbox" checked={on} aria-label={label} onChange={(event) => setOn(event.target.checked)} />;
+}
+/** A table with "Copy table" over it (answer design): tab-separated, so it pastes into a spreadsheet as cells. */
+function DesignedTable({ children, label, copy, copied }: { children: ReactNode; label: string; copy: string; copied: string }) {
+  const region = useRef<HTMLDivElement>(null);
+  const [done, setDone] = useState(false);
+  return (
+    <div className="answer-table-block">
+      <button
+        type="button"
+        className="answer-table-copy"
+        onClick={() => {
+          const table = region.current?.querySelector("table");
+          if (table) void navigator.clipboard.writeText(tableText(table)).then(() => (setDone(true), setTimeout(() => setDone(false), 1600)), () => {});
+        }}
+      >
+        {done ? copied : copy}
+      </button>
+      <div className="answer-table" tabIndex={0} role="region" aria-label={label} ref={region}>
+        <table>{children}</table>
+      </div>
+    </div>
+  );
+}
 
 export function Answer({
   text,
   sources,
   open,
   complete = false,
+  designed = answerDesignEnabled(),
 }: {
   text: string;
   sources: Source[];
   open: (source: Source) => void;
   complete?: boolean;
+  /** Answer design (docs/answer-design-20261125.md); the print view passes false and stays as it was. */
+  designed?: boolean;
 }) {
   const t = useText(answerText);
   // One set of components for the life of the answer: components defined inline are new types on every
@@ -104,7 +138,12 @@ export function Answer({
       img: ({ alt }) => (
         <span className="muted">{t.imageOmitted(alt ?? "")}</span>
       ),
-      table: ({ children }) => (
+      table: ({ children }) =>
+        designed ? (
+          <DesignedTable label={t.table} copy={t.copyTable} copied={t.tableCopied}>
+            {children}
+          </DesignedTable>
+        ) : (
         <div
           className="answer-table"
           tabIndex={0}
@@ -114,14 +153,19 @@ export function Answer({
           <table>{children}</table>
         </div>
       ),
+      ...(designed
+        ? {
+            input: ({ type, checked }: { type?: string; checked?: boolean }) => (type === "checkbox" ? <Tick checked={!!checked} label={t.tick} /> : null),
+          }
+        : {}),
     }),
-    [complete, t],
+    [complete, t, designed],
   );
   const audit = sources.some((source) => source.url)
     ? auditResearchAnswer(text, sources)
     : undefined;
   return (
-    <div className="message-text">
+    <div className={designed ? "message-text designed" : "message-text"}>
       {audit &&
         (audit.unknownSourceReferences > 0 ||
           audit.unsupportedLineReferences > 0 ||
@@ -141,6 +185,7 @@ export function Answer({
           remarkGfm,
           [remarkMath, { singleDollarTextMath: false }],
           sourceCitations,
+          ...(designed ? [answerStructure] : []),
         ]}
         rehypePlugins={[
           [

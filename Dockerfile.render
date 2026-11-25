@@ -32,6 +32,8 @@ ARG VITE_LIVE_VOICE=
 ARG VITE_SCHEDULED=
 # Report card (docs/report-card-20261125.md): off unless built with it set to 1.
 ARG VITE_REPORT_CARD=
+# Answer design (docs/answer-design-20261125.md): off unless built with it set to 1.
+ARG VITE_ANSWER_DESIGN=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).
