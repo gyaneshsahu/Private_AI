@@ -15,6 +15,9 @@
 | Plans (41) | none on Render: only on your PC, see section 41 | |
 | Report card (42) | Render variable `VITE_REPORT_CARD=1`, then redeploy | Deep research on |
 | Answer design (43) | Render variable `VITE_ANSWER_DESIGN=1`, then redeploy | |
+| Activity (44) | Render variable `VITE_ACTIVITY=1`, then redeploy | |
+| Error states (45) | Render variable `VITE_ERROR_STATES=1`, then redeploy | Best together with Activity |
+| Memory per project (46) | Render variable `VITE_PROJECT_MEMORY=1`, then redeploy | `VITE_PROJECTS` and `VITE_MEMORY` on. Read the warning in `docs/project-memory-20261126.md` before switching it on |
 
 **Cost:** every edit counts as one image of the day (about EUR 0.01 to 0.03 each). Sections 32 and 33 together use about 12. Raise `dailyImages` for your test day or spread them over two days.
 
@@ -192,4 +195,69 @@
 | 43.5 | A long answer with a title and sections ("Explain in detail how a heat pump works") | A title with a line under it, clear sections | |
 | 43.6 | All of the above on the phone and in dark mode | Nothing cut off; everything readable | |
 | 43.7 | Export one of these answers as PDF | The PDF looks as before (black on white) | |
+| 43.9 | An answer that searched the web (C.15): the line under it | A small pill "Searched the web" with the number of sources; a tap opens a card with the searched text and the sources as numbered rows (title, then the site) | |
+| 43.10 | Open `docs/answer-design-sheets/` on `preview/all-tracks` | One picture per sample answer, before on the left and after on the right, in light and dark. Start with `numbers`, `lernplan`, `decision`, `study-guide` | |
 | 43.8 | Write down what you like and what you do not | This is a first pass; your reaction decides the next one | |
+
+## 44. Thinking, steps and loading (with `VITE_ACTIVITY` on)
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 44.1 | Thinking mode: "A train leaves at 09:17 and arrives at 11:52. How long is the trip in minutes?" | Where the answer will be: a softly pulsing dot (cyan to violet) and "Thinking…". No three dots, no grey bar at the top, no technical words | |
+| 44.2 | When the answer starts | The line becomes "Thought for N s". The answer does not jump | |
+| 44.3 | Tap "Thought for N s" | The model's own reasoning opens (it may be in English); tap again and it closes | |
+| 44.4 | Check that the reasoning is not in Copy, Share or the PDF, and is gone after a reload | Only the answer is copied, shared and printed; after a reload the answer has no "Thought" line | |
+| 44.5 | A question that searches (C.15) | The same line says "Searching the web…"; afterwards "Thought for N s" opens to the reasoning, or to steps that include "Searching the web" and "Read N sources" | |
+| 44.6 | Attach a PDF and ask about it; "What is 19 % of 6,420 EUR?" | The line names the step ("Reading on your device…", "Calculating on your device…") | |
+| 44.7 | Deep research | Its progress is the same kind of line with the same dot | |
+| 44.8 | "+" > Create image | A square placeholder with a soft shimmer where the image will be; the image fades in | |
+| 44.9 | Reload the app and watch the sidebar | Grey rows in the shape of the list for a moment, then the chats. No sentence "Loading your chats…" | |
+| 44.10 | Phone: switch on "Reduce motion" (Android: Settings > Accessibility; iPhone: Accessibility > Motion), repeat 44.1 and 44.8 | Nothing pulses or shimmers; everything else is the same | |
+| 44.11 | Dark mode: 44.1 to 44.3 | Readable; the dot keeps its colours | |
+
+## 45. When something fails (with `VITE_ERROR_STATES` on)
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 45.1 | Start an answer, then switch the PC's network off before it arrives | Where the answer would be: one line with a soft red edge, "You're offline. Your message is safe.", and Retry greyed out with "Retry works once you are back online." Your message is still there | |
+| 45.2 | Switch the network on | The line changes; Retry works and the answer comes | |
+| 45.3 | A long answer; switch the network off halfway | The part that arrived stays. Under it the line says the part is kept and the rest was lost | |
+| 45.4 | Press Stop on a long answer | "Stopped by you." in the same kind of line, **not red**, with Retry | |
+| 45.5 | Read every such line | Plain words. No numbers, no "error", no "HTTP" | |
+| 45.6 | Look above the message box after a failure | No second notice | |
+| 45.7 | Create image with the network off | In the Create image window: "You're offline. Your description is kept." with Retry; the description is still in the field | |
+| 45.8 | Reach the daily limit (C.21 or 20.x) | The calm limit line as before, not red | |
+| 45.9 | A question that searches while the search has no credit (C.21) | A normal answer without search, no red line | |
+| 45.10 | Phone and dark mode: 45.1 and 45.4 | The line fits; Retry is easy to hit; the red is soft | |
+
+## 46. Memory per project (with `VITE_PROJECT_MEMORY` on)
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 46.1 | Open a project | A section "Project memory" with a field and "Nothing yet…" | |
+| 46.2 | Add "The Hamburg trip is in June, by train." | It is listed; "Added to this project's memory." | |
+| 46.3 | In a chat of that project: "When is the Hamburg trip, and how do we travel?" | The answer uses it; under the answer "Memory used" lists it | |
+| 46.4 | Sidebar: tap Recent, then New chat (a chat in no project), ask the same | The memory is **not** used; no "Memory used" line | |
+| 46.5 | In another project, ask the same | Not used | |
+| 46.6 | In a chat of the first project type "Remember that we need two rooms", Save | "Saved in the project “…”. It is used only there."; it is on the project page | |
+| 46.7 | Settings > Personalization | The project's memories are not in the list; one line says they are on the project's page. General memories are there as before | |
+| 46.8 | A general memory ("I am vegetarian"), then a dinner question inside the project | The general memory is used inside the project too | |
+| 46.9 | "Forget all" in Settings | The general ones are gone; the project's are still on its page | |
+| 46.10 | Delete on a project memory; then delete the whole project | The memory is gone; with the project, all its memories are gone | |
+| 46.11 | Second device (19.x): open the project | The same project memories | |
+| 46.12 | Phone and dark mode: 46.1 to 46.3 | Fits; readable | |
+
+## 47. Dark mode, every screen
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 47.1 | Settings > General > Appearance: Dark. Go through the screens of sections 32 to 46 | Nothing white that should be dark; every button readable; the main buttons are not pale | |
+| 47.2 | The same on the phone | The same | |
+| 47.3 | Appearance: System, then switch the PC between light and dark | The app follows at once | |
+
+## 48. The chat list does not hang
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 48.1 | Reload the app ten times in a row, signed in, with saved chats | Each time the chats are there within a few seconds | |
+| 48.2 | If the sidebar ever stays on "Loading your chats…" (or on grey rows) for more than about 8 seconds | Write down what you did just before and send it to the agent (`docs/loading-hang-20261126.md`) | |
