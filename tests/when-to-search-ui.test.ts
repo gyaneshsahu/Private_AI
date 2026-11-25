@@ -209,7 +209,7 @@ it("searches a time-sensitive question automatically with the masked text, shows
     await ui(searchedWeb(answers.last())).toHaveCount(0);
 
     // The search service has no credit left: answered without a search, with no note and no error.
-    failNext = 503;
+    failNext = 402;
     const noCredit = "What is the latest synthetic score today?";
     await message.fill(noCredit);
     await send.click();

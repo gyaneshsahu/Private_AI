@@ -1620,10 +1620,10 @@ export function App() {
       }
     } catch (e) {
       if (current === epoch.current && !abort.signal.aborted) {
-        // The day's searches are used up (429), or the search service has no credit left (503):
+        // The day's searches are used up (429), or the search service has no credit left (402):
         // the question is answered without a search, never with an error (owner, 25 November).
         const code = (e as { status?: number }).status;
-        if (approved.kind === "search" && (code === 429 || code === 503))
+        if (approved.kind === "search" && (code === 429 || code === 402))
           return code === 429 ? "capped" : "quiet";
         fail(e instanceof Error ? e.message : t.researchFailed);
         return "failed";

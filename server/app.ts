@@ -1177,7 +1177,7 @@ export function createApp(config: Config) {
       // (owner, 25 November). The hourly count line tells the operator.
       if (error instanceof SearchCreditExhausted) {
         count("search.no_credit");
-        res.status(503).json({ error: "Web search is not available right now. No results were used." });
+        res.status(402).json({ error: "Web search is not available right now. No results were used." });
         return;
       }
       count("search.failed");
