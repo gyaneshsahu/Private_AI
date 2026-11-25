@@ -11,6 +11,7 @@ import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { bflImageProvider } from "./image-creation";
 import { bflImageEditor } from "./image-edit";
+import { PostgresShareStore } from "./share-links";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
@@ -87,6 +88,8 @@ export interface ProductionInferenceConfig {
   code?: boolean;
   /** Image creation with Black Forest Labs (EU endpoint); absent means off. */
   imageCreation?: { apiKey: string; model: string; dailyImages: number };
+  /** Encrypted share links (migration 0027); absent means off. */
+  shareLinks?: true;
   /** Image editing with image creation's provider; absent means off. */
   imageEditing?: { uploads: boolean; providerMasks: boolean };
   /** Deep research cost, caps and optional account list; absent means off. */
@@ -156,6 +159,7 @@ export function createProductionConsumerCandidate(
                 },
               }
             : {}),
+          ...(inference.shareLinks ? { shareLinks: { store: new PostgresShareStore(config.database) } } : {}),
           ...(inference.imageCreation && inference.imageEditing
             ? {
                 imageEditing: {

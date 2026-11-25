@@ -1,5 +1,6 @@
 import { bflImageProvider, mockImageProvider } from "./image-creation";
 import { bflImageEditor, mockImageEditor } from "./image-edit";
+import { MemoryShareStore } from "./share-links";
 import { readFile } from "node:fs/promises";
 import { createServer as createHttpsServer } from "node:https";
 import { resolve } from "node:path";
@@ -86,6 +87,8 @@ const app = createApp({
         },
       }
     : {}),
+  // Encrypted share links (docs/sharing-20261125.md) on the development server: off unless "1"; kept in memory.
+  ...(process.env.PRIVATEAI_SHARE_LINKS === "1" ? { shareLinks: { store: new MemoryShareStore() } } : {}),
   // Image editing (docs/image-editing-20261125.md): off unless "1", and only with image creation.
   // PRIVATEAI_IMAGE_UPLOAD_EDITING=1 also allows the user's own photos.
   ...(process.env.PRIVATEAI_IMAGE_EDITING === "1" && process.env.PRIVATEAI_IMAGE_CREATION === "1" && (process.env.IMAGE_API_KEY || dev)
@@ -160,7 +163,8 @@ if (dev) {
   app.use(vite.middlewares);
 } else {
   app.use(express.static(resolve("dist"), { index: false }));
-  app.get("/", (_req, res) => {
+  // "/s/<id>" is a shared link: the same page, which shows the viewer for that path (src/main.tsx).
+  app.get(["/", "/s/:id"], (_req, res) => {
     res.sendFile(resolve("dist/index.html"));
   });
 }

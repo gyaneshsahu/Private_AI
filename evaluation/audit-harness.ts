@@ -25,6 +25,7 @@ import { chromium, firefox, webkit } from "@playwright/test";
 import { createApp } from "../server/app";
 import { mockImageProvider } from "../server/image-creation";
 import { mockImageEditor } from "../server/image-edit";
+import { MemoryShareStore } from "../server/share-links";
 import { MemoryBackgroundStore } from "../server/background-store";
 import { ephemeralKeyRing } from "../server/background-crypto";
 import { SqliteUsageRecords } from "../server/usage-records";
@@ -98,6 +99,7 @@ export async function startServer(config: AuditConfig, client: string, fakesInSe
     ...(on ? { code: true } : {}),
     ...(on ? { imageCreation: { provider: mockImageProvider(), dailyImages: 3 } } : {}),
     ...(on ? { imageEditing: { editor: mockImageEditor(), uploads: true } } : {}),
+    ...(on ? { shareLinks: { store: new MemoryShareStore() } } : {}),
     ...(on ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
     ...(on ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } } : {}),
     ...(on
@@ -128,7 +130,7 @@ export async function startServer(config: AuditConfig, client: string, fakesInSe
   });
   // As server/index.ts without --dev; sendFile with a root, since this worktree sits under a dot folder.
   app.use(express.static(client, { index: false }));
-  app.get("/", (_req, res) => res.sendFile("index.html", { root: client }));
+  app.get(["/", "/s/:id"], (_req, res) => res.sendFile("index.html", { root: client }));
   // --serve: the fake answers come from this server, so a plain browser (no test script) gets a full app.
   const responder = fakesInServer ? createResponder() : undefined;
   const send = (res: import("node:http").ServerResponse, f: FakeReply) => {

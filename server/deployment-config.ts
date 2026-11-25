@@ -131,6 +131,11 @@ const schema = z
           .strict()
           .optional(),
         /**
+         * Encrypted share links, their own switch, off unless enabled (docs/sharing-20261125.md). The
+         * database then holds ciphertext only (migration 0027); the key stays in the link.
+         */
+        shareLinks: z.object({ enabled: z.boolean() }).strict().optional(),
+        /**
          * Usage metering, its own switch, off unless enabled (docs/usage-metering-20261115.md): weights
          * from shared/usage-weights.json, a usage record per request, the usage meter. `plan` (default
          * alpha) names a plan in shared/usage-plans.json whose quotas then replace `allowance` and the
@@ -476,6 +481,7 @@ export async function loadDeploymentConfig(file: string) {
                     },
                   }
                 : {}),
+              ...(inference.shareLinks?.enabled ? { shareLinks: true as const } : {}),
               ...(inference.imageCreation?.enabled && inference.imageEditing?.enabled
                 ? { imageEditing: { uploads: inference.imageEditing.uploads, providerMasks: inference.imageEditing.providerMasks } }
                 : {}),

@@ -29,6 +29,7 @@ const files = [
   "vault-sync-postgres",
   "vault-sync-blobs-postgres",
   "secure-store-postgres",
+  "share-links-postgres",
 ].map((name) => `tests/${name}.test.ts`);
 
 async function main() {

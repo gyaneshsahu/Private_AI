@@ -598,6 +598,8 @@ export interface AppStatus {
    * `uploads`: the user's own photos may be edited, not only created images.
    */
   imageEditing?: { masks: boolean; uploads: boolean };
+  /** Encrypted share links are switched on (off by default; docs/sharing-20261125.md). */
+  shareLinks?: true;
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

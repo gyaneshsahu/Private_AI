@@ -108,6 +108,8 @@ export function createRenderBridge(config: {
       ? 32 * 1024 * 1024 // maxFileMb is at most 25
       : /^\/api\/(sync|secure)\/items\//.test(path)
         ? 6 * 1024 * 1024
+        : path === "/api/share"
+        ? 5 * 1024 * 1024 // one encrypted snapshot (shared/share-links.ts)
         : path === "/api/images/edit"
         ? 3 * 1024 * 1024 // one picture as base64 (shared/image-edit.ts)
         : 1024 * 1024;

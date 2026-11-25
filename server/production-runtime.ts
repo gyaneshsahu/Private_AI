@@ -82,7 +82,8 @@ export async function prepareProductionRuntime(
       },
     }),
   );
-  candidate.app.get(["/", "/account"], (_req, res) =>
+  // "/s/<id>" is a shared link: the same page, which shows the viewer for that path (src/main.tsx).
+  candidate.app.get(["/", "/account", "/s/:id"], (_req, res) =>
     res.sendFile(resolve(config.assets, "index.html")),
   );
   // Unknown page paths and errors after this point: branded pages, never Express's bare text.
