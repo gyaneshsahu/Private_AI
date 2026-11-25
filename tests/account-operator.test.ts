@@ -66,7 +66,8 @@ describe("account operator SQL", () => {
     // rateLimit: keyed by IP and path; signin_delivery: keyed hash needs the app secret, pruned after a day;
     // billing_event_inbox: provider events, not keyed to an account; account_recovery_control: one service-wide row;
     // sync_blob_sweep: object keys waiting for deletion in the bucket, no account (migration 0024).
-    const accountFree = ["rateLimit", "signin_delivery", "billing_event_inbox", "account_recovery_control", "sync_blob_sweep"];
+    // analytics_daily: day totals of fixed-name counters, no account in any row (migration 0028).
+    const accountFree = ["rateLimit", "signin_delivery", "billing_event_inbox", "account_recovery_control", "sync_blob_sweep", "analytics_daily"];
     const show = operatorSql("show", "plain@example.test");
     for (const [, table] of created)
       if (!accountFree.includes(table))

@@ -582,6 +582,10 @@ export interface AppStatus {
    * `limit`: images a day on this plan; `used`: in the last 24 hours (absent when unknown).
    */
   imageCreation?: { limit: number; used?: number };
+  /** Analytics is on (docs/analytics-20261125.md): the app may count feature use by fixed name, with nothing else. */
+  analytics?: true;
+  /** This account is on the owner list: the account menu offers the owner's dashboard. */
+  ownerDashboard?: true;
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

@@ -56,6 +56,7 @@ import { chatFeature, createMetering, meteringWeights, withWeights, type Meterin
 import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
 import { secureRoutes, type SecureSettings } from "./secure-store";
 import { legalPages } from "./legal-pages";
+import { analyticsRoutes, isOwner, scheduleAnalytics, type AnalyticsSettings } from "./analytics";
 
 export interface Config {
   origin: string;
@@ -110,6 +111,8 @@ export interface Config {
   research?: ResearchSettings;
   /** Usage metering (docs/usage-metering-20261115.md): weights from shared/usage-weights.json, usage records, meter; absent means off. */
   metering?: MeteringConfig;
+  /** Privacy-safe analytics for the owner (docs/analytics-20261125.md); absent means off. `start: false` (tests) keeps the timer off. */
+  analytics?: AnalyticsSettings & { start?: boolean };
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** End-to-end encrypted vault sync (docs/vault-sync-20261115.md); absent means off. */
@@ -229,6 +232,9 @@ export function createApp(config: Config) {
   // deep-research cost (read at start), and each forwarded request gets a usage record.
   if (config.metering && config.research)
     config = { ...config, research: { ...config.research, cost: meteringWeights(config.metering).units["research-run"] } };
+  // The development server has no accounts: one fixed address stands in, so the owner's dashboard can be tried there.
+  const ownerEmail = (res: express.Response): string | undefined =>
+    (res.locals.accountEmail as string | undefined) ?? (config.dev ? "local@development.test" : undefined);
   const meterAccount = (res: express.Response): string | undefined =>
     res.locals.accountId ?? (config.dev ? "local-development" : undefined);
   const metering = config.metering
@@ -500,6 +506,9 @@ export function createApp(config: Config) {
         : {}),
       ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
       ...(config.code && ready ? { code: true } : {}),
+      // Analytics is on: the browser may count the use of a feature by its fixed name. The dashboard entry is the owner's alone.
+      ...(config.analytics && (res.locals.accountId || config.dev) ? { analytics: true as const } : {}),
+      ...(isOwner(config.analytics, ownerEmail(res)) ? { ownerDashboard: true as const } : {}),
       // Its own partner and allowance: not tied to the chat provider being ready.
       ...(config.imageCreation && (res.locals.accountId || config.dev)
         ? { imageCreation: { limit: config.imageCreation.dailyImages, used: createDay.used(String(res.locals.accountId ?? "local-development")) } }
@@ -1058,6 +1067,17 @@ export function createApp(config: Config) {
     app.use(syncRoutes(config.vaultSync.store, config.vaultSync, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   if (config.secureStore)
     app.use(secureRoutes(config.secureStore, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
+  if (config.analytics) {
+    app.use(
+      analyticsRoutes({
+        settings: config.analytics,
+        records: config.metering?.records,
+        account: (res) => (res.locals.accountId ?? (config.dev ? "local-development" : undefined)) as string | undefined,
+        email: ownerEmail,
+      }),
+    );
+    if (config.analytics.start !== false) scheduleAnalytics(config.analytics);
+  }
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   if (metering) app.use(metering.router);

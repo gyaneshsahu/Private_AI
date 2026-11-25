@@ -51,6 +51,8 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
     // Consent record (migration 0026): one row per accepted version pair, written at sign-in, read for the export.
     `GRANT SELECT,INSERT ON ${table("consent_records")} TO ${runtime}`,
+    // Analytics (migration 0028): day totals with no account in them; the runtime adds to them, reads them and deletes old days.
+    `GRANT SELECT,INSERT,UPDATE,DELETE ON ${table("analytics_daily")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,
     // Account data export reads the account's own billing binding and operations.
     `GRANT SELECT ON ${table("billing_customer_binding")},${table("billing_operation")} TO ${runtime}`,
