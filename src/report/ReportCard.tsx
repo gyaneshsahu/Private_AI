@@ -1,11 +1,16 @@
-// The report's card in the chat (docs/report-card-20261125.md): a file-like row that opens the
-// report in the side panel, the report's own first paragraph, and its sections as links into it.
+// The report in the chat (docs/report-card-20261125.md): a document card. Its head carries the
+// title, Download and Open; under it the beginning of the report itself is shown and fades out,
+// so the chat shows what the report is without holding all of it. Open (or a click on the
+// preview) puts the whole report into the side panel. Under the card: its sections as links.
+import { lazy, Suspense } from "react";
 import type { Message } from "../../shared/contracts";
 import { Icon } from "../Icon";
 import { useText } from "../i18n";
 import { reportText } from "../text/report";
-import { readMinutes, reportSections, reportSummary, reportTitle } from "./report";
+import { downloadReport, readMinutes, reportPreview, reportSections, reportTitle } from "./report";
 import "./report.css";
+
+const Answer = lazy(() => import("../Answer").then((m) => ({ default: m.Answer })));
 
 export function ReportCard(props: { message: Message; question: string; onOpen(section?: number): void }) {
   const t = useText(reportText);
@@ -13,23 +18,39 @@ export function ReportCard(props: { message: Message; question: string; onOpen(s
   const writing = message.status !== "complete";
   const title = reportTitle(message.text, props.question);
   const sources = (message.sourceSnapshot ?? []).filter((source) => source.url).length;
-  const summary = writing ? "" : reportSummary(message.text);
   const sections = writing ? [] : reportSections(message.text);
+  const preview = reportPreview(message.text);
   return (
     <div className="report-card-block">
-      <button type="button" className="report-card" aria-label={t.open(title)} onClick={() => props.onOpen()}>
-        <span className="report-card-icon" aria-hidden="true">
-          <Icon name="file" />
-        </span>
-        <span className="report-card-text">
-          <strong>{title}</strong>
-          <span className="muted">
-            {writing ? t.writing : [t.kind, sources ? t.sources(sources) : "", t.minutes(readMinutes(message.text))].filter(Boolean).join(" · ")}
+      <p className="muted report-card-meta" role={writing ? "status" : undefined}>
+        {writing ? t.writing : [t.kind, sources ? t.sources(sources) : "", t.minutes(readMinutes(message.text))].filter(Boolean).join(" · ")}
+      </p>
+      <div className="report-preview">
+        <header>
+          <span className="report-preview-icon" aria-hidden="true">
+            <Icon name="file" />
           </span>
-        </span>
-        <Icon name="open" />
-      </button>
-      {summary && <p className="report-card-summary">{summary}</p>}
+          <strong>{title}</strong>
+          {!writing && (
+            <button type="button" aria-label={t.downloadReport} title={t.downloadReport} onClick={() => downloadReport(title, message.text)}>
+              <Icon name="download" />
+            </button>
+          )}
+          <button type="button" className="report-card" aria-label={t.open(title)} title={t.openShort} onClick={() => props.onOpen()}>
+            <Icon name="open" />
+          </button>
+        </header>
+        {preview && (
+          // The preview is a picture of the report's beginning: nothing in it takes focus or a click of its own.
+          <div className="report-preview-body" onClick={() => props.onOpen()}>
+            <div inert>
+              <Suspense fallback={<div className="message-text">{preview}</div>}>
+                <Answer text={preview} complete={!writing} sources={message.sourceSnapshot ?? []} open={() => {}} />
+              </Suspense>
+            </div>
+          </div>
+        )}
+      </div>
       {sections.length > 1 && (
         <nav className="report-card-sections" aria-label={t.inReport}>
           <span className="muted">{t.inReport}</span>
