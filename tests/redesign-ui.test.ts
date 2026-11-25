@@ -366,8 +366,8 @@ describe.each([375, 1280])("answers at %i px", (width) => {
       await ui(chart.locator("circle.dot")).toHaveCount(5);
       await ui(chart.locator("circle.dot.top")).toHaveCount(1);
       await ui(chart.locator(".answer-chart-source")).toHaveText("Source: your uploaded bank statements");
-      await ui(chart.locator("table.sr-only tr")).toHaveCount(5);
-      await ui(chart.locator("table.sr-only")).toContainText("9,850");
+      await ui(chart.locator(".sr-only table tr")).toHaveCount(5);
+      await ui(chart.locator(".sr-only table")).toContainText("9,850");
       // The invalid block (a negative number) is shown as code, not drawn.
       await ui(answer.locator(".code-block")).toHaveCount(1);
       const box = (await chart.boundingBox())!;
