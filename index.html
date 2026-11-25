@@ -9,6 +9,11 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/logo/favicon/apple-touch-icon-180.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- Home-screen app (docs/pwa-20261125.md): on an iPhone it opens in its own window, with this name under the icon. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="CometRow" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#fbfcfe" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1b1b1e" media="(prefers-color-scheme: dark)" />
     <title>CometRow</title>
@@ -23,7 +28,19 @@
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- The start screen: the mark on the page colour until the app has loaded and replaces it. -->
+    <style>
+      .boot{position:fixed;inset:0;display:grid;place-items:center;background:#fbfcfe}
+      .boot img{width:88px;height:88px}
+      .boot .on-dark{display:none}
+      @media (prefers-color-scheme:dark){.boot{background:#1b1b1e}.boot .on-light{display:none}.boot .on-dark{display:block}}
+    </style>
+    <div id="root">
+      <div class="boot" role="img" aria-label="CometRow">
+        <img class="on-light" src="/logo/svg/cometrow-A-icon-dark.svg" alt="" />
+        <img class="on-dark" src="/logo/svg/cometrow-A-icon-light.svg" alt="" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -841,3 +841,7 @@ footer {
 .import-results p {
   margin: 4px 0;
 }
+/* "Install CometRow" in Settings (docs/pwa-20261125.md). */
+.install-app p:empty {
+  display: none;
+}

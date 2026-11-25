@@ -1,6 +1,7 @@
 // The Settings dialog's tabs and their content (SS-05, SS-15; docs/settings-structure-20261116.md).
 // src/App.tsx keeps the <dialog>, its title, close button and focus handling, and closes Settings
 // before anything here leaves it (another tab of the app, the account page, sign out).
+import { InstallApp } from "./InstallApp";
 import { useId, useState, type ReactNode } from "react";
 import { accountRequest } from "./account-request";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -8,7 +9,7 @@ import type { AppStatus, Conversation } from "../shared/contracts";
 import { privacySummary } from "../shared/privacy-copy";
 import { AccountUsage } from "./AccountUsage";
 import { DataControls } from "./DataControls";
-import { memoryEnabled } from "./device-features";
+import { memoryEnabled, installAppEnabled } from "./device-features";
 import { germanEnabled, LanguageSwitch, useLang } from "./i18n";
 import { Icon } from "./Icon";
 import { MemorySettings } from "./MemorySettings";
@@ -140,6 +141,7 @@ export function SettingsBody({
             </select>
             <p className="muted">{tm.appearanceNote}</p>
             {lookUp !== undefined && <LookUpSetting value={lookUp} onChange={onLookUp} />}
+            {installAppEnabled() && <InstallApp />}
             {germanEnabled() && (
               <>
                 <h4>{t.languageLabel}</h4>

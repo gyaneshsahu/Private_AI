@@ -9,6 +9,8 @@ const on = (name: string): boolean => {
   return env?.[name] === "1";
 };
 export const readAloudEnabled = () => on("VITE_READ_ALOUD");
+/** "Install CometRow" in Settings (docs/pwa-20261125.md): the browser's own install, started by the user. */
+export const installAppEnabled = () => on("VITE_INSTALL_APP");
 export const pdfExportEnabled = () => on("VITE_PDF_EXPORT");
 /** Memory across chats (docs/memory-20261114.md): kept in the vault on the device, no server part. */
 export const memoryEnabled = () => on("VITE_MEMORY");
