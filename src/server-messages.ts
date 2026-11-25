@@ -79,7 +79,7 @@ const GERMAN: Record<string, string> = {
   "Session limit reached.": "Die Höchstzahl an Sitzungen ist erreicht.",
   "Request authorization failed.": "Die Anfrage konnte nicht autorisiert werden.",
   "Evaluation request limit reached.": "Das Anfragelimit für die Erprobung ist erreicht.",
-  "Trial request limit reached.": "Das Anfragelimit für den Test ist erreicht.",
+  "Trial request limit reached.": "Das Anfragelimit für die Testphase ist erreicht.",
   "Session unavailable or request limit reached. Sign in again if expired.":
     "Die Sitzung ist nicht verfügbar oder das Anfragelimit ist erreicht. Melden Sie sich erneut an, falls sie abgelaufen ist.",
   "Individual access expired or revoked. Sign in again.":
