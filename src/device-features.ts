@@ -32,5 +32,7 @@ export const scheduledEnabled = () => on("VITE_SCHEDULED");
 export const answerDesignEnabled = () => on("VITE_ANSWER_DESIGN");
 /** Activity (docs/activity-states-20261126.md): the live line, "Thought for N s", placeholders and skeleton rows. */
 export const activityEnabled = () => on("VITE_ACTIVITY");
+/** Error states (docs/error-states-20261126.md): one friendly line with Retry where an answer or image failed. */
+export const errorStatesEnabled = () => on("VITE_ERROR_STATES");
 /** Report card (docs/report-card-20261125.md): a deep research answer is a card in the chat and opens in the side panel. */
 export const reportCardEnabled = () => on("VITE_REPORT_CARD");

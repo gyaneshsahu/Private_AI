@@ -158,7 +158,7 @@ import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
-import { activityEnabled, reportCardEnabled, scheduledEnabled } from "./device-features";
+import { activityEnabled, errorStatesEnabled, reportCardEnabled, scheduledEnabled } from "./device-features";
 import { PendingActivity } from "./activity/Activity";
 import * as activity from "./activity/store";
 import { activityText } from "./text/activity";
@@ -1494,7 +1494,7 @@ export function App() {
             ? ""
             : error instanceof AttestationBusyError || error instanceof DeploymentChangedError
               ? passed(error.message)
-              : error instanceof IncompleteReplyError && kind === "error"
+              : error instanceof IncompleteReplyError && kind === "error" && !errorStatesEnabled()
                 ? passed(error.message)
                 : retried
                   ? t.retriedOnce

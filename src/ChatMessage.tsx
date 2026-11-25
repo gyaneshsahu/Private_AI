@@ -22,7 +22,8 @@ import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
-import { activityEnabled, answerDesignEnabled, projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { activityEnabled, answerDesignEnabled, errorStatesEnabled, projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { ErrorLine } from "./errors/ErrorLine";
 import { ReportCard } from "./report/ReportCard";
 import { ActivityLine, Thought, useTurn } from "./activity/Activity";
 import { PdfExportButton } from "./PdfExportButton";
@@ -299,7 +300,7 @@ export function ChatMessage({
           {message.keptOnDevice} {t.keptNote}
         </p>
       )}
-      {message.failure && (
+      {message.failure && !errorStatesEnabled() && (
         <div className="failure-note">
           <p>{t.failure(message.failure)}</p>
           <details>
@@ -383,7 +384,8 @@ export function ChatMessage({
           />
         ) : (
         <>
-        {activity && turn && <Thought turn={turn} />}
+        {/* Only over an answer: a failed one with no text has nothing that was thought towards. */}
+        {activity && turn && !!message.text && <Thought turn={turn} />}
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>
             <Answer
@@ -397,6 +399,8 @@ export function ChatMessage({
         </>
         )
       )}
+      {/* Error states: one line where the answer would be, after whatever part of it arrived. */}
+      {message.failure && errorStatesEnabled() && <ErrorLine kind={message.failure} partial={!!message.text} onRetry={retry ? () => retry.run() : undefined} />}
       {!user && message.searchedFor && (
         <SearchedWeb
           query={message.searchedFor}

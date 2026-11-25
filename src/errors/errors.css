@@ -1,0 +1,64 @@
+/* Error states (docs/error-states-20261126.md): a soft red accent, never a red block; the theme's
+   own danger colour, so light and dark follow. A stopped answer uses the same line without red. */
+.chat-design .error-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  max-width: 720px;
+  margin: 6px 0 8px;
+  padding: 10px 12px 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--danger) 22%, var(--line));
+  border-left: 3px solid var(--danger);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface));
+  color: var(--ink);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.chat-design .error-line.calm {
+  border-color: var(--line);
+  border-left-color: var(--ink3);
+  background: var(--surface);
+}
+.chat-design .error-line p {
+  flex: 1 1 260px;
+  margin: 0;
+}
+.chat-design .error-line strong {
+  font-weight: 600;
+}
+.chat-design .error-line span {
+  color: var(--ink2);
+}
+.chat-design .error-line button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 550;
+}
+.chat-design .error-line button svg {
+  width: 16px;
+  height: 16px;
+}
+.chat-design .error-line button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.chat-design .error-line button:disabled {
+  opacity: 0.55;
+}
+@media (max-width: 760px) {
+  .chat-design .error-line button {
+    min-height: 44px;
+  }
+}
