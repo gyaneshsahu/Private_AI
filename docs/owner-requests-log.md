@@ -8,6 +8,14 @@
 
 ---
 
+## 21. Visual answers: twelve reference screenshots for normal chat
+
+- **Date:** 26 November 2026.
+- **You asked:** you put twelve screenshots into the reference folder: a long ChatGPT answer with diagrams, boxes, a coloured conclusion and highlighted sentences, and two of an interactive Claude answer (tabs that change a small diagram). Learn from them, do not copy; no unnecessary pictures (ChatGPT's picture strips look cheap); interactive diagrams are welcome; the platform must know when to do what. For reference, to get an idea; for normal chat.
+- **What I did:** looked at all twelve, moved them to `ui-references\received-20261126b` under names that say what each shows, and wrote a proposal: `docs/answer-design-next-20261126.md`. It says what each element in your references does well or badly, and proposes five answer blocks (callout, steps, diagram, quick check, explorer), each with a rule for when the model may use it, limits the app keeps, how it is measured before it ships, and what it costs. No pictures from the web: the app loads nothing from other sites, and a drawn diagram says more than a stock picture.
+- **Not built,** for two reasons: you said these are references, and your list for this round ended at item 6. It also adds instructions to every request, which is yours to approve.
+- **Status:** open, waiting for your yes, and for which blocks first (three questions at the end of the proposal).
+
 ## 20. Where your screenshots are kept
 
 - **Date:** 26 November 2026.
