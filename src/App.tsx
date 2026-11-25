@@ -4,6 +4,7 @@ import { chatMenuText } from "./text/chat-menu";
 import { useImageEditing } from "./image-edit/host";
 import { ImageSidePanel, useShare } from "./share/parts";
 import { shareText } from "./text/share";
+import { setTracking, track } from "./owner/track";
 import { imageCreationText } from "./text/image-creation";
 import { imageEditText } from "./text/image-edit";
 import { Icon } from "./Icon";
@@ -190,6 +191,9 @@ const SettingsBody = lazyNamed(() => import("./SettingsBody"), "SettingsBody");
 const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
 const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
 const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
+const OwnerDashboard = lazyNamed(() => import("./owner/OwnerDashboard"), "OwnerDashboard");
+const FeedbackDialog = lazyNamed(() => import("./feedback/FeedbackDialog"), "FeedbackDialog");
+const FeedbackList = lazyNamed(() => import("./feedback/FeedbackList"), "FeedbackList");
 const CanvasPanel = lazyNamed(() => import("./CanvasPanel"), "CanvasPanel");
 const WhiteboardPanel = lazyNamed(() => import("./Whiteboard"), "WhiteboardPanel");
 const OutputsPanel = lazyNamed(() => import("./OutputsPanel"), "OutputsPanel");
@@ -460,6 +464,7 @@ export function App() {
     // Only a change of panel decides; the user's own fold or unfold in between stays as they set it.
   }, [side]);
   const openBoard = () => {
+    track("whiteboard.opened");
     setSide("board");
     setBoardChatView(false);
   };
@@ -469,6 +474,7 @@ export function App() {
     if (text.length > CANVAS_LIMITS.characters) return fail(canvasText[lang].problem("long"));
     // Cancel opens the canvas as it is.
     const replace = old !== text && (!old || (await ask(q.canvasTitle, canvasText[lang].replaceConfirm, q.canvasReplace)));
+    track("canvas.opened");
     setCanvasOpen(true);
     if (!replace) return;
     keepForUndo(conversation.id, old);
@@ -838,6 +844,11 @@ export function App() {
           }
         : undefined,
   });
+  // Analytics (docs/analytics-20261125.md): feature use is counted by fixed name only while the server says it is on.
+  useEffect(() => setTracking(status?.analytics ? status.csrf : undefined), [status?.analytics, status?.csrf]);
+  const [ownerOpen, setOwnerOpen] = useState(false);
+  // Feedback from testers (docs/feedback-20261125.md): the form opens from the account menu.
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   async function copyAnswer(text: string, id: string) {
     const current = epoch.current;
     try {
@@ -2175,6 +2186,7 @@ export function App() {
       if (current !== epoch.current) return;
       setProjects(all);
       setNotice(tm(into).projectCreated);
+      track("project.created");
       return id;
     } catch (error) {
       if (current === epoch.current)
@@ -2446,6 +2458,8 @@ export function App() {
         projects={secureOn ? projects.filter((p) => !inMax(p.id)) : projects}
         status={status}
         onSignOut={() => void signOut()}
+        onOwnerDashboard={status?.ownerDashboard ? () => setOwnerOpen(true) : undefined}
+        onFeedback={status?.feedback ? () => setFeedbackOpen(true) : undefined}
         onCreateProject={createProject}
         onEditProject={editProject}
         onDeleteProject={deleteProject}
@@ -2700,6 +2714,7 @@ export function App() {
                 () => {
                   if (asked.draft) setInput("");
                   setNotice(forStorage(memoryText[lang], storageOf(heldMode)).added);
+                  track("memory.saved");
                 },
                 (error) => fail(memoryText[lang].problem(memoryProblem(error))),
               );
@@ -4138,6 +4153,12 @@ export function App() {
         />
       )}
       {imageEditing.element}
+      {ownerOpen && status?.ownerDashboard && (
+        <OwnerDashboard analytics={!!status.analytics} onClose={() => setOwnerOpen(false)}>
+          {status.feedbackOwner && <FeedbackList csrf={status.csrf} />}
+        </OwnerDashboard>
+      )}
+      {feedbackOpen && status?.feedback && <FeedbackDialog csrf={status.csrf} onClose={() => setFeedbackOpen(false)} />}
       {status?.imageCreation && createImageFor !== undefined && (
         <CreateImageDialog
           open

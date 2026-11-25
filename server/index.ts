@@ -2,6 +2,8 @@ import { bflImageProvider, mockImageProvider } from "./image-creation";
 import { bflImageEditor, mockImageEditor } from "./image-edit";
 import { MemoryShareStore } from "./share-links";
 import { foundryImages } from "./image-foundry";
+import { MemoryAnalyticsStore } from "./analytics";
+import { MemoryFeedbackStore } from "./feedback";
 import { readFile } from "node:fs/promises";
 import { createServer as createHttpsServer } from "node:https";
 import { resolve } from "node:path";
@@ -111,6 +113,10 @@ const app = createApp({
         },
       }
     : {}),
+  // Feedback from testers (docs/feedback-20261125.md) on the development server: off unless "1"; in memory.
+  ...(process.env.PRIVATEAI_FEEDBACK === "1" ? { feedback: { store: new MemoryFeedbackStore(), ownerEmails: ["local@development.test"] } } : {}),
+  // Analytics for the owner (docs/analytics-20261125.md) on the development server: off unless "1"; in memory.
+  ...(process.env.PRIVATEAI_ANALYTICS === "1" ? { analytics: { store: new MemoryAnalyticsStore(), ownerEmails: ["local@development.test"], retentionDays: 90 } } : {}),
   // Code execution on the device, on the development server: off unless "1".
   ...(process.env.PRIVATEAI_CODE === "1" ? { code: true } : {}),
   // Deep research on the development server: off unless "1" (it also needs the search key).

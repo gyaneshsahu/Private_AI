@@ -600,6 +600,14 @@ export interface AppStatus {
   imageEditing?: { masks: boolean; uploads: boolean };
   /** Encrypted share links are switched on (off by default; docs/sharing-20261125.md). */
   shareLinks?: true;
+  /** Analytics is on (docs/analytics-20261125.md): the app may count feature use by fixed name, with nothing else. */
+  analytics?: true;
+  /** This account is on the owner list: the account menu offers the owner's dashboard. */
+  ownerDashboard?: true;
+  /** Feedback from testers is on (docs/feedback-20261125.md): the account menu offers "Send feedback". */
+  feedback?: true;
+  /** This account may read and delete feedback in the owner's dashboard. */
+  feedbackOwner?: true;
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

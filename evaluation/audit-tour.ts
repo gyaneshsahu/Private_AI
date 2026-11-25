@@ -395,6 +395,22 @@ const STEPS: Step[] = [
     await c.shot("share-link");
     await c.page.keyboard.press("Escape");
   }, "on"],
+  // The owner's dashboard (docs/analytics-20261125.md): the audit account is on the owner list.
+  ["owner-dashboard", async (c) => {
+    await c.fresh();
+    await accountMenu(c, "Owner dashboard");
+    await pause(c.page, 900);
+    await c.shot("owner-dashboard");
+    await c.page.keyboard.press("Escape");
+  }, "on"],
+  // Feedback from testers (docs/feedback-20261125.md): the form from the account menu.
+  ["feedback", async (c) => {
+    await c.fresh();
+    await accountMenu(c, "Send feedback");
+    await pause(c.page, 600);
+    await c.shot("feedback-form");
+    await c.page.keyboard.press("Escape");
+  }, "on"],
   ["incognito", async (c) => { await c.fresh(); await c.nav(); await c.click("New incognito chat"); await pause(c.page, 600); await c.shot("incognito-chat"); }],
   ["search-chats", async (c) => {
     await c.fresh();

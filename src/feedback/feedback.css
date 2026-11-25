@@ -1,0 +1,202 @@
+/* Feedback from testers (docs/feedback-20261125.md): the form and the owner's list. */
+.chat-design dialog.feedback-dialog {
+  width: min(540px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.chat-design .feedback-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 8px;
+}
+.chat-design .feedback-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.chat-design .feedback-dialog form {
+  display: grid;
+  gap: 14px;
+}
+.chat-design .feedback-dialog form > p {
+  margin: 0;
+}
+.chat-design .feedback-dialog fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.chat-design .feedback-dialog legend,
+.chat-design .feedback-field > span {
+  display: block;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.chat-design .feedback-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chat-design .feedback-choices label,
+.chat-design .feedback-rating label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 14px;
+  cursor: pointer;
+}
+.chat-design .feedback-rating label {
+  min-width: 40px;
+  padding: 0;
+}
+/* The radio itself covers its label, unseen: the whole pill is the target, and the keyboard and screen readers get a real radio. */
+.chat-design :is(.feedback-choices, .feedback-rating) input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.chat-design :is(.feedback-choices, .feedback-rating) label:has(input:checked) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  font-weight: 600;
+}
+.chat-design :is(.feedback-choices, .feedback-rating) label:has(input:focus-visible) {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.chat-design .feedback-rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.chat-design .feedback-rating label {
+  color: var(--ink);
+}
+.chat-design .feedback-field textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+.chat-design .feedback-attach,
+.chat-design .feedback-actions > button,
+.chat-design .feedback-row-actions > :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.chat-design .feedback-attach {
+  justify-self: start;
+}
+.chat-design .feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chat-design .feedback-actions > button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.chat-design .feedback-shot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 14px;
+}
+.chat-design .feedback-note {
+  font-size: 13px;
+}
+.chat-design .feedback-status:empty {
+  display: none;
+}
+/* The owner's list. */
+.chat-design .feedback-list ul {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.chat-design .feedback-list li {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .feedback-list li p {
+  margin: 0 0 6px;
+}
+.chat-design .feedback-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13.5px;
+}
+.chat-design .feedback-meta span {
+  color: var(--muted);
+}
+.chat-design .feedback-body {
+  white-space: pre-wrap;
+}
+.chat-design .feedback-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 0 !important;
+}
+@media (max-width: 760px) {
+  .chat-design .feedback-choices label,
+  .chat-design .feedback-rating label,
+  .chat-design .feedback-attach,
+  .chat-design .feedback-actions > button,
+  .chat-design .feedback-row-actions > :is(a, button) {
+    min-height: 44px;
+  }
+  .chat-design .feedback-rating label {
+    min-width: 44px;
+  }
+}
+@media (max-width: 760px) {
+  /* Every control of the form is a 44 px target on a phone, the close button and the text buttons included. */
+  .chat-design .feedback-dialog :is(.icon-button, .text-button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

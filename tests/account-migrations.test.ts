@@ -20,7 +20,7 @@ it.skipIf(!enabled)(
       await db.pool.query("DROP TYPE preserved_type");
       expect(
         (await applyAccountMigrations(db.pool, { requireEmpty: true })).applied,
-      ).toHaveLength(21);
+      ).toHaveLength(23);
       await expect(
         applyAccountMigrations(db.pool, { requireEmpty: true }),
       ).rejects.toThrow("empty schema");
@@ -37,7 +37,7 @@ it.skipIf(!enabled)(
     try {
       const plan = await planAccountMigrations(db.pool);
       expect(plan.applied).toEqual([]);
-      expect(plan.pending).toHaveLength(21);
+      expect(plan.pending).toHaveLength(23);
       expect(
         (
           await db.pool.query(
@@ -52,7 +52,7 @@ it.skipIf(!enabled)(
       expect(
         results.every(
           (result) =>
-            result.applied.length === 21 && result.pending.length === 0,
+            result.applied.length === 23 && result.pending.length === 0,
         ),
       ).toBe(true);
       await db.pool.query(
@@ -69,7 +69,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(21);
+      ).toBe(23);
     } finally {
       await db.dispose();
     }
@@ -110,7 +110,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(20);
+      ).toBe(22);
     } finally {
       await db.dispose();
     }

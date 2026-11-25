@@ -110,6 +110,24 @@ const schema = z
          */
         code: z.object({ enabled: z.boolean() }).strict().optional(),
         /**
+         * Feedback from testers, its own switch, off unless enabled (docs/feedback-20261125.md):
+         * a form in the account menu; entries are stored with the account (migration 0029) and shown
+         * only to `ownerEmails`.
+         */
+        feedback: z.object({ enabled: z.boolean(), ownerEmails: z.array(z.email().max(254)).min(1).max(5) }).strict().optional(),
+        /**
+         * Privacy-safe analytics for the owner, its own switch, off unless enabled
+         * (docs/analytics-20261125.md): counts only, kept `retentionDays`, shown only to `ownerEmails`.
+         */
+        analytics: z
+          .object({
+            enabled: z.boolean(),
+            ownerEmails: z.array(z.email().max(254)).min(1).max(5),
+            retentionDays: z.number().int().min(7).max(400).default(90),
+          })
+          .strict()
+          .optional(),
+        /**
          * Image creation, its own switch, off unless enabled (docs/image-creation-20261117.md). Black
          * Forest Labs, EU endpoint; the key comes from its own secret file. `model` must be one the
          * price list (shared/usage-weights.json) prices; `dailyImages` per account a day.
@@ -483,6 +501,10 @@ export async function loadDeploymentConfig(file: string) {
                 ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }
                 : {}),
               ...(inference.code?.enabled ? { code: true } : {}),
+              ...(inference.feedback?.enabled ? { feedback: { ownerEmails: inference.feedback.ownerEmails.map((email) => email.toLowerCase()) } } : {}),
+              ...(inference.analytics?.enabled
+                ? { analytics: { ownerEmails: inference.analytics.ownerEmails.map((email) => email.toLowerCase()), retentionDays: inference.analytics.retentionDays } }
+                : {}),
               ...(inference.imageCreation?.enabled
                 ? {
                     imageCreation: {

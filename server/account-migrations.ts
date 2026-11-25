@@ -24,6 +24,8 @@ const names = [
   "0025-secure-store.sql",
   "0026-consent-records.sql",
   "0027-share-links.sql",
+  "0028-analytics-daily.sql",
+  "0029-feedback.sql",
 ] as const;
 interface Migration {
   name: string;

@@ -61,6 +61,8 @@ const tables = (literal: string): [string, string][] => [
   ["consent_records", `account_id IN ${target}`],
   // Encrypted share links (migration 0027): ciphertext only.
   ["share_links", `account_id IN ${target}`],
+  // Feedback the account sent (migration 0029).
+  ["feedback", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
 
@@ -109,6 +111,8 @@ export function operatorSql(command: Command, email: string): string {
         "consent_records",
         // Encrypted share links (migration 0027) go with the account.
         "share_links",
+        // Feedback the account sent (migration 0029) goes with the account.
+        "feedback",
         "usage_metrics",
         "usage_records",
         "usage_requests",
