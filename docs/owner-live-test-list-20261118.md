@@ -18,9 +18,9 @@
 - **Allowance.** Your friends will get the alpha plan: 150 units a week and 40 a day. A full pass of this list uses more than 40 in a day. So for your test, set `"metering": { "enabled": true, "plan": "premium" }` in `render-config.json` (150 a day, 600 a week, more pictures, voice and research), and set it back to `"alpha"` before friends come. The limit tests in section 20 use account B and a database edit, so they work with either plan.
 - **Cost.** One full pass costs well under EUR 10: Privatemode tokens, about 60 Brave searches (about USD 0.30) and about 10 created images (about EUR 0.15 to 0.30). Check the Privatemode portal at the end of each day (test 25.6).
 
-## Core path (do these 46 first)
+## Core path (do these 48 first)
 
-**What this is:** the shortest pass that touches everything a friend will use. About 2 hours on the PC plus 20 minutes on the phone. If all 46 pass, the build is good enough to go on with the full list below; if one fails, write it in the findings log as "C.n" and carry on. The number in brackets is the full test it comes from. C.20, C.21 and C.35 are new (fixes of 25 November).
+**What this is:** the shortest pass that touches everything a friend will use. About 2 hours on the PC plus 20 minutes on the phone. If all 48 pass, the build is good enough to go on with the full list below; if one fails, write it in the findings log as "C.n" and carry on. The number in brackets is the full test it comes from. C.20, C.21 and C.35 to C.35b are new (fixes of 25 November).
 
 | # | Do | Expect | P/F |
 | --- | --- | --- | --- |
@@ -58,7 +58,9 @@
 | C.32 | **Open in canvas**, edit, "Ask for changes": "make it shorter", Apply (14.1 to 14.3) | The panel opens on the right; nothing changes until Apply | |
 | C.33 | "Remember that I am vegetarian", Save; in a new chat ask for a dinner idea (15.1, 15.2) | Not sent as a message; the new answer respects it and says 1 memory was sent | |
 | C.34 | Create a project with instructions and a PDF; "New chat in this project", ask about the file (16.1 to 16.3) | Uses the file and the instructions | |
-| C.35 | **New.** Open the project, press the pencil beside a chat, type a new name, Enter. Then again and press Esc | Enter saves and the new name shows in the project and the sidebar; Esc keeps the old name | |
+| C.35 | **New.** In the sidebar, point at a chat and press its "⋯" > **Add to project** > **New project…**, type a name, Create. Open the menu again | The project exists and holds the chat. The menu now offers "Remove from <project>" | |
+| C.35a | **New.** Open the project (click the project's name under the chat's title). Press the "⋯" beside the chat > Rename, type a name, Enter. Then "⋯" > Remove from the project | The chats are the first thing on the project screen. Enter saves the name there and in the sidebar. After Remove the chat is still in Recent, without a project | |
+| C.35b | **New.** In an open chat, press "⋯" at the top right > Rename | A small box with the name selected; Enter saves and the title above the chat changes at once | |
 | C.36 | Left menu > **Whiteboard**: draw, write "Kitchen", ask "What is on my whiteboard?" (17.1, 17.2, 17.4) | A sensible answer with a "Whiteboard" card on the question | |
 | C.37 | **Scheduled** > a template, time 2 minutes ahead, Manual; wait; Run now (18.1 to 18.3) | The due strip appears; Run now makes a new chat | |
 | C.38 | Chat on the PC, then sign in on the phone (19.2, 19.3) | The chat is there; continue it on the phone and both devices show both parts | |

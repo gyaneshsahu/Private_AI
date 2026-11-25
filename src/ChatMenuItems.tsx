@@ -42,7 +42,19 @@ export function ChatMenuItems(props: {
     const show = () => element.checkVisibility() && (element.closest(".chat-menu-popover") ?? element).scrollIntoView({ block: "nearest" });
     const watch = new ResizeObserver(show);
     watch.observe(element);
-    return () => watch.disconnect();
+    // A menu that closes forgets its half-made choice: it opens fresh the next time.
+    const menu = element.closest("details");
+    const forget = () => {
+      if (menu?.open) return;
+      setChoosing(false);
+      setNaming(false);
+      setName("");
+    };
+    menu?.addEventListener("toggle", forget);
+    return () => {
+      watch.disconnect();
+      menu?.removeEventListener("toggle", forget);
+    };
   }, []);
   const act = (change: Partial<Pick<Conversation, "pinned" | "archived" | "projectId">>) => {
     props.onOrganize(chat, { title: chat.title, ...change });

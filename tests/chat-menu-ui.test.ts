@@ -114,6 +114,8 @@ describe.each([
       await dots.click();
       await ui(menu.getByRole("button", { name: cm.removeFrom("Hamburg"), exact: true })).toBeVisible();
       await ui(menu.getByRole("button", { name: cm.addToProject, exact: true })).toHaveCount(0);
+      // It opened fresh: the project list and the name typed before are gone.
+      await ui(menu.locator(".chat-menu-projects")).toHaveCount(0);
       await page.screenshot({ path: `.local/projects-ux/menu-in-project-${lang}-${width}.png` });
       // Escape closes the menu and gives the focus back to the ⋯.
       await page.keyboard.press("Escape");
