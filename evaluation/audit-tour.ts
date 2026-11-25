@@ -686,6 +686,8 @@ export async function runTour(o: {
           context.on("requestfinished", (r) => open.delete(r));
           context.on("requestfailed", (r) => open.delete(r));
           const page = await context.newPage();
+          // A new page load drops the requests of the page before it: they are leftovers, not what this page waits for.
+          page.on("framenavigated", (f) => void (f === page.mainFrame() && open.clear()));
           // "Leave site?" (unsaved work) is accepted so the next step can navigate; other dialogs are dismissed.
           page.on("dialog", (d) => void (d.type() === "beforeunload" ? d.accept() : d.dismiss()).catch(() => {}));
           let n = 0;

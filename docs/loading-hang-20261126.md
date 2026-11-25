@@ -1,6 +1,6 @@
 # The "Loading your chats…" stall (investigation, 26 November 2026)
 
-**Status:** two causes are now named by the diagnostic (below); neither is confirmed in the real app yet. A guard test is in place. Not seen outside the long screen tour.
+**Status:** not explained. The diagnostic gave leads, not causes (below). A guard test is in place. Not seen outside the long screen tour.
 
 ## What was seen
 
@@ -19,21 +19,23 @@ In the long automated screen tour, a page sometimes stayed on "Loading your chat
 
 ## What the new diagnostic showed (evening of 26 November)
 
-The first two stalls after the diagnostic was added named what they were waiting for. They are two different things.
+Three stalls happened after the diagnostic was added. What it recorded are **leads, not causes**. One reading I wrote down at first (old streamed answers using up the browser's six connections) does not hold and is withdrawn: the test answers are served by the test tool inside the browser, not over a connection to the server, and the diagnostic's list still held requests of earlier pages. The list is now emptied on every page load, so the next stall shows only what its own page waits for.
 
 | Stall | What the page was waiting for | What that points to |
 | --- | --- | --- |
-| Light tour, German, phone, a Settings step | The request for the saved chats (`GET /api/secure/items`) had no answer for **69 seconds**. At the same time a streamed test answer from an earlier step (`POST /__audit/reply`) had been open for 180 seconds | **The browser's limit of six connections to one server.** Old streamed answers that were never closed hold connections; when all six are taken, the next request waits. In the tour these are the steps that start a long answer and move on |
-| Dark tour, English, phone, an answer step | **No request at all** was open, and the sidebar still said "Loading your chats…" | Not the network. Opening the saved chats also opens the browser's own database, and that open was waiting. The usual cause is another page that still holds the database |
+| Light tour, German, phone, a Settings step | The request for the saved chats (`GET /api/secure/items`) had no answer for **69 seconds**. At the same time a streamed test answer from an earlier step (`POST /__audit/reply`) had been open for 180 seconds | Only that the request for the saved chats was slow or unanswered. The old streamed answer was a leftover of an earlier page and proves nothing. Whether the 69 seconds belong to this page's request is not certain either |
+| Dark tour, English, phone, an answer step | **No request at all** was open, and the sidebar still said "Loading your chats…" | A lead: not the network, so something inside the page was waiting. Opening the saved chats also opens the browser's own database; a blocked open would look like this. Not shown |
+| Light tour, English, phone, the first-send step | No "Loading your chats…" on the page at all; the click on Send timed out | A different failure that only looks alike. Passed when run alone |
 
 ## What is still not known
 
-- **Whether a user can hit the first one.** In the real app an answer is streamed by the provider's library, not by this test route, and Stop closes it. I have not shown that a stream can be left open there.
-- **What held the database in the second one.** Two tabs of CometRow, or a page kept by the browser's back/forward cache, are the candidates. If it is two tabs, a user can hit it.
+- **Why the request for the saved chats went unanswered in the first one,** and whether that was this page's request at all.
+- **Whether the database was really what waited in the second one,** and what would have held it. Two tabs of CometRow, or a page kept by the browser's back/forward cache, are the candidates. If it is two tabs, a user can hit it.
+- **Whether a user can hit any of it.** Nothing so far says yes; nothing rules it out.
 
 ## Next steps (not done)
 
-1. In the tour, close a streamed answer before moving on, and see whether the first kind disappears.
+1. Read the next stall with the corrected diagnostic (only the page's own requests).
 2. Make the database open report when it is blocked and by what, and show a plain line ("CometRow is open in another tab") instead of waiting silently.
 3. A test with two tabs of the same account.
 
