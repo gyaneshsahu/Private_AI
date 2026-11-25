@@ -1,6 +1,6 @@
 # How answers look: the answer design (25 November 2026)
 
-**Status:** first version built on the branch `feat/answer-design` (on top of `feat/report-card`). Behind a switch, off by default. Nothing deployed. **This is a first pass, not the finished design:** see "Still to do".
+**Status:** inline design built on the branch `feat/answer-design` (on top of `feat/report-card`). Behind a switch, off by default. Nothing deployed. Your judgement of the before/after sheet decides the next pass.
 
 **Your request (25 November):** how CometRow shows its answers is where it can win: organised, beautiful, interactive and graphical where it helps, for normal chat, search and deep research. Your example was a Claude answer with a file card, a short summary and bold-led points.
 
@@ -33,14 +33,23 @@ Charts, code blocks, formulas and source buttons are as before.
 2. **Ticks are not saved.** They last while the chat is open. Saving them means changing the saved chat's format; say if you want it.
 3. **The PDF export is unchanged** (it prints black on white as before).
 
-## Still to do (in this order)
+## Decided by you on 26 November
 
-1. **A before/after sheet for you** with whole answers side by side, in both themes. Two samples were sent on 25 November.
-2. **Long, document-like answers as a card** (a title, three or more sections, long): the same card and side panel as deep research, which is what your Claude screenshot shows. Built for deep research; not yet switched on for normal answers, because it changes how every long answer appears and you should see it first.
-3. **A dark pass over the screens built earlier on 25 November.** Found already: several new buttons use white text on the accent colour, which is too pale in dark mode (fixed in the report panel; open for share, feedback and plans).
-4. **Search answers:** the "Searched the web" block opens as a plain white box; it needs the same care.
-5. **One or two new answer blocks** if they earn their place (a comparison block, a "steps" block), following how charts were added.
-6. Your screenshots for the "UI references I need" list in the report.
+- **Answers stay inline, as in ChatGPT.** Document cards are only for deep research reports and canvas documents. Long normal answers are not turned into cards.
+
+## Added on 26 November
+
+- **"Searched the web"** is a quiet pill with the number of sources. Opened, it is a card: the exact text that was searched, then the sources as numbered rows with the title and the site.
+- **The before/after sheet:** `docs/answer-design-sheets/`, one picture per sample answer, in light and in dark (`numbers-light.jpg`, `lernplan-dark.jpg`, and so on). Left is today, right is the design. They are made by the test from the real answers, so they can be made again after any change.
+
+## How to judge the sheet
+
+Start with `numbers`, `lernplan`, `decision` and `study-guide`: they show the tiles, the check-list, the table and the labels. The plain ones (`fact`, `email`) change little on purpose: a short answer should stay a short answer.
+
+## Still to do
+
+1. One or two new answer blocks if they earn their place (a comparison block, a "steps" block), after your reaction to the sheet.
+2. Your screenshots for the "UI references I need" list in the report.
 
 ## Switch
 

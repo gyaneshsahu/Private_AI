@@ -22,7 +22,7 @@ import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
-import { projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { answerDesignEnabled, projectSpacesEnabled, reportCardEnabled } from "./device-features";
 import { ReportCard } from "./report/ReportCard";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
@@ -496,10 +496,12 @@ function SearchedWeb({ query, sources }: { query: string; sources: Source[] }) {
   useLang();
   const web = sources.filter((source) => source.url);
   return (
-    <details className="source-history-note searched-web">
+    <details className={answerDesignEnabled() ? "source-history-note searched-web designed" : "source-history-note searched-web"}>
       <summary>
         <Icon name="globe" />
         {WHEN_TO_SEARCH.searchedWeb}
+        {/* Answer design: how many sources, before opening. */}
+        {answerDesignEnabled() && web.length > 0 && <span className="searched-web-count">{web.length}</span>}
       </summary>
       <p>{WHEN_TO_SEARCH.searchedFor(query)}</p>
       {web.length ? (
@@ -509,6 +511,7 @@ function SearchedWeb({ query, sources }: { query: string; sources: Source[] }) {
               <a href={source.url} target="_blank" rel="noopener noreferrer">
                 {source.title || new URL(source.url!).hostname}
               </a>
+              {answerDesignEnabled() && source.title && <span className="searched-web-host">{new URL(source.url!).hostname.replace(/^www\./, "")}</span>}
             </li>
           ))}
         </ol>

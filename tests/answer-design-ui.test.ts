@@ -99,3 +99,21 @@ it("with the design off the same answers carry none of it", async () => {
     await context.close();
   }
 });
+
+// The sheet for the owner (docs/answer-design-sheets/): every sample answer before and after, one picture per answer and theme.
+it("writes the before/after sheet", async () => {
+  mkdirSync("docs/answer-design-sheets", { recursive: true });
+  for (const theme of ["light", "dark"] as const) {
+    const { context, page, errors } = await open(1600, `compare=1&theme=${theme}`);
+    try {
+      for (const section of await page.locator("[data-answer]").all()) {
+        const id = await section.getAttribute("data-answer");
+        await section.scrollIntoViewIfNeeded();
+        await section.screenshot({ path: `docs/answer-design-sheets/${id}-${theme}.jpg`, type: "jpeg", quality: 82 });
+      }
+      expect(errors).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  }
+});
