@@ -103,20 +103,24 @@ export function AnswerChart({ chart }: { chart: ChartData }) {
         </p>
       )}
       {/* The same numbers for screen readers (the drawing is hidden from them). */}
-      <table className="sr-only">
-        <caption>{name}</caption>
-        <tbody>
-          {chart.labels.map((label, i) => (
-            <tr key={i}>
-              <th scope="row">{label}</th>
-              <td>
-                {format(chart.values[i])}
-                {chart.unit ? ` ${chart.unit}` : ""}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* In a clipped box: a table is never narrower than its content, so on a narrow phone it reached
+          past the screen and the page scrolled sideways. */}
+      <div className="sr-only">
+        <table>
+          <caption>{name}</caption>
+          <tbody>
+            {chart.labels.map((label, i) => (
+              <tr key={i}>
+                <th scope="row">{label}</th>
+                <td>
+                  {format(chart.values[i])}
+                  {chart.unit ? ` ${chart.unit}` : ""}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }
