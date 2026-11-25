@@ -142,7 +142,9 @@ import { sidePanelsText } from "./text/side-panels";
 import { boardText, boardUnsent, emptyBoard } from "../shared/whiteboard";
 import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
 import { canvasText } from "./text/canvas";
-import { addMemory, memoriesFor, rememberRequest } from "./memory";
+import { addMemory, forgetProject, heldMemories, memoriesFor, rememberRequest } from "./memory";
+import { projectMemoryText } from "./text/project-memory";
+import { projectMemoryEnabled } from "./device-features";
 import {
   changeMemories,
   loadMemories,
@@ -558,6 +560,8 @@ export function App() {
   const heldMode: Mode = !secureOn ? "max" : ((openProject && modeOf(openProject)) || mode);
   const heldVault = heldMode === "max" ? vault.current : (secureVault() ?? null);
   const heldReady = heldMode === "max" ? unlocked : secureReady;
+  // Memory per project (docs/project-memory-20261126.md): a memory saved from a chat in a project belongs to that project.
+  const memoryProject = projectMemoryEnabled() && conversation.projectId ? projects.find((p) => p.id === conversation.projectId) : undefined;
   const anyStore = unlocked || secureReady;
   const storeOf = (id: string) => vaultFor(modeOf(id) ?? "max", vault.current)!;
   const modeRef = useRef(mode);
@@ -2271,6 +2275,8 @@ export function App() {
         if (current === epoch.current) setBusy("");
       }
     }
+    // The project's memories go with it (docs/project-memory-20261126.md).
+    if (heldReady && heldVault && heldMemories().some((m) => m.projectId === id)) await changeMemories(heldVault, forgetProject(id)).catch(() => {});
     return editProject(id);
   }
   // A new, empty chat that belongs to a project: from the project screen and from the project's menu.
@@ -2740,10 +2746,10 @@ export function App() {
             setRemember(undefined);
             if (result === "send") void send();
             else if (result)
-              changeMemories(heldVault!, addMemory(result.save)).then(
+              changeMemories(heldVault!, addMemory(result.save, memoryProject?.id)).then(
                 () => {
                   if (asked.draft) setInput("");
-                  setNotice(forStorage(memoryText[lang], storageOf(heldMode)).added);
+                  setNotice(memoryProject ? projectMemoryText[lang].savedHere(memoryProject.name) : forStorage(memoryText[lang], storageOf(heldMode)).added);
                   track("memory.saved");
                 },
                 (error) => fail(memoryText[lang].problem(memoryProblem(error))),
@@ -2756,6 +2762,7 @@ export function App() {
           key={openProject}
           storage={storageOf(modeOf(openProject) === "secure" ? "secure" : "max")}
           vault={storeOf(openProject!)}
+          memoryVault={heldReady && heldVault && heldVault === storeOf(openProject!) ? heldVault : undefined}
           fileSlot={modeOf(openProject) === "secure" ? "secure" : "max"}
           project={projects.find((p) => p.id === openProject)!}
           chats={saved.filter((c) => c.projectId === openProject)}
