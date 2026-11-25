@@ -10,6 +10,7 @@ import { Icon } from "./Icon";
 import { useLang, useText } from "./i18n";
 import { savedListText } from "./text/saved-list";
 import { workspaceText } from "./text/workspace";
+import { plansText } from "./text/plans";
 import { projectText } from "./text/projects";
 import { projectSpacesEnabled } from "./device-features";
 import { scheduledText } from "./text/scheduled";
@@ -55,6 +56,8 @@ export function WorkspaceNavigation(props: {
   storage?: Storage;
   /** Opens the keyboard shortcuts list (src/ShortcutHelp.tsx); the account menu entry is shown only when given. */
   onShortcuts?: () => void;
+  /** Opens the plans (docs/plans-20261125.md); given only while plans are switched on. */
+  onPlans?: () => void;
   /** The Scheduled screen (docs/scheduled-20261115.md); absent while its switch is off. */
   onScheduled?: () => void;
   /** Whiteboard: a new chat with the board open (absent when the whiteboard is off). */
@@ -633,6 +636,12 @@ export function WorkspaceNavigation(props: {
               <Icon name="usage" />
               {t.accountUsage}
             </button>
+            {props.onPlans && (
+              <button type="button" onClick={props.onPlans}>
+                <Icon name="sparkle" />
+                {plansText[lang].menu}
+              </button>
+            )}
             <button onClick={onSettings}>
               <Icon name="settings" />
               {t.settings}

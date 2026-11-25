@@ -182,6 +182,7 @@ type Tab = "Conversation" | "Context" | "Saved" | "Account" | "Help";
 // and everything on the first screen stay in the first file.
 const SettingsBody = lazyNamed(() => import("./SettingsBody"), "SettingsBody");
 const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
+const PlansDialog = lazyNamed(() => import("./plans/PlansDialog"), "PlansDialog");
 const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
 const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
 const CanvasPanel = lazyNamed(() => import("./CanvasPanel"), "CanvasPanel");
@@ -224,6 +225,8 @@ export function App() {
   // The Secure store could not open: the sidebar says so instead of "Loading your chats".
   const [secureFailed, setSecureFailed] = useState(false);
   const [shortcutHelp, setShortcutHelp] = useState(false);
+  // Plans (docs/plans-20261125.md): opens from the account menu, and by itself when a checkout sends the user back.
+  const [plansOpen, setPlansOpen] = useState(() => new URLSearchParams(location.search).has("plan-checkout"));
   const [settingsSection, setSettingsSection] = useState("general");
   const [projects, setProjects] = useState<Project[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -2381,6 +2384,7 @@ export function App() {
         // The normal list holds Secure projects with Secure on (Secure Max has its own section).
         projectStorage={secureOn ? "secure" : "local"}
         storage={secureOn ? "secure" : "local"}
+        onPlans={status?.plans ? () => setPlansOpen(true) : undefined}
         onShortcuts={() => {
           setNavigationOpen(false);
           setShortcutHelp(true);
@@ -2567,6 +2571,7 @@ export function App() {
           }}
         />
       )}
+      {plansOpen && status?.plans && <PlansDialog csrf={status.csrf} onClose={() => setPlansOpen(false)} />}
       {shortcutHelp && (
         <ShortcutHelp
           onClose={() => setShortcutHelp(false)}

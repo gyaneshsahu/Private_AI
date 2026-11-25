@@ -1,3 +1,4 @@
+import { fakeCheckoutProvider, MemoryPlanStore } from "./plans";
 import { bflImageProvider, mockImageProvider } from "./image-creation";
 import { readFile } from "node:fs/promises";
 import { createServer as createHttpsServer } from "node:https";
@@ -54,6 +55,8 @@ if (process.env.PRIVATEAI_LIVE_MANIFEST === "1" && privatemode && apiKey)
   scheduleManifestCheck(qualification, apiKey, providerManifest, (line) => console.warn(line), { serveLive: true });
 const app = createApp({
   origin,
+  // Plans with the test checkout (docs/plans-20261125.md) on the development server: off unless "1". No money moves.
+  ...(process.env.PRIVATEAI_PLANS === "1" ? { plans: { store: new MemoryPlanStore(), provider: fakeCheckoutProvider() } } : {}),
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,
   // Local review of the draft health-consent step only; the production composition never sets it.
   providerDisclosureDraft: (["tinfoil", "privatemode"] as const).find(

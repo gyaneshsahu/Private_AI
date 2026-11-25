@@ -54,6 +54,7 @@ import type { BackgroundKeyRing } from "./background-crypto";
 import { REQUEST_ID_HEADER } from "../shared/usage-config";
 import { chatFeature, createMetering, meteringWeights, withWeights, type MeteringConfig } from "./usage-metering";
 import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
+import { planRoutes, type PlanSettings } from "./plans";
 import { secureRoutes, type SecureSettings } from "./secure-store";
 import { legalPages } from "./legal-pages";
 
@@ -104,6 +105,8 @@ export interface Config {
    * goes to `provider`; the server keeps neither it nor the image. `dailyImages`: per account a day.
    */
   imageCreation?: { provider: ImageProvider; dailyImages: number };
+  /** Plans and checkout (docs/plans-20261125.md); absent means off. */
+  plans?: PlanSettings;
   /** Code execution on the user's device: the status says so and follow-up requests get their credit; absent means off. */
   code?: boolean;
   /** Deep research (docs/deep-research-20261114.md); absent means off. It also needs search. */
@@ -441,6 +444,8 @@ export function createApp(config: Config) {
         ? { providerDisclosureDraft: config.providerDisclosureDraft }
         : {}),
       ...(config.consumer?.billingRouter ? { billingRehearsal: true } : {}),
+      // Plans are on: the account menu offers "Plans" (docs/plans-20261125.md).
+      ...(config.plans && (res.locals.accountId || config.dev) ? { plans: true as const } : {}),
       ...(res.locals.accountId
         ? {
             requestAllowance: await (async () => {
@@ -1060,6 +1065,8 @@ export function createApp(config: Config) {
     app.use(secureRoutes(config.secureStore, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
+  if (config.plans)
+    app.use(planRoutes({ settings: config.plans, origin: config.origin, account: (res) => (res.locals.accountId ?? (config.dev ? "local-development" : undefined)) as string | undefined }));
   if (metering) app.use(metering.router);
   // Searches cost money at the search provider and page reads nothing; both are counted, never charged.
   const recordTool = (res: express.Response, feature: "search" | "page-fetch") => {

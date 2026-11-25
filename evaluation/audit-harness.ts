@@ -23,6 +23,7 @@ import { build } from "vite";
 import react from "@vitejs/plugin-react";
 import { chromium, firefox, webkit } from "@playwright/test";
 import { createApp } from "../server/app";
+import { fakeCheckoutProvider, MemoryPlanStore } from "../server/plans";
 import { mockImageProvider } from "../server/image-creation";
 import { MemoryBackgroundStore } from "../server/background-store";
 import { ephemeralKeyRing } from "../server/background-crypto";
@@ -97,6 +98,7 @@ export async function startServer(config: AuditConfig, client: string, fakesInSe
     ...(on ? { code: true } : {}),
     ...(on ? { imageCreation: { provider: mockImageProvider(), dailyImages: 3 } } : {}),
     ...(on ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
+    ...(on ? { plans: { store: new MemoryPlanStore(), provider: fakeCheckoutProvider() } } : {}),
     ...(on ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } } : {}),
     ...(on
       ? {

@@ -368,6 +368,14 @@ const STEPS: Step[] = [
     await c.shot("project-screen");
   }],
   ["incognito", async (c) => { await c.fresh(); await c.nav(); await c.click("New incognito chat"); await pause(c.page, 600); await c.shot("incognito-chat"); }],
+  // Plans (docs/plans-20261125.md): the three plans from the account menu, with the test checkout connected.
+  ["plans", async (c) => {
+    await c.fresh();
+    await accountMenu(c, "Plans");
+    await pause(c.page, 700);
+    await c.shot("plans");
+    await c.page.keyboard.press("Escape");
+  }, "on"],
   ["search-chats", async (c) => {
     await c.fresh();
     await c.nav();
