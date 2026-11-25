@@ -33,12 +33,12 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in `docs/working-rules.md`). I build my best version meanwhile; send screenshots when you can, any of the three apps is fine.
 
-1. **Received on 25 November for desktop (Claude); the phone view is still wanted.** **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
-2. **A long normal answer** with headings, a list and a table (filled; light and dark; phone and desktop). To compare: spacing, heading sizes, how a table looks on a phone, the row of buttons under the answer.
-3. **An answer that used web search** (filled; phone): how sources are shown inside the text and as a list. To compare: our source chips and the "Searched the web" line.
-4. **The opened document from a file card**, as in your Claude screenshot (filled; desktop and phone): the panel or page that opens when you tap "NetEcon Question Bank". To compare: our report panel and canvas.
-5. **Editing a text document in ChatGPT's canvas** (filled; desktop): the toolbar, and what happens when you select a sentence. To compare: our canvas, which edits raw Markdown today.
-6. **The three-dot menu on a chat and an open project page** (filled; desktop and phone), ChatGPT or Claude. To compare: the menu and project page built on 25 November.
+1. **Received (desktop 25 November, phone 26 November). Nothing more needed.** **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
+2. **Partly received on 26 November** (the text of a long ChatGPT answer and its end on the phone). **Still wanted: a table inside an answer on the phone, and one screenshot of the coloured cards and the diagram in that answer.** **A long normal answer** with headings, a list and a table (filled; light and dark; phone and desktop). To compare: spacing, heading sizes, how a table looks on a phone, the row of buttons under the answer.
+3. **Received on 26 November (the sources sheet). Still wanted: how a source is marked inside the text.** **An answer that used web search** (filled; phone): how sources are shown inside the text and as a list. To compare: our source chips and the "Searched the web" line.
+4. **Received on 26 November (phone). Nothing more needed.** **The opened document from a file card**, as in your Claude screenshot (filled; desktop and phone): the panel or page that opens when you tap "NetEcon Question Bank". To compare: our report panel and canvas.
+5. **Still wanted.** **Editing a text document in ChatGPT's canvas** (filled; desktop): the toolbar, and what happens when you select a sentence. To compare: our canvas, which edits raw Markdown today.
+6. **Received on 26 November for the project page and its menu (phone). Still wanted: the three-dot menu on a single chat.** **The three-dot menu on a chat and an open project page** (filled; desktop and phone), ChatGPT or Claude. To compare: the menu and project page built on 25 November.
 
 ## Next
 

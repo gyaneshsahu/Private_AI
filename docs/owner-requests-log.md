@@ -8,6 +8,24 @@
 
 ---
 
+## 19. Reference screenshots, and how a long answer should look
+
+- **Date:** 26 November 2026.
+- **You sent:** phone screenshots (a finished deep research in ChatGPT and its opened report; the opened document from a Claude file card; sources as a bottom sheet; a project page with its menu; the projects list) and the text of a long ChatGPT answer ("explain AGI in detail"). You said: a long answer can stay in the chat like this, or go to the side panel with a short note in the chat, whichever is better; and that ChatGPT's answer was multicolour, with images and diagrams.
+- **What I decided:** long answers stay in the chat, as you said on the same day (entry 13) and as your ChatGPT example does. A report-style card stays for deep research and canvas documents only.
+- **What ChatGPT's long answer has, and where ours stands:**
+
+| In ChatGPT's answer | In CometRow |
+| --- | --- |
+| Clear sections, tables, lists, quoted notes | Yes, with the answer design (entry 13) |
+| Coloured cards with a small tag ("Stage 1 · Current era", "Hypothetical") | **Not yet.** Needs a new answer block and one sentence in the model's instructions |
+| A drawn diagram (a flow chart from a text description) | **Not yet.** Needs a diagram drawer in the app and one sentence in the instructions. Charts with numbers are already drawn |
+| Pictures from the web | **Not possible under your rules:** the app loads nothing from other sites (no third party sees the user). It would need pictures fetched through our own server, which is a decision for you |
+
+- **My proposal, not built (your list for this round ends at item 6):** two new answer blocks, "cards" and "diagram", each behind the answer-design switch, with a measured cost per request, tried on the real sample answers first. Say yes and it is the next piece of work.
+- **What I took from the screenshots already:** the research card in ChatGPT's form (entry 12) matches your phone screenshots too. The rest is noted against "UI references I need" in the report: numbers 1, 3, 4 and 6 are answered; number 2 partly (I have the text and the end of the answer, not a table on the phone); number 5 (ChatGPT's canvas while editing) is still wanted.
+- **Status:** partly. Recorded and decided; the two new blocks wait for your yes.
+
 ## 18. Loading hang: a test and more investigation
 
 - **Date:** 26 November 2026.
