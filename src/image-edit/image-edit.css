@@ -202,14 +202,6 @@
   min-height: 44px;
   min-width: 44px;
 }
-/* The image card in the chat: the picture itself opens the editor. */
-.chat-design .created-image-open {
-  display: block;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: zoom-in;
-}
 @media (max-width: 760px) {
   /* Phones: the tools keep their names and wrap onto a second line; every target is at least 44 px. */
   .chat-design .image-editor-bar {

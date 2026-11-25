@@ -9,6 +9,7 @@ import { useLang, useText } from "./i18n";
 import { prepareSearchQuery } from "./identifier-masking";
 import { imageCreationText } from "./text/image-creation";
 import { imageEditText } from "./text/image-edit";
+import "./image-edit/image-card.css";
 
 export type CreatedImage = NonNullable<Message["createdImage"]>;
 /**

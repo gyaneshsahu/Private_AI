@@ -77,7 +77,8 @@ export function paste(picture: ImageBitmap, edited: ImageBitmap, overlay: HTMLCa
   // The edited crop, kept only where the user painted (blurred a little so the seam does not show).
   const patch = canvasOf(picture);
   const p = context(patch);
-  p.filter = `blur(${Math.max(2, Math.round(Math.min(box.width, box.height) / 60))}px)`;
+  // A wide soft edge: one live try (25 November) showed a faint box at a narrower one.
+  p.filter = `blur(${Math.max(3, Math.round(Math.min(box.width, box.height) / 25))}px)`;
   p.drawImage(overlay, 0, 0, picture.width, picture.height);
   p.filter = "none";
   p.globalCompositeOperation = "source-in";
