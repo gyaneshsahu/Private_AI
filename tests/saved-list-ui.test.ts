@@ -261,8 +261,7 @@ for (const width of WIDTHS)
         await page.keyboard.press("Enter");
         await ui(groups).toHaveText([s.pinned, s.today, s.week, s.older]);
         await ui(chats.nth(0)).toHaveText("Synthetic chat from yesterday");
-        // Close the menu again from its own button. (The app also closes menus on Escape.)
-        await press(page, actions("Synthetic chat from yesterday"));
+        // An entry that acts closes the menu itself.
         await ui(side.locator(".chat-item-menu[open]")).toHaveCount(0);
 
         // Archive by keyboard: gone from the recent list, shown under "Archived".
@@ -286,10 +285,7 @@ for (const width of WIDTHS)
         await search.fill("");
         await ui(chats).toHaveCount(4);
 
-        // "Manage history" and "New chat" from the keyboard.
-        await press(page, actions("Synthetic chat from today"));
-        await press(page, side.locator(".chat-item-menu[open]").getByRole("button", { name: messageActionsText[lang].manageHistory }));
-        await expect.poll(() => page.title()).toBe("opened Saved");
+        // "New chat" from the keyboard. (The row menu no longer has "Manage history": that is in the chat's own menu.)
         await press(page, side.getByRole("button", { name: w.newConversation, exact: true }));
         await expect.poll(() => page.title()).toBe("new chat");
         await noSidewaysScroll(page);
@@ -330,7 +326,7 @@ for (const width of WIDTHS)
         // Every entry of the row menu is a real button of at least 24 px (44 px on phones).
         await press(page, actions);
         await target(actions, width);
-        for (const name of [ma.rename, w.pin, w.archive, ma.manageHistory, ma.delete])
+        for (const name of [ma.rename, w.pin, w.archive, ma.delete])
           await target(menu.getByRole("button", { name, exact: true }), width);
         const box = (await menu.boundingBox())!;
         expect(box.x + box.width).toBeLessThanOrEqual(width);

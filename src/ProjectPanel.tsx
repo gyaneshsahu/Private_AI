@@ -23,7 +23,10 @@ import {
   type Project,
 } from "./projects";
 import { forStorage, type Storage } from "./text/mode-copy";
+import { ChatMenuItems, type Organize } from "./ChatMenuItems";
 import { messageActionsText } from "./text/message-actions";
+import { savedListText } from "./text/saved-list";
+import { workspaceText } from "./text/workspace";
 import { projectText } from "./text/projects";
 import { syncFilesText } from "./text/sync-files";
 // From src/sync/files.ts, not the whole sync API: the screen works the same without sync.
@@ -47,7 +50,9 @@ export function ProjectPanel({
   onNewChat,
   onOpenChat,
   onRename,
-  onRenameChat,
+  projects,
+  onOrganizeChat,
+  onDeleteChat,
   onDelete,
   onChange,
 }: {
@@ -64,8 +69,12 @@ export function ProjectPanel({
   onNewChat: () => void;
   onOpenChat: (c: Conversation) => void;
   onRename: (name: string) => Promise<boolean>;
-  /** Renames one of the project's chats, as the sidebar does. */
-  onRenameChat: (c: Conversation, title: string) => void;
+  /** Every project the chats could move to (the same store as this one). */
+  projects: readonly Project[];
+  /** Rename, pin, archive, move or remove one of the project's chats, as the sidebar does. */
+  onOrganizeChat: Organize;
+  /** Deletes a chat after the question; the menu entry is shown only when given. */
+  onDeleteChat?: (c: Conversation) => void;
   /** Resolves true when the project is gone; then the screen closes. */
   onDelete: (deleteChats: boolean) => Promise<boolean>;
   /** Writes a change of the project list to the vault; throws when nothing was saved. */
@@ -81,6 +90,8 @@ export function ProjectPanel({
   // Rename a chat in place, as in the sidebar: Enter or leaving the field saves, Escape cancels.
   const ma = messageActionsText[lang];
   const [chatRenaming, setChatRenaming] = useState<string>();
+  const [deletingChat, setDeletingChat] = useState<Conversation>();
+  const groups = savedListText[lang];
   const [chatDraft, setChatDraft] = useState("");
   const chatRenameRef = useRef<string | undefined>(undefined);
   const finishChatRename = (c: Conversation, save: boolean, refocus: boolean) => {
@@ -88,8 +99,8 @@ export function ProjectPanel({
     chatRenameRef.current = undefined;
     setChatRenaming(undefined);
     const title = chatDraft.trim();
-    if (save && title && title !== conversationTitle(c)) onRenameChat(c, title);
-    if (refocus) requestAnimationFrame(() => document.getElementById(`${id}-rename-${c.id}`)?.focus());
+    if (save && title && title !== conversationTitle(c)) onOrganizeChat(c, { title });
+    if (refocus) requestAnimationFrame(() => document.getElementById(`${id}-menu-${c.id}`)?.focus());
   };
   const [name, setName] = useState(project.name);
   const [instructions, setDraft] = useState(project.instructions ?? "");
@@ -257,7 +268,69 @@ export function ProjectPanel({
       <p className="project-status" aria-live="polite">
         {status}
       </p>
-      <section className="project-section" aria-labelledby={`${id}-instructions`}>
+      <div className="project-body">
+      <section className="project-section project-chats-section" aria-labelledby={`${id}-chats`}>
+        <h3 id={`${id}-chats`}>{t.chats}</h3>
+        {!chats.length ? (
+          <p className="muted">{t.noChats}</p>
+        ) : (
+          <ul className="project-chats">
+            {chats.map((c) => (
+              <li key={c.id}>
+                {chatRenaming === c.id ? (
+                  <input
+                    className="chat-rename"
+                    autoFocus
+                    aria-label={ma.chatName(conversationTitle(c))}
+                    value={chatDraft}
+                    maxLength={120}
+                    onFocus={(e) => e.currentTarget.select()}
+                    onChange={(e) => setChatDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter" && e.key !== "Escape") return;
+                      // Escape cancels the rename only: it must not close the project screen.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      finishChatRename(c, e.key === "Enter", true);
+                    }}
+                    onBlur={() => finishChatRename(c, true, false)}
+                  />
+                ) : (
+                  <button type="button" className="project-chat-open" disabled={busy} onClick={() => onOpenChat(c)}>
+                    <Icon name="chat" />
+                    <span>{conversationTitle(c)}</span>
+                    {c.archived && <small>{t.archived}</small>}
+                    <small>{new Date(c.createdAt).toLocaleDateString(locale)}</small>
+                  </button>
+                )}
+                {chatRenaming !== c.id && (
+                  <details className="chat-item-menu project-chat-menu">
+                    <summary id={`${id}-menu-${c.id}`} aria-label={workspaceText[lang].chatActions(conversationTitle(c))}>
+                      <Icon name="more" />
+                    </summary>
+                    <div className="chat-item-actions chat-menu-popover">
+                      <ChatMenuItems
+                        chat={c}
+                        projects={projects}
+                        busy={busy}
+                        close={() => document.getElementById(`${id}-menu-${c.id}`)?.closest("details")?.removeAttribute("open")}
+                        onOrganize={onOrganizeChat}
+                        onRename={() => {
+                          chatRenameRef.current = c.id;
+                          setChatDraft(conversationTitle(c));
+                          setChatRenaming(c.id);
+                        }}
+                        onDelete={onDeleteChat ? () => setDeletingChat(c) : undefined}
+                      />
+      </div>
+                  </details>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <section className="project-section project-instructions" aria-labelledby={`${id}-instructions`}>
         <h3 id={`${id}-instructions`}>{t.instructions}</h3>
         <p className="muted">{t.instructionsIntro}</p>
         <form
@@ -293,7 +366,7 @@ export function ProjectPanel({
           </div>
         </form>
       </section>
-      <section className="project-section" aria-labelledby={`${id}-files`}>
+      <section className="project-section project-files-section" aria-labelledby={`${id}-files`}>
         <h3 id={`${id}-files`}>{t.files}</h3>
         <p className="muted">{t.filesIntro}</p>
         {t.notInBackup && <p className="muted">{t.notInBackup}</p>}
@@ -374,62 +447,21 @@ export function ProjectPanel({
           </ul>
         )}
       </section>
-      <section className="project-section" aria-labelledby={`${id}-chats`}>
-        <h3 id={`${id}-chats`}>{t.chats}</h3>
-        {!chats.length ? (
-          <p className="muted">{t.noChats}</p>
-        ) : (
-          <ul className="project-chats">
-            {chats.map((c) => (
-              <li key={c.id}>
-                {chatRenaming === c.id ? (
-                  <input
-                    className="chat-rename"
-                    autoFocus
-                    aria-label={ma.chatName(conversationTitle(c))}
-                    value={chatDraft}
-                    maxLength={120}
-                    onFocus={(e) => e.currentTarget.select()}
-                    onChange={(e) => setChatDraft(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key !== "Enter" && e.key !== "Escape") return;
-                      // Escape cancels the rename only: it must not close the project screen.
-                      e.preventDefault();
-                      e.stopPropagation();
-                      finishChatRename(c, e.key === "Enter", true);
-                    }}
-                    onBlur={() => finishChatRename(c, true, false)}
-                  />
-                ) : (
-                  <button type="button" className="project-chat-open" disabled={busy} onClick={() => onOpenChat(c)}>
-                    <Icon name="chat" />
-                    <span>{conversationTitle(c)}</span>
-                    {c.archived && <small>{t.archived}</small>}
-                    <small>{new Date(c.createdAt).toLocaleDateString(locale)}</small>
-                  </button>
-                )}
-                {chatRenaming !== c.id && (
-                  <button
-                    type="button"
-                    id={`${id}-rename-${c.id}`}
-                    className="icon-button project-chat-rename"
-                    aria-label={`${ma.rename}: ${conversationTitle(c)}`}
-                    title={ma.rename}
-                    disabled={busy}
-                    onClick={() => {
-                      chatRenameRef.current = c.id;
-                      setChatDraft(conversationTitle(c));
-                      setChatRenaming(c.id);
-                    }}
-                  >
-                    <Icon name="edit" />
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      </div>
+      {deletingChat && onDeleteChat && (
+        <ConfirmDialog
+          title={groups.deleteTitle}
+          text={groups.deleteText(conversationTitle(deletingChat))}
+          confirmLabel={groups.deleteConfirm}
+          cancelLabel={t.cancel}
+          fallback={() => heading.current}
+          onClose={(confirmed) => {
+            const chat = deletingChat;
+            setDeletingChat(undefined);
+            if (confirmed) onDeleteChat(chat);
+          }}
+        />
+      )}
       {removing && (
         <ConfirmDialog
           title={t.removeFileTitle(removing.name)}

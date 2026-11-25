@@ -32,7 +32,8 @@ function Page() {
         onNewChat={() => {}}
         onOpenChat={() => {}}
         onRename={async () => true}
-        onRenameChat={() => {}}
+        projects={[]}
+        onOrganizeChat={() => {}}
         onDelete={async () => false}
         onChange={async () => {}}
       />

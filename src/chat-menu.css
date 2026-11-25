@@ -1,0 +1,257 @@
+/* The chat menu (docs/projects-ux-20261125.md): a floating list under the "⋯", not a block pushed into the list. */
+.chat-design .chat-list-row,
+.chat-design .project-chats li {
+  position: relative;
+}
+.chat-design .sidebar details.chat-item-menu[open] {
+  width: 34px;
+  order: 0;
+}
+.chat-design .sidebar .chat-item-menu[open] summary {
+  position: static;
+  background: var(--hover);
+}
+.chat-design .chat-menu-popover {
+  position: absolute;
+  top: calc(100% + 2px);
+  right: 4px;
+  z-index: 40;
+  width: min(264px, calc(100% - 8px));
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.16);
+}
+.chat-design .chat-menu-items {
+  display: grid;
+  gap: 2px;
+}
+.chat-design .chat-menu-items button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 450;
+  text-align: left;
+  box-shadow: none;
+}
+.chat-design .chat-menu-items button:hover:not(:disabled),
+.chat-design .chat-menu-items button[aria-expanded="true"] {
+  background: var(--hover);
+}
+.chat-design .chat-menu-items button:disabled {
+  opacity: 0.6;
+}
+.chat-design .chat-menu-items .chat-menu-chevron {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 120ms;
+}
+.chat-design .chat-menu-items .chat-menu-more[aria-expanded="true"] .chat-menu-chevron {
+  transform: rotate(90deg);
+}
+.chat-design .chat-menu-items .chat-menu-danger {
+  color: var(--danger, #b42318);
+}
+.chat-design .chat-menu-projects {
+  display: grid;
+  gap: 2px;
+  max-height: 220px;
+  margin: 2px 0 4px 10px;
+  padding-left: 8px;
+  border-left: 2px solid var(--line);
+  overflow-y: auto;
+}
+.chat-design .chat-menu-projects button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-design .chat-menu-projects button[aria-pressed="true"] {
+  opacity: 1;
+  font-weight: 600;
+}
+.chat-design .chat-menu-projects p {
+  margin: 4px 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.chat-design .chat-menu-projects form {
+  display: grid;
+  gap: 6px;
+  padding: 4px 2px;
+}
+.chat-design .chat-menu-projects form input {
+  width: 100%;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font-size: 16px;
+}
+.chat-design .chat-menu-projects form div {
+  display: flex;
+  gap: 6px;
+}
+.chat-design .chat-menu-projects form div button {
+  justify-content: center;
+  border: 1px solid var(--line);
+}
+.chat-design .chat-menu-projects form div button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+@media (max-width: 760px) {
+  .chat-design .chat-menu-items button,
+  .chat-design .chat-menu-projects form input {
+    min-height: 44px;
+  }
+}
+/* In the open chat's header menu the items sit among the menu's own entries, set off by lines. */
+.chat-design .conversation-menu .chat-menu-items {
+  margin: 4px 0;
+  padding: 4px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.chat-design .chat-rename-field {
+  width: 100%;
+  min-height: 44px;
+  margin: 0 0 16px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 16px;
+}
+.chat-design .project-breadcrumb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 6px 0 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.chat-design .project-breadcrumb-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+/* The project screen (docs/projects-ux-20261125.md): a roomy sheet; chats on the left, what the
+   project knows (instructions, files) on the right. One column on phones and narrow windows. */
+.chat-design dialog.project-dialog.project-dialog {
+  width: min(1040px, calc(100vw - 32px));
+  height: min(820px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 22px 26px 26px;
+}
+.chat-design .project-dialog .project-dialog-header h2 {
+  font-size: 22px;
+}
+.chat-design .project-dialog .project-body {
+  display: grid;
+  gap: 0 28px;
+  margin-top: 6px;
+}
+.chat-design .project-dialog .project-chats-section h3,
+.chat-design .project-dialog .project-instructions h3,
+.chat-design .project-dialog .project-files-section h3 {
+  font-size: 15px;
+}
+.chat-design .project-chats li {
+  border-radius: 10px;
+}
+.chat-design .project-chats li:hover,
+.chat-design .project-chats li:focus-within {
+  background: var(--hover);
+}
+.chat-design .project-chats .project-chat-open {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 450;
+}
+.chat-design .project-chats details.project-chat-menu {
+  flex: 0 0 36px;
+  width: 36px;
+}
+.chat-design .project-chats .project-chat-menu summary {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  min-height: 40px;
+  border-radius: 8px;
+  list-style: none;
+  cursor: pointer;
+}
+.chat-design .project-chats .project-chat-menu:not([open]) > :not(summary) {
+  display: none;
+}
+@media (hover: hover) {
+  .chat-design .project-chats li:not(:hover, :focus-within) .project-chat-menu:not([open]) summary {
+    opacity: 0;
+  }
+}
+@media (min-width: 900px) {
+  .chat-design .project-dialog .project-body {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-areas: "chats instructions" "chats files";
+    align-items: start;
+  }
+  .chat-design .project-dialog .project-chats-section {
+    grid-area: chats;
+  }
+  .chat-design .project-dialog .project-instructions {
+    grid-area: instructions;
+  }
+  .chat-design .project-dialog .project-files-section {
+    grid-area: files;
+  }
+}
+@media (max-width: 760px) {
+  .chat-design dialog.project-dialog.project-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 16px;
+    border-radius: 0;
+  }
+  .chat-design .project-chats .project-chat-menu summary {
+    min-height: 44px;
+  }
+}
+/* The first section of the project screen has no line above it. */
+.chat-design .project-dialog .project-body > .project-section:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+@media (min-width: 900px) {
+  .chat-design .project-dialog .project-body > .project-instructions {
+    border-top: 0;
+    padding-top: 4px;
+  }
+}

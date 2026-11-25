@@ -1,4 +1,6 @@
 import { CHAT_IMAGE_BUDGET, chatImageCharacters, CreateImageDialog } from "./CreateImage";
+import { ChatHeaderOrganize } from "./ChatHeaderOrganize";
+import { chatMenuText } from "./text/chat-menu";
 import { imageCreationText } from "./text/image-creation";
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
@@ -287,7 +289,8 @@ export function App() {
             event instanceof KeyboardEvent ||
             !(event.target instanceof Node) ||
             !menu.contains(event.target) ||
-            (event.target instanceof Element && event.target.closest("button"))
+            // A button closes its menu, except one that opens more of it (the project list of the chat menu).
+            (event.target instanceof Element && event.target.closest("button:not([data-keep-menu])"))
           ) {
             menu.open = false;
             if (event instanceof KeyboardEvent) event.preventDefault();
@@ -2660,7 +2663,9 @@ export function App() {
             setTab("Conversation");
             setOpenProject(undefined);
           }}
-          onRenameChat={(c, title) => void organizeChat(c, { title })}
+          projects={projects.filter((p) => modeOf(p.id) === modeOf(openProject))}
+          onOrganizeChat={(c, change) => void organizeChat(c, change)}
+          onDeleteChat={(c) => void deleteSnapshot(c)}
           onOpenChat={(c) => {
             setOpenProject(undefined);
             openSaved(c);
@@ -2762,8 +2767,23 @@ export function App() {
             {tab === "Conversation" &&
               projects.some((p) => p.id === conversation.projectId) && (
                 <p className="project-breadcrumb">
-                  <Icon name="folder" />
-                  {projects.find((p) => p.id === conversation.projectId)?.name}
+                  {projectSpacesEnabled() ? (
+                    // The project's name leads back to the project.
+                    <button
+                      type="button"
+                      className="project-breadcrumb-link"
+                      aria-label={chatMenuText[lang].openProject(projects.find((p) => p.id === conversation.projectId)?.name ?? "")}
+                      onClick={() => setOpenProject(conversation.projectId)}
+                    >
+                      <Icon name="folder" />
+                      {projects.find((p) => p.id === conversation.projectId)?.name}
+                    </button>
+                  ) : (
+                    <>
+                      <Icon name="folder" />
+                      {projects.find((p) => p.id === conversation.projectId)?.name}
+                    </>
+                  )}
                 </p>
               )}
             {tab === "Conversation" && conversation.messages.length > 0 && (
@@ -2800,6 +2820,22 @@ export function App() {
                 conversation={conversation}
                 disabled={!conversation.messages.length}
               />
+              {/* A saved chat can be organised from here too: rename, pin, project, archive, delete. */}
+              {tab === "Conversation" &&
+                !conversation.incognito &&
+                (() => {
+                  const kept = saved.find((c) => c.id === conversation.id);
+                  return kept ? (
+                    <ChatHeaderOrganize
+                      chat={kept}
+                      projects={secureOn ? projects.filter((p) => inMax(p.id) === inMax(kept.id)) : projects}
+                      busy={!!busy}
+                      onOrganize={(c, change) => void organizeChat(c, change)}
+                      onCreateProject={projectSpacesEnabled() ? (name) => createProject(name, secureOn && inMax(kept.id) ? "max" : undefined) : undefined}
+                      onDelete={(c) => void deleteSnapshot(c)}
+                    />
+                  ) : null;
+                })()}
               <button onClick={() => setTab("Saved")}>
                 <Icon name="edit" />
                 {t.renameSave}

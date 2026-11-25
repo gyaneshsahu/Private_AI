@@ -197,11 +197,17 @@ export function SettingsBody({
                   <li>
                     <button type="button" className="settings-row-link" onClick={() => onAccountPage("account-access")}>
                       {s.signInMethods}
+                      <span className="settings-row-arrow" aria-hidden="true">
+                        ›
+                      </span>
                     </button>
                   </li>
                   <li>
                     <button type="button" className="settings-row-link" onClick={() => onAccountPage("account-sessions")}>
                       {s.activeSessions}
+                      <span className="settings-row-arrow" aria-hidden="true">
+                        ›
+                      </span>
                     </button>
                   </li>
                   <li>
