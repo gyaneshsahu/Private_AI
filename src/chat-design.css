@@ -732,6 +732,10 @@
   padding-left: 20px;
 }
 .chat-design .searched-web a {
+  /* Each source is a 24 px target (WCAG 2.5.8), also when the list is tight. */
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
   color: var(--accent);
 }
 .chat-design .composer-dock {
