@@ -8,8 +8,6 @@ export const USE_EVENTS = [
   "whiteboard.opened",
   "project.created",
   "memory.saved",
-  "scheduled.created",
-  "voice-conversation.started",
   "read-aloud.used",
   "pdf-export.used",
 ] as const;

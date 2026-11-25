@@ -1,3 +1,4 @@
+import { ownerText } from "./text/owner";
 import { sidePanelsText } from "./text/side-panels";
 import { BrandLockup } from "./CometMark";
 import { UsageMeter } from "./UsageMeter";
@@ -71,6 +72,8 @@ export function WorkspaceNavigation(props: {
   ) => void;
   /** Deletes the saved chat after the row menu's confirmation; the entry is shown only when given. */
   onDelete?: (c: Conversation) => void;
+  /** Opens the owner's dashboard (docs/analytics-20261125.md); given only for an account on the owner list. */
+  onOwnerDashboard?: () => void;
 }) {
   const {
     open,
@@ -641,6 +644,12 @@ export function WorkspaceNavigation(props: {
               <Icon name="drive" />
               {t.savedData}
             </button>
+            {props.onOwnerDashboard && (
+              <button type="button" onClick={props.onOwnerDashboard}>
+                <Icon name="usage" />
+                {ownerText[lang].menu}
+              </button>
+            )}
             <button onClick={() => onNavigate("Help")}>
               <Icon name="help" />
               {t.help}

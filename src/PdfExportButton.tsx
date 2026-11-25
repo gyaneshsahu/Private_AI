@@ -1,3 +1,4 @@
+import { track } from "./owner/track";
 import { Suspense, useState } from "react";
 import type { Conversation } from "../shared/contracts";
 import { pdfExportEnabled } from "./device-features";
@@ -23,7 +24,11 @@ export function PdfExportButton({
 }) {
   const t = useText(deviceText);
   // Counts exports: a new key opens the dialog again even if a browser never reported it closed.
-  const [run, setRun] = useState(0);
+  const [run, setRunNumber] = useState(0);
+  const setRun: typeof setRunNumber = (next) => {
+    track("pdf-export.used");
+    setRunNumber(next);
+  };
   if (!pdfExportEnabled()) return null;
   const messages =
     answer === undefined

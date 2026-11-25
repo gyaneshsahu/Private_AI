@@ -1,3 +1,4 @@
+import { track } from "./owner/track";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { languageOf } from "./arithmetic/numbers";
 import { readAloudEnabled } from "./device-features";
@@ -32,6 +33,7 @@ export function ReadAloudButton({ id, disabled }: { id: string; disabled: boolea
         aria-pressed={active}
         onClick={async (event) => {
           if (active) return reader.stop();
+          track("read-aloud.used");
           setRefusal("");
           // The rendered answer: speech follows what the screen shows.
           const shown = event.currentTarget.closest("article")?.querySelector(".message-text");
