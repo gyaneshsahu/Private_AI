@@ -12,12 +12,15 @@ Every decision and every manual step only you can do. Nothing here was done by t
 4. **Your config for the owner test:** the example `deployment/render-config.owner-test.example.json` now says `"plan": "premium"` and 60 searches a day. Your real `render-config.json` on Render is yours to edit: set `"metering": { "enabled": true, "plan": "premium" }` there (premium gives 60 searches a day). Back to `"alpha"` before friends (24 a day).
 5. **Black Forest Labs trains on what is sent** (their EU API terms, 26 August 2026, section 2(b)); you knew this for prompts (D1). It also covers **input images** once image editing is on. An opt-out exists by email to privacy@blackforestlabs.ai, subject "Training Opt Out". Only you can send it. Until a no-training provider is live (Track 4), editing uploaded photos should stay off for friends.
 6. **Wording choice:** the Terms still say "invite-only test phase (alpha)". It is a legal text under the legal read, so I left it. Say if you want "trial" there too.
+8. **Images per day in your test:** your config has `"imageCreation": { ..., "dailyImages": 3 }`, and the plan does not change that number. With editing on, every edit counts as an image, so three edits end the day. Raise it for your test (for example 20; the config allows up to 50). Each image or edit costs about USD 0.015 at the provider.
+9. **Projects and the chat menu (your message of 25 November):** being redesigned on its own branch, `feat/projects-ux`. Project-level memory is not built: see that track's notes for what it would take.
 7. **Two older decisions the new work touches** (I did not edit `docs/owner-decisions.md`): item 17 of 16 November lists shared links as "not built because of your rules", and the 13 November constraint says images are never stored after the answer. Share links (Track 1b, step 2) and image versions (Track 1) are built behind off-switches because you asked for them on 25 November; confirm before switching them on.
 
 ## Next
 
-- Track 0 (`fix/before-owner-test`, head `e6193da`): done, pushed; read the CI result (`gh run list --branch fix/before-owner-test`).
-- Track 1 (`feat/image-editing`, head `686bb13`, worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-editing`): built and tested; its full local check is running. When green: push, read CI.
+- Track 0 (`fix/before-owner-test`, head `7bb1478`): done, pushed. CI was green on `e6193da` (run 45584344193); read the run for `7bb1478`.
+- Track 1 (`feat/image-editing`, head `d4a74f9`, worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-editing`): done, pushed 25 November; read its CI run.
+- **Now: projects and chat menu redesign** (owner's message of 25 November), branch `feat/projects-ux` **from `fix/before-owner-test`** (it changes the same project screen), worktree `C:\Gyanesh\Startups\Private_AI-tracks\projects-ux`. Start by screenshotting today's flows.
 - Then Track 1b (`feat/image-share`): branch it **from `feat/image-editing`**, not from the tag (it builds on the image card and the editor; written down under Track 1b when started).
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
@@ -51,8 +54,9 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 
 | Track | Branch | State | CI |
 | --- | --- | --- | --- |
-| 0 Fixes | `fix/before-owner-test` | done; local: build, 2,368 unit tests, 64 browser tests, evaluation checks, secret scan all green | pushed 25 Nov, run 45584344193 in progress when written |
-| 1 Image editing | `feat/image-editing` | built; 32 new tests green; 245 tests of touched areas green; full local check running | not pushed yet |
+| 0 Fixes | `fix/before-owner-test` | done. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `e6193da` (run 45584344193); `7bb1478` pushed, run to read |
+| 1 Image editing | `feat/image-editing` | done. Local full run on `d4a74f9`: build green, unit 2,393 passed and 1 failed (`invite-browser`, a 5-second wait; alone it passed 5 of 6 here and 4 of 4 on the fix branch: timing, not this change, but unproven), browser tests 64 of 64, evaluation checks and secret scan green | pushed 25 Nov, run to read |
+| P Projects and chat menu | `feat/projects-ux` | starting | |
 | 1b Placement and sharing | `feat/image-share` | not started | |
 | 2 Analytics | `feat/analytics` | not started | |
 | 3 Feedback | `feat/feedback` | not started | |
@@ -90,7 +94,12 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 - The search cap is still kept in memory (a restart forgets the day's count) and applies only while deep research is configured. Both are as before; not changed.
 - The plan screen with "Subscription rehearsal" wording shows only when the server offers the billing rehearsal, which production refuses. Left as is; Track 6 replaces it.
 
-**Not verified:** anything on Render (no deploy). The account-menu line "Usage unavailable" appears only when no allowance is configured; with your premium config it shows the counts.
+**Not verified:**
+- Anything on Render (no deploy).
+- **The visitor-address change at the app's front door.** The rule that admits requests (`server/authenticated-ingress.ts`) was rewritten as one function and has direct unit tests for all three modes. CI's database job runs the Render bridge tests against the real code in the mode you use today (no address) and they pass. The Docker-based ingress suites (28 checks) were not run against this code: they use pre-built local images from older commits, and rebuilding them would overwrite your local images. Nobody has run the new "address" mode end to end; it stays off until you switch it on.
+- The account-menu line reads "Usage unavailable · No active plan shown" only when the server sends no allowance. With your config it shows the counts. Seen only in a test fixture, so left unchanged.
+
+**Screens looked at after the polish:** project screen, Settings > Security (rows checked equal by a test; the "Sign out everywhere" question keeps its own buttons), usage with real numbers (week, today, limits, by feature, latest), each at phone and desktop size.
 
 ## Track 1: image editing (`feat/image-editing`)
 
