@@ -17,7 +17,13 @@ function totals(days: readonly AnalyticsDay[], pick: (day: AnalyticsDay) => Reco
   return [...out].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
-export function OwnerDashboard(props: { onClose(): void; children?: ReactNode }) {
+export function OwnerDashboard(props: {
+  onClose(): void;
+  /** False when analytics is off and the dashboard only holds what `children` bring (feedback). */
+  analytics?: boolean;
+  children?: ReactNode;
+}) {
+  const counted = props.analytics !== false;
   const t = useText(ownerText);
   const { lang } = useLang();
   const names = ownerFeatureText[lang];
@@ -35,6 +41,7 @@ export function OwnerDashboard(props: { onClose(): void; children?: ReactNode })
   }, []);
   useEffect(() => {
     let live = true;
+    if (!counted) return;
     setView(undefined);
     fetch(`/api/owner/analytics?days=${range}`, { credentials: "same-origin" })
       .then((response) => (response.ok ? (response.json() as Promise<AnalyticsView>) : Promise.reject()))
@@ -45,7 +52,7 @@ export function OwnerDashboard(props: { onClose(): void; children?: ReactNode })
     return () => {
       live = false;
     };
-  }, [range]);
+  }, [range, counted]);
   const number = (n: number) => n.toLocaleString(lang === "de" ? "de-DE" : "en-GB");
   const euros = (n: number) => n.toLocaleString(lang === "de" ? "de-DE" : "en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const date = (day: string) => new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === "de" ? "de-DE" : "en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
@@ -91,22 +98,24 @@ export function OwnerDashboard(props: { onClose(): void; children?: ReactNode })
     >
       <header>
         <h2>{t.title}</h2>
-        <label>
-          <span>{t.range}</span>
-          <select value={range} onChange={(event) => setRange(Number(event.target.value))}>
-            {[7, 30, 90].map((n) => (
-              <option key={n} value={n}>
-                {t.days(n)}
-              </option>
-            ))}
-          </select>
-        </label>
+        {counted && (
+          <label>
+            <span>{t.range}</span>
+            <select value={range} onChange={(event) => setRange(Number(event.target.value))}>
+              {[7, 30, 90].map((n) => (
+                <option key={n} value={n}>
+                  {t.days(n)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <button type="button" className="icon-button" aria-label={t.close} onClick={props.onClose}>
           <Icon name="close" />
         </button>
       </header>
-      {!view && <p role="status">{t.loading}</p>}
-      {view === "failed" && <p role="status">{t.failed}</p>}
+      {counted && !view && <p role="status">{t.loading}</p>}
+      {counted && view === "failed" && <p role="status">{t.failed}</p>}
       {open && (
         <>
           <p className="muted">{t.intro(open.retentionDays)}</p>
@@ -168,9 +177,9 @@ export function OwnerDashboard(props: { onClose(): void; children?: ReactNode })
           {list(t.featureUse, [...totals(open.days, (d) => d.requests, () => true), ...totals(open.days, (d) => d.counters, (name) => name.startsWith("use."))])}
           {list(t.errorsHeading, totals(open.days, (d) => d.counters, isErrorCounter))}
           {list(t.limitsHeading, totals(open.days, (d) => d.counters, isLimitCounter))}
-          {props.children}
         </>
       )}
+      {props.children}
     </dialog>
   );
 }

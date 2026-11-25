@@ -11,6 +11,7 @@ import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { bflImageProvider } from "./image-creation";
 import { PostgresAnalyticsStore } from "./analytics";
+import { PostgresFeedbackStore } from "./feedback";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
@@ -83,6 +84,8 @@ export interface ProductionInferenceConfig {
   voice?: import("../shared/voice").VoiceLimits;
   /** Image question limits; absent means image upload is off. */
   images?: { maxBytes: number; dailyImages: number };
+  /** Feedback from testers (migration 0029); absent means off. */
+  feedback?: { ownerEmails: string[] };
   /** Privacy-safe analytics for the owner (migration 0028); absent means off. */
   analytics?: { ownerEmails: string[]; retentionDays: number };
   /** Code execution on the user's device; absent means off. */
@@ -148,6 +151,7 @@ export function createProductionConsumerCandidate(
           ...(inference.voice ? { voice: inference.voice } : {}),
           ...(inference.images ? { images: inference.images } : {}),
           ...(inference.code ? { code: true } : {}),
+          ...(inference.feedback ? { feedback: { ...inference.feedback, store: new PostgresFeedbackStore(config.database) } } : {}),
           ...(inference.analytics ? { analytics: { ...inference.analytics, store: new PostgresAnalyticsStore(config.database) } } : {}),
           ...(inference.imageCreation
             ? {

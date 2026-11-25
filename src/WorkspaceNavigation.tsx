@@ -1,3 +1,4 @@
+import { feedbackText } from "./text/feedback";
 import { ownerText } from "./text/owner";
 import { sidePanelsText } from "./text/side-panels";
 import { BrandLockup } from "./CometMark";
@@ -74,6 +75,8 @@ export function WorkspaceNavigation(props: {
   onDelete?: (c: Conversation) => void;
   /** Opens the owner's dashboard (docs/analytics-20261125.md); given only for an account on the owner list. */
   onOwnerDashboard?: () => void;
+  /** Opens the feedback form (docs/feedback-20261125.md); given only while feedback is switched on. */
+  onFeedback?: () => void;
 }) {
   const {
     open,
@@ -654,6 +657,12 @@ export function WorkspaceNavigation(props: {
               <Icon name="help" />
               {t.help}
             </button>
+            {props.onFeedback && (
+              <button type="button" onClick={props.onFeedback}>
+                <Icon name="chat" />
+                {feedbackText[lang].menu}
+              </button>
+            )}
             {onShortcuts && (
               <button type="button" onClick={onShortcuts}>
                 <Icon name="keyboard" />

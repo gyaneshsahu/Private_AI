@@ -586,6 +586,10 @@ export interface AppStatus {
   analytics?: true;
   /** This account is on the owner list: the account menu offers the owner's dashboard. */
   ownerDashboard?: true;
+  /** Feedback from testers is on (docs/feedback-20261125.md): the account menu offers "Send feedback". */
+  feedback?: true;
+  /** This account may read and delete feedback in the owner's dashboard. */
+  feedbackOwner?: true;
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

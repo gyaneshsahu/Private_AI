@@ -51,6 +51,8 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
     // Consent record (migration 0026): one row per accepted version pair, written at sign-in, read for the export.
     `GRANT SELECT,INSERT ON ${table("consent_records")} TO ${runtime}`,
+    // Feedback (migration 0029): the runtime adds an entry, lists them for the owner and deletes; never changes one.
+    `GRANT SELECT,INSERT,DELETE ON ${table("feedback")} TO ${runtime}`,
     // Analytics (migration 0028): day totals with no account in them; the runtime adds to them, reads them and deletes old days.
     `GRANT SELECT,INSERT,UPDATE,DELETE ON ${table("analytics_daily")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,

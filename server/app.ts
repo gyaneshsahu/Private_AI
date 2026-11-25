@@ -57,6 +57,7 @@ import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
 import { secureRoutes, type SecureSettings } from "./secure-store";
 import { legalPages } from "./legal-pages";
 import { analyticsRoutes, isOwner, scheduleAnalytics, type AnalyticsSettings } from "./analytics";
+import { feedbackRoutes, isFeedbackOwner, type FeedbackSettings } from "./feedback";
 
 export interface Config {
   origin: string;
@@ -113,6 +114,8 @@ export interface Config {
   metering?: MeteringConfig;
   /** Privacy-safe analytics for the owner (docs/analytics-20261125.md); absent means off. `start: false` (tests) keeps the timer off. */
   analytics?: AnalyticsSettings & { start?: boolean };
+  /** Feedback from testers (docs/feedback-20261125.md); absent means off. */
+  feedback?: FeedbackSettings;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** End-to-end encrypted vault sync (docs/vault-sync-20261115.md); absent means off. */
@@ -508,7 +511,10 @@ export function createApp(config: Config) {
       ...(config.code && ready ? { code: true } : {}),
       // Analytics is on: the browser may count the use of a feature by its fixed name. The dashboard entry is the owner's alone.
       ...(config.analytics && (res.locals.accountId || config.dev) ? { analytics: true as const } : {}),
-      ...(isOwner(config.analytics, ownerEmail(res)) ? { ownerDashboard: true as const } : {}),
+      ...(isOwner(config.analytics, ownerEmail(res)) || isFeedbackOwner(config.feedback, ownerEmail(res)) ? { ownerDashboard: true as const } : {}),
+      // Feedback is on: the account menu offers "Send feedback". `feedbackOwner`: this account may read it.
+      ...(config.feedback && (res.locals.accountId || config.dev) ? { feedback: true as const } : {}),
+      ...(isFeedbackOwner(config.feedback, ownerEmail(res)) ? { feedbackOwner: true as const } : {}),
       // Its own partner and allowance: not tied to the chat provider being ready.
       ...(config.imageCreation && (res.locals.accountId || config.dev)
         ? { imageCreation: { limit: config.imageCreation.dailyImages, used: createDay.used(String(res.locals.accountId ?? "local-development")) } }
@@ -1067,6 +1073,14 @@ export function createApp(config: Config) {
     app.use(syncRoutes(config.vaultSync.store, config.vaultSync, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   if (config.secureStore)
     app.use(secureRoutes(config.secureStore, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
+  if (config.feedback)
+    app.use(
+      feedbackRoutes({
+        settings: config.feedback,
+        account: (res) => (res.locals.accountId ?? (config.dev ? "local-development" : undefined)) as string | undefined,
+        email: ownerEmail,
+      }),
+    );
   if (config.analytics) {
     app.use(
       analyticsRoutes({

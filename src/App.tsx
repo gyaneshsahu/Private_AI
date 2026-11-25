@@ -186,6 +186,8 @@ const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
 const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
 const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
 const OwnerDashboard = lazyNamed(() => import("./owner/OwnerDashboard"), "OwnerDashboard");
+const FeedbackDialog = lazyNamed(() => import("./feedback/FeedbackDialog"), "FeedbackDialog");
+const FeedbackList = lazyNamed(() => import("./feedback/FeedbackList"), "FeedbackList");
 const CanvasPanel = lazyNamed(() => import("./CanvasPanel"), "CanvasPanel");
 const WhiteboardPanel = lazyNamed(() => import("./Whiteboard"), "WhiteboardPanel");
 const OutputsPanel = lazyNamed(() => import("./OutputsPanel"), "OutputsPanel");
@@ -797,6 +799,8 @@ export function App() {
   // Analytics (docs/analytics-20261125.md): feature use is counted by fixed name only while the server says it is on.
   useEffect(() => setTracking(status?.analytics ? status.csrf : undefined), [status?.analytics, status?.csrf]);
   const [ownerOpen, setOwnerOpen] = useState(false);
+  // Feedback from testers (docs/feedback-20261125.md): the form opens from the account menu.
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   async function copyAnswer(text: string, id: string) {
     const current = epoch.current;
     try {
@@ -2384,6 +2388,7 @@ export function App() {
         status={status}
         onSignOut={() => void signOut()}
         onOwnerDashboard={status?.ownerDashboard ? () => setOwnerOpen(true) : undefined}
+        onFeedback={status?.feedback ? () => setFeedbackOpen(true) : undefined}
         onCreateProject={createProject}
         onEditProject={editProject}
         onDeleteProject={deleteProject}
@@ -4004,7 +4009,12 @@ export function App() {
           onUse={(file) => void importFiles([file])}
         />
       )}
-      {ownerOpen && status?.ownerDashboard && <OwnerDashboard onClose={() => setOwnerOpen(false)} />}
+      {ownerOpen && status?.ownerDashboard && (
+        <OwnerDashboard analytics={!!status.analytics} onClose={() => setOwnerOpen(false)}>
+          {status.feedbackOwner && <FeedbackList csrf={status.csrf} />}
+        </OwnerDashboard>
+      )}
+      {feedbackOpen && status?.feedback && <FeedbackDialog csrf={status.csrf} onClose={() => setFeedbackOpen(false)} />}
       {status?.imageCreation && createImageFor !== undefined && (
         <CreateImageDialog
           open
