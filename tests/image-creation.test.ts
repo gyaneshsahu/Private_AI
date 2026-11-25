@@ -98,7 +98,8 @@ it("Black Forest Labs adapter: EU endpoint, the key in a header, submit, poll, d
     const url = String(input);
     const headers = new Headers(init?.headers);
     calls.push({ url, key: headers.get("x-key") ?? undefined, body: typeof init?.body === "string" ? init.body : undefined });
-    if (url === "https://api.eu.bfl.ai/v1/flux-2-klein") return Response.json({ id: "t1", polling_url: "https://api.eu.bfl.ai/v1/get_result?id=t1" });
+    // The config's "flux-2-klein" is the provider's "flux-2-klein-4b" (the short name answers 404 there).
+    if (url === "https://api.eu.bfl.ai/v1/flux-2-klein-4b") return Response.json({ id: "t1", polling_url: "https://api.eu.bfl.ai/v1/get_result?id=t1" });
     if (url.startsWith("https://api.eu.bfl.ai/v1/get_result")) return Response.json(++poll < 2 ? { status: "Pending" } : { status: "Ready", result: { sample: "https://delivery.example/s.jpeg" } });
     if (url === "https://delivery.example/s.jpeg") return new Response(png, { headers: { "content-type": "image/jpeg" } });
     return new Response("no", { status: 404 });

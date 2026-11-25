@@ -31,7 +31,7 @@ Not done by the agent: nothing was deployed, no account was created, no key was 
 | D3 | **German interface for your test** (`VITE_GERMAN_UI`) | On: only you and the test account can sign in, so nobody else sees the unapproved German texts. Off: until the German legal read | On, for your test only |
 | D4 | **Session length** | **Decided 18 November: 14 days without use (the timer restarts each time you use the app), at most 90 days after sign-in, and "Sign out everywhere" in Settings > Security.** Built the same day; the Terms and Privacy Policy say so in English and German (for the legal read) | Done |
 | D5 | **Deep research for everyone or premium only** | Everyone on the list, or `research.allowedEmails` | Everyone (only you and the test account) |
-| D6 | **Allowance for your test** | The alpha plan your friends will get (150 a week, 40 a day), or the premium plan (600 a week, 150 a day, more pictures, voice and research). A full test pass uses more than 40 in a day | Premium for your test: change `"plan": "alpha"` to `"premium"` in the config. Back to alpha before friends |
+| D6 | **Allowance for your test** | The alpha plan your friends will get (150 a week, 40 a day), or the premium plan (600 a week, 150 a day, more pictures, voice and research). A full test pass uses more than 40 in a day | Premium for your test. The example config now says `"plan": "premium"` (25 November; 60 web searches a day): change it back to `"alpha"` before friends |
 
 **Your answers, 18 November:** D1 Black Forest Labs for your test, D2 everything, D3 German on for your test, D4 as above, D5 everyone, D6 premium.
 

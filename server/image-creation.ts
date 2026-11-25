@@ -80,11 +80,15 @@ export function bflImageProvider(o: {
   const base = (o.baseUrl ?? "https://api.eu.bfl.ai").replace(/\/$/, "");
   const pollMs = o.pollMs ?? 500;
   const timeoutMs = o.timeoutMs ?? 60_000;
+  // The provider has no "flux-2-klein" address: it answered 404, and "flux-2-klein-4b" 200, on the
+  // EU endpoint (one live request, 25 November 2026). The config keeps its short name; the 4B
+  // model is the one priced in shared/usage-weights.json (USD 0.014 per image).
+  const path = o.model === "flux-2-klein" ? "flux-2-klein-4b" : o.model;
   return {
     name: "bfl",
     model: o.model,
     async generate(prompt, signal) {
-      const submit = await http(`${base}/v1/${encodeURIComponent(o.model)}`, {
+      const submit = await http(`${base}/v1/${encodeURIComponent(path)}`, {
         method: "POST",
         headers: { "content-type": "application/json", accept: "application/json", "x-key": o.apiKey },
         body: JSON.stringify({ prompt, width: 1024, height: 1024, output_format: "jpeg", safety_tolerance: 2 }),
