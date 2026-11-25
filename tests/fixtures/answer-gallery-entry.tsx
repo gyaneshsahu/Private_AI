@@ -7,6 +7,7 @@ import { createRoot } from "react-dom/client";
 import { LangProvider } from "../../src/i18n";
 import { Answer } from "../../src/Answer";
 import replies from "../../evaluation/answer-design/replies-20261125.json";
+import { BLOCKS_SAMPLE } from "./answer-blocks-sample";
 import "../../src/styles.css";
 import "../../src/chat-design.css";
 
@@ -15,7 +16,8 @@ const designed = params.get("designed") !== "0";
 const theme = params.get("theme") === "dark" ? "dark" : "light";
 const ids = params.get("ids")?.split(",");
 const compare = params.get("compare") === "1";
-const rows = replies.rows.filter((row) => row.answer && (!ids || ids.includes(row.id)));
+// &blocks=1: one answer that uses every answer block (docs/answer-blocks-20261126.md), instead of the captured ones.
+const rows = params.get("blocks") === "1" ? [{ id: "blocks", question: "Explain how an AI agent works.", answer: BLOCKS_SAMPLE }] : replies.rows.filter((row) => row.answer && (!ids || ids.includes(row.id)));
 
 function Gallery() {
   return (

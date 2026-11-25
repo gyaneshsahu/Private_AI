@@ -1,0 +1,289 @@
+/* Answer blocks (docs/answer-blocks-20261126.md). Restraint on purpose: the theme's neutrals and
+   one accent; the three kinds of note differ by a thin coloured edge and a faint tint, nothing
+   louder. Light and dark follow from the theme's variables. */
+.chat-design {
+  --note-caution: #b45309;
+  --note-conclusion: #15803d;
+}
+.chat-design[data-theme="dark"] {
+  --note-caution: #f0b35c;
+  --note-conclusion: #6cc98d;
+}
+@media (prefers-color-scheme: dark) {
+  .chat-design:not([data-theme="light"]) {
+    --note-caution: #f0b35c;
+    --note-conclusion: #6cc98d;
+  }
+}
+
+/* Notes: a quoted line with a label. The class is named twice so these rules outrank the answer
+   design's own look for quoted lines (src/answer/design.css). */
+.chat-design .message-text blockquote.answer-callout.answer-callout {
+  --note: var(--accent);
+  margin: 6px 0 16px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--note) 22%, var(--line));
+  border-left: 3px solid var(--note);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--note) 6%, var(--surface));
+  color: var(--ink);
+}
+.chat-design .message-text blockquote.answer-callout.answer-callout.caution {
+  --note: var(--note-caution);
+}
+.chat-design .message-text blockquote.answer-callout.answer-callout.conclusion {
+  --note: var(--note-conclusion);
+}
+.chat-design .message-text blockquote.answer-callout.answer-callout > :last-child {
+  margin-bottom: 0;
+}
+/* The label reads as a label: small, in the note's colour, on its own line. */
+.chat-design .message-text blockquote.answer-callout.answer-callout > p:first-child > strong:first-child {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--note);
+  font-size: 0.82em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Steps: numbered cards on one line down the page. */
+.chat-design .message-text ol.answer-steps {
+  display: grid;
+  gap: 0;
+  margin: 8px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.chat-design .message-text ol.answer-steps > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0 0 14px;
+}
+/* The line that joins one step to the next. */
+.chat-design .message-text ol.answer-steps > li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 28px;
+  bottom: 0;
+  left: 13.5px;
+  width: 1px;
+  background: var(--line);
+}
+.chat-design .answer-step-number {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.chat-design .message-text ol.answer-steps > li > div {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.chat-design .message-text ol.answer-steps strong {
+  display: block;
+  font-weight: 650;
+}
+.chat-design .message-text ol.answer-steps p {
+  margin: 2px 0 0;
+  color: var(--ink2);
+  font-size: 0.94em;
+}
+.chat-design .answer-step-tag {
+  display: inline-block;
+  margin: 0 0 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--subtle);
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Diagrams. */
+.chat-design .message-text figure.answer-diagram {
+  margin: 8px 0 18px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .answer-diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.chat-design .answer-diagram-node rect {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--accent) 50%, var(--line));
+  stroke-width: 1.2;
+}
+.chat-design .answer-diagram-node.decision rect {
+  fill: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  stroke-dasharray: 5 4;
+}
+.chat-design .answer-diagram-node text {
+  fill: var(--ink);
+  font-size: 13.5px;
+  font-weight: 550;
+}
+.chat-design .answer-diagram-edge path {
+  fill: none;
+  stroke: var(--ink3);
+  stroke-width: 1.3;
+}
+.chat-design .answer-diagram marker path {
+  fill: var(--ink3);
+}
+.chat-design .answer-diagram-edge text {
+  fill: var(--ink2);
+  font-size: 12px;
+}
+.chat-design .answer-diagram figcaption {
+  margin-top: 8px;
+  color: var(--ink2);
+  font-size: 13px;
+  text-align: center;
+}
+.chat-design .answer-layers {
+  display: grid;
+  gap: 8px;
+}
+.chat-design .answer-layer {
+  display: grid;
+  gap: 8px;
+}
+.chat-design .answer-layer > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--subtle);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+/* The row that stands alone in the middle of the stack is the heart of the thing: one accent. */
+.chat-design .answer-layer:nth-child(2):has(> div:only-child) > div {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+}
+.chat-design .answer-layer strong {
+  font-weight: 650;
+}
+.chat-design .answer-layer span {
+  color: var(--ink2);
+  font-size: 0.86em;
+}
+
+/* Quick check. */
+.chat-design .message-text ol.answer-quiz {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 18px;
+  padding-left: 24px;
+}
+.chat-design .message-text ol.answer-quiz > li > p {
+  margin: 0 0 4px;
+}
+.chat-design .message-text ol.answer-quiz details {
+  padding: 0;
+  border: 0;
+  background: transparent !important;
+}
+.chat-design .message-text ol.answer-quiz summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink2);
+  font-size: 13.5px;
+  cursor: pointer;
+  list-style: none;
+}
+.chat-design .message-text ol.answer-quiz summary::-webkit-details-marker {
+  display: none;
+}
+.chat-design .message-text ol.answer-quiz details[open] summary {
+  display: none;
+}
+.chat-design .message-text ol.answer-quiz details > p {
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  border-left: 2px solid var(--accent);
+  background: var(--subtle);
+  border-radius: 0 10px 10px 0;
+}
+
+/* Explorer: tabs, one case at a time. */
+.chat-design .answer-explore {
+  margin: 8px 0 18px;
+}
+.chat-design .answer-explore [role="tablist"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.chat-design .answer-explore [role="tab"] {
+  min-height: 34px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink2);
+  font-size: 13.5px;
+  font-weight: 550;
+}
+.chat-design .answer-explore [role="tab"][aria-selected="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+.chat-design .answer-explore [role="tabpanel"] {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .answer-explore [role="tabpanel"] > p:last-child {
+  margin-bottom: 0;
+}
+.chat-design .answer-explore [role="tabpanel"] figure.answer-diagram {
+  margin-top: 0;
+  padding: 0 0 6px;
+  border: 0;
+}
+@media (max-width: 760px) {
+  /* A shrunk drawing has unreadable labels: on a phone it keeps its size and scrolls inside its frame. */
+  .chat-design .message-text figure.answer-diagram:not(.answer-layers) {
+    overflow-x: auto;
+  }
+  .chat-design .answer-diagram svg {
+    min-width: 440px;
+  }
+  .chat-design .message-text ol.answer-quiz summary,
+  .chat-design .answer-explore [role="tab"] {
+    min-height: 44px;
+  }
+  .chat-design .answer-layer {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

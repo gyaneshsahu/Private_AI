@@ -38,6 +38,8 @@ ARG VITE_ANSWER_DESIGN=
 ARG VITE_ACTIVITY=
 # Error states (docs/error-states-20261126.md): off unless built with it set to 1.
 ARG VITE_ERROR_STATES=
+# Answer blocks (docs/answer-blocks-20261126.md): off unless built with it set to 1.
+ARG VITE_ANSWER_BLOCKS=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).

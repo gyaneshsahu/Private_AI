@@ -5,6 +5,7 @@
 //  - a paragraph that is only a bold line ending in a colon, before a list: a label for that list;
 //  - two to six short lines of "**Name:** value": key figures, drawn as tiles.
 import type { Paragraph, PhrasingContent, Root, RootContent } from "mdast";
+import { calloutKind } from "./blocks";
 
 const textOf = (nodes: PhrasingContent[]): string =>
   nodes.map((node) => ("value" in node ? node.value : "children" in node ? textOf(node.children as PhrasingContent[]) : "")).join("");
@@ -71,6 +72,26 @@ export function answerStructure() {
     // The lead: the answer's first paragraph, when more follows and it is short enough to be one thought.
     const first = blocks[0];
     if (first?.type === "paragraph" && blocks.length > 2 && !first.data && textOf(first.children).length <= 320) mark(first, undefined, "answer-lead");
+  };
+}
+
+/**
+ * Answer blocks (docs/answer-blocks-20261126.md): a quoted line that opens with a bold label the app
+ * knows ("Key idea:", "Watch out:", "Conclusion:", and their German words) is a note of that kind.
+ */
+export function answerCallouts() {
+  return (tree: Root) => {
+    for (const block of tree.children) {
+      if (block.type !== "blockquote") continue;
+      const first = block.children[0];
+      const label = first?.type === "paragraph" && first.children[0]?.type === "strong" ? textOf(first.children[0].children) : "";
+      const kind = label && calloutKind(label);
+      if (!kind) continue;
+      mark(block, undefined, "answer-callout", { className: ["answer-callout", kind] });
+      // The label stands on its own line: the space that followed it would indent the text.
+      const after = (first as Paragraph).children[1];
+      if (after?.type === "text") after.value = after.value.replace(/^\s+/, "");
+    }
   };
 }
 

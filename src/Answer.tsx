@@ -8,7 +8,10 @@ import { displayMath, sourceCitations } from "./answer-format";
 import { auditResearchAnswer } from "./research-audit";
 import { isValidElement, useMemo, useRef, useState, type ReactNode } from "react";
 import { answerStructure, tableText } from "./answer/structure";
-import { answerDesignEnabled } from "./device-features";
+import { answerBlocksEnabled, answerDesignEnabled } from "./device-features";
+import { parseDiagram, parseExplore, parseQuiz, parseSteps } from "./answer/blocks";
+import { answerCallouts } from "./answer/structure";
+import { DiagramBlock, ExploreBlock, QuizBlock, StepsBlock } from "./answer/BlockViews";
 import "./answer/design.css";
 import { CodeBlock } from "./CodeBlock";
 import { AnswerChart, parseChart } from "./AnswerChart";
@@ -79,6 +82,17 @@ export function Answer({
         const chart =
           language === "chart" && complete ? parseChart(text) : undefined;
         if (chart) return <AnswerChart chart={chart} />;
+        // Answer blocks: a finished block that fits its shape is drawn; anything else stays code.
+        if (complete && answerBlocksEnabled()) {
+          const steps = language === "steps" && parseSteps(text);
+          if (steps) return <StepsBlock data={steps} />;
+          const diagram = language === "diagram" && parseDiagram(text);
+          if (diagram) return <DiagramBlock data={diagram} />;
+          const quiz = language === "quiz" && parseQuiz(text);
+          if (quiz) return <QuizBlock data={quiz} />;
+          const explore = language === "explore" && parseExplore(text);
+          if (explore) return <ExploreBlock data={explore} />;
+        }
         return (
           <CodeBlock text={text} language={language} complete={complete}>
             {children}
@@ -186,6 +200,7 @@ export function Answer({
           [remarkMath, { singleDollarTextMath: false }],
           sourceCitations,
           ...(designed ? [answerStructure] : []),
+          ...(answerBlocksEnabled() ? [answerCallouts] : []),
         ]}
         rehypePlugins={[
           [
