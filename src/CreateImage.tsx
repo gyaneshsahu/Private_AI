@@ -144,19 +144,22 @@ export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(pro
     return () => URL.revokeObjectURL(made);
   }, [props.image.data, props.image.type]);
   const extension = props.image.type === "image/png" ? "png" : props.image.type === "image/webp" ? "webp" : "jpg";
+  // An uploaded photo, a follow-up edit and a later version were not created from `prompt`: no Regenerate, and their own words.
+  const original = !props.image.source && !props.image.edited && !props.image.at;
+  const alt = original ? t.alt(props.image.prompt) : props.image.prompt ? e.altEdited(props.image.prompt) : e.uploaded;
   return (
     <figure className="created-image">
       {url &&
         (props.onEdit ? (
           // A click on the picture opens it full screen, where it can be edited.
           <button type="button" className="created-image-open" aria-label={e.open} onClick={props.onEdit}>
-            <img src={url} alt={t.alt(props.image.prompt)} />
+            <img src={url} alt={alt} />
           </button>
         ) : (
-          <img src={url} alt={t.alt(props.image.prompt)} />
+          <img src={url} alt={alt} />
         ))}
       <figcaption>
-        <span className="created-image-prompt">{props.image.prompt}</span>
+        <span className="created-image-prompt">{props.image.prompt || e.uploaded}</span>
         <span className="created-image-actions">
           {props.onEdit && (
             <button type="button" className="icon-action" aria-label={e.edit} title={e.edit} onClick={props.onEdit}>
@@ -166,7 +169,7 @@ export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(pro
           <a className="icon-action" href={url} download={`cometrow-image.${extension}`} aria-label={t.download} title={t.download}>
             <Icon name="download" />
           </a>
-          {props.onRegenerate && (
+          {props.onRegenerate && original && (
             <button type="button" className="icon-action" aria-label={t.regenerate} title={t.regenerate} onClick={() => props.onRegenerate!(props.image.prompt)}>
               <Icon name="retry" />
             </button>

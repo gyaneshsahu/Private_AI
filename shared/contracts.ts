@@ -464,6 +464,8 @@ export interface Message {
     at?: number;
     /** The first version is the user's own photo, not a created image. */
     source?: "upload";
+    /** Made by a follow-up request from another image: `prompt` is the edit's words, not a description to create from. */
+    edited?: true;
   };
   /**
    * Local-only result of recalculating the arithmetic the reply writes out

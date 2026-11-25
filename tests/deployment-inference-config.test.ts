@@ -393,6 +393,22 @@ it("loads deployment/render-config.owner-test.example.json with everything on, i
     expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("imageCreation");
     await writeFile(configFile, JSON.stringify({ ...parsed, inference: { ...parsed.inference, imageCreation: { ...parsed.inference.imageCreation, model: "dall-e" } } }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    // Image editing: off unless enabled, its two inner switches default to off, and it needs image creation.
+    await writeFile(configFile, JSON.stringify(parsed));
+    expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("imageEditing");
+    const withEditing = (imageEditing: unknown, creation = parsed.inference.imageCreation) =>
+      writeFile(configFile, JSON.stringify({ ...parsed, inference: { ...parsed.inference, imageCreation: creation, imageEditing } }));
+    await withEditing({ enabled: true });
+    expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ imageEditing: { uploads: false, providerMasks: false } });
+    await withEditing({ enabled: true, uploads: true, providerMasks: true });
+    expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ imageEditing: { uploads: true, providerMasks: true } });
+    await withEditing({ enabled: false, uploads: true });
+    expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("imageEditing");
+    await withEditing({ enabled: true }, { ...parsed.inference.imageCreation, enabled: false });
+    expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("imageEditing");
+    await withEditing({ enabled: true, masks: true });
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    await writeFile(configFile, JSON.stringify(parsed));
     // The allowlist holds up to 30 addresses (owner test plus 10 to 20 invitees); 31 refuse.
     const emails = (n: number) => Array.from({ length: n }, (_, i) => `person${i}@example.test`);
     await writeFile(configFile, JSON.stringify({ ...parsed, allowedEmails: emails(30) }));

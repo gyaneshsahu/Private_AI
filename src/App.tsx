@@ -1711,8 +1711,6 @@ export function App() {
     // While the deep research card is open, its buttons decide; armed, Send opens it for this text.
     if (researchFor !== undefined) return;
     const picture = !!attachedImage || boardGoes;
-    // Right after an image, "make the background white" edits that image; nothing goes to the chat model.
-    if (!asIs && !picture && !busy && imageEditing.followUp(input, () => setInput(""))) return;
     if (researchNext && researchReady && !picture && !busy) {
       setResearchNext(false);
       setResearchFor(input.trim());
@@ -1730,6 +1728,9 @@ export function App() {
         : undefined;
     if (wanted) setRemember({ text: wanted, draft: true });
     else if (planned) setScheduleCard({ text: input, found: planned });
+    // Right after an image, "make the background white" edits that image; nothing goes to the chat
+    // model. After the memory and scheduled-task offers, which never cost anything.
+    else if (!asIs && !picture && !busy && imageEditing.followUp(input, () => setInput(""))) return;
     // A picture question goes straight to the model: no search step in between.
     else if (picture && status?.images) void send();
     else {

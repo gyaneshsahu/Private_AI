@@ -66,7 +66,7 @@ export function useImageEditing(o: {
               ...newMessage("assistant", t.context(prompt)),
               at,
               status: "complete",
-              createdImage: { ...version, model: target.image.model, ...(target.image.source ? { source: target.image.source } : {}) },
+              createdImage: { ...version, model: target.image.model, edited: true, ...(target.image.source ? { source: target.image.source } : {}) },
             },
           ],
         }));

@@ -80,6 +80,7 @@ const conversationBody = z.object({
             .optional(),
           at: z.number().int().min(0).max(11).optional(),
           source: z.literal("upload").optional(),
+          edited: z.literal(true).optional(),
         })
         .strict()
         .optional(),

@@ -46,7 +46,9 @@
 7. **"No comments"** is read as: no commenting feature on images. None is built.
 8. **People in uploaded photos.** Two checks before anything reaches the image provider: the browser's own face finder where it exists (most browsers have none), then one YES or NO question to CometRow's own picture model. "YES" and "no clear answer" both refuse the photo. Where picture questions are switched off, uploaded photos cannot be edited at all. The check counts as one picture question (2 units). It can miss a person; it is a filter, not proof.
 9. **Our own refusals** (real, named people; minors with harmful content) run on every edit's words, as for created images.
-10. **Painting needs a pointer** (mouse, finger or pen). With the keyboard alone every other function works, but an area cannot be painted. Not solved in this pass.
+10. **`uploads: false` is a screen switch first.** It removes "Edit a picture" and the server refuses a request marked as an upload. The server cannot tell a photo from a created image by looking at it, so a changed browser could send a photo marked as created. The same is true of the people check: it runs in the browser. Both are filters for honest use, not barriers.
+11. **Regenerate** shows only on an image that was created from a description, not on an uploaded photo, a follow-up edit or a later version.
+12. **Painting needs a pointer** (mouse, finger or pen). With the keyboard alone every other function works, but an area cannot be painted. Not solved in this pass.
 
 ## For the owner before switching on
 
@@ -73,7 +75,7 @@ Six paid requests at Black Forest Labs' EU address with the 4B model, through th
 - **Resize to Portrait:** the picture was extended above and below; the objects stayed as they were.
 - **Erase, in the real editor in a real browser** (an apple painted over): the box with the magenta area went out, the apple was gone in the result, and everything outside the painted area was untouched (its reflection on the table stayed, because it was not painted over).
 - **Select area** (a cup painted over, "a small green plant in a terracotta pot"): the plant replaced the cup inside the area only.
-- Seen: a faint lighter box on the plain wall at the edge of the painted area. The soft edge was widened after that; the wider edge was not tried live.
+- Seen: a faint lighter box on the plain wall at the edge of the painted area. It is a small difference in brightness, which a soft edge can hide only in part. The edge is now 8 pixels on a 1,024-pixel picture.
 - Not tried live: `providerMasks` (the provider's own mask addresses), and the 4B model's limits on large or busy pictures.
 
 ## Not verified

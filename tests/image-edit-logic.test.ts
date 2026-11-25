@@ -99,6 +99,16 @@ it("which messages after an image are edits: English", () => {
     "write a poem about this lake",
     "Explain how watercolour works",
     "How do I make the background white?",
+    // Requests for the chat or another part of the app, even with an edit-like verb.
+    "can you give me a new German word to learn every 2 days",
+    "give me three caption ideas",
+    "delete this chat",
+    "turn this into a haiku",
+    "make a plan for tomorrow",
+    "add a reminder for Tuesday",
+    "Remember that I am vegetarian",
+    "make me a sandwich",
+    "change my mind",
     "make it darker\nand also tell me a story",
     "x".repeat(241),
   ])
@@ -119,7 +129,7 @@ it("which messages after an image are edits: German", () => {
     "dasselbe aber bei Nacht",
   ])
     expect(looksLikeImageEdit(text), text).toBe(true);
-  for (const text of ["Was ist auf dem Bild?", "Warum ist der Himmel rot", "Beschreibe das Bild", "danke", "mach eine Liste der Farben", "Schreibe ein Gedicht über den See", "Wie mache ich den Hintergrund weiß?"])
+  for (const text of ["Was ist auf dem Bild?", "Warum ist der Himmel rot", "Beschreibe das Bild", "danke", "mach eine Liste der Farben", "Schreibe ein Gedicht über den See", "Wie mache ich den Hintergrund weiß?", "mach mir einen Plan für morgen", "füge eine Erinnerung für Dienstag hinzu", "lösche diesen Chat"])
     expect(looksLikeImageEdit(text), text).toBe(false);
 });
 

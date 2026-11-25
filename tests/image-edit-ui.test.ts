@@ -120,9 +120,11 @@ describe.each([
   [1280, "de"],
 ] as [number, Lang][])("image editor at %i px, %s", (width, lang) => {
   it("Edit opens the picture full screen; Describe edits makes a new version; earlier versions stay, can be shown, downloaded and deleted", async () => {
-    const { context, page, edits, t, editor, create, colourAt } = await open(width, lang);
+    const { context, page, edits, a, c, t, editor, create, colourAt } = await open(width, lang);
     try {
       const card = await create();
+      // An image made from a description can be made again from it.
+      await ui(card.getByRole("button", { name: c.regenerate })).toHaveCount(1);
       await card.getByRole("button", { name: t.edit, exact: true }).click();
       await ui(editor).toBeVisible();
       const box = (await editor.boundingBox())!;
@@ -167,8 +169,18 @@ describe.each([
       // Back: the chat's card shows the version that was shown, and reopening has both versions.
       await editor.getByRole("button", { name: t.back }).click();
       await ui(editor).toHaveCount(0);
-      await card.getByRole("button", { name: t.open, exact: true }).click();
+      // The card now shows an edited version: Regenerate would create from the edit's words, so it is gone.
+      await ui(card.getByRole("button", { name: c.regenerate })).toHaveCount(0);
+      await ui(card.locator("img")).toHaveAttribute("alt", t.altEdited("Make the sky orange"));
+      // The versions are part of the saved chat: after a reload both are still there.
+      await page.waitForTimeout(2500); // the chat is saved to the account a moment after a change
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 30_000 });
+      await page.locator(".app-shell").waitFor({ state: "visible", timeout: 30_000 });
+      if (width < 700) await page.getByLabel(a.openNavigation, { exact: true }).click();
+      await page.locator(".chat-list-row > button").first().click();
+      await page.locator("figure.created-image").last().getByRole("button", { name: t.open, exact: true }).click();
       await ui(versions).toHaveCount(2);
+      await ui(versions.nth(1)).toHaveAttribute("aria-pressed", "true");
       // Deleting the shown version leaves the other; the last one cannot be deleted.
       await editor.getByRole("button", { name: t.deleteVersion }).click();
       await ui(versions).toHaveCount(1);
