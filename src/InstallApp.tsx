@@ -2,7 +2,7 @@
 // Chrome offer an install the page may start; on an iPhone only the user can do it, from Safari's
 // share menu, so there the row says how. Nothing is shown once the app runs from the home screen,
 // or in a browser that can do neither.
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { installAppEnabled } from "./device-features";
 import { Icon } from "./Icon";
 import { useText } from "./i18n";
@@ -35,38 +35,35 @@ export const isAppleTouch = () =>
 
 export function InstallApp() {
   const t = useText(installText);
-  const [, refresh] = useState(0);
   const [note, setNote] = useState("");
-  useEffect(() => {
-    const tell = () => refresh((n) => n + 1);
-    waiting.add(tell);
-    return () => void waiting.delete(tell);
-  }, []);
+  // The offer can arrive while Settings is still loading: a store subscription cannot miss it, an effect can.
+  const offer = useSyncExternalStore(
+    (tell) => (waiting.add(tell), () => void waiting.delete(tell)),
+    () => offered,
+  );
   if (runsInstalled()) return null;
   const apple = isAppleTouch();
-  if (!offered && !apple) return null;
+  if (!offer && !apple && !note) return null; // the "added" line stays after the one offer is used
   return (
     <section className="install-app" aria-labelledby="install-app-heading">
       <h4 id="install-app-heading">{t.heading}</h4>
       <p className="muted">{t.intro}</p>
-      {offered ? (
+      {offer ? (
         <button
           type="button"
           onClick={async () => {
-            const prompt = offered;
-            if (!prompt) return;
-            await prompt.prompt();
-            const { outcome } = await prompt.userChoice;
+            await offer.prompt();
+            const { outcome } = await offer.userChoice;
             offered = undefined; // an offer can be used once
             setNote(outcome === "accepted" ? t.installed : "");
-            refresh((n) => n + 1);
+            waiting.forEach((tell) => tell());
           }}
         >
           <Icon name="download" />
           {t.install}
         </button>
       ) : (
-        <p>{t.appleSteps}</p>
+        apple && <p>{t.appleSteps}</p>
       )}
       <p role="status">{note}</p>
     </section>
