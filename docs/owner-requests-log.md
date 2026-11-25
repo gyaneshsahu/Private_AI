@@ -8,13 +8,24 @@
 
 ---
 
+## 22. Go ahead with 19 to 21; all blocks approved
+
+- **Date:** 26 November 2026.
+- **You said:** keep working on 19 to 21 instead of stopping; you approve all blocks; careful that there are not too many colours and that it looks professional. And: do not get overwhelmed by the new messages, stay with my own development and approach.
+- **What I did:** built all five blocks (entry 21), measured the rules on the live model, and merged them into the combined preview. New messages were recorded as entries and handled after the work in hand, not in the middle of it.
+- **Status:** done.
+
 ## 21. Visual answers: twelve reference screenshots for normal chat
 
 - **Date:** 26 November 2026.
 - **You asked:** you put twelve screenshots into the reference folder: a long ChatGPT answer with diagrams, boxes, a coloured conclusion and highlighted sentences, and two of an interactive Claude answer (tabs that change a small diagram). Learn from them, do not copy; no unnecessary pictures (ChatGPT's picture strips look cheap); interactive diagrams are welcome; the platform must know when to do what. For reference, to get an idea; for normal chat.
 - **What I did:** looked at all twelve, moved them to `ui-references\received-20261126b` under names that say what each shows, and wrote a proposal: `docs/answer-design-next-20261126.md`. It says what each element in your references does well or badly, and proposes five answer blocks (callout, steps, diagram, quick check, explorer), each with a rule for when the model may use it, limits the app keeps, how it is measured before it ships, and what it costs. No pictures from the web: the app loads nothing from other sites, and a drawn diagram says more than a stock picture.
-- **Not built,** for two reasons: you said these are references, and your list for this round ended at item 6. It also adds instructions to every request, which is yours to approve.
-- **Status:** open, waiting for your yes, and for which blocks first (three questions at the end of the proposal).
+- **Built after your yes (entry 22):** notes (Key idea, Watch out, Conclusion), steps, diagrams (flow and layers), quick checks and tabs. One accent colour and greys; only the three notes have a soft tint of their own. The model has a rule for each block that says when it may be used; the app keeps the limits and shows a block that does not fit as it was written.
+- **Measured on the live model** (24 made-up questions, English and German, the product's own settings): the 8 short or simple questions all stayed plain; 14 of the 16 that should get a block got a fitting one; 22 of 24 in all.
+- **Where:** branch `feat/answer-blocks` (on top of `feat/error-states`), commit `128b752`. Doc `docs/answer-blocks-20261126.md`. Switch `VITE_ANSWER_BLOCKS`. Your tests: section 49. Two screenshots were sent to you.
+- **Tests:** 5 logic tests and 5 browser tests green (phone and desktop, light and dark; with the switch off no block and the instructions unchanged to the character).
+- **Cost:** about 300 more input tokens per message (about EUR 0.00006 on Fast). The measurement cost EUR 0.25.
+- **Status:** done. Not built: pictures from the web (your rule: nothing is loaded from other sites) and a live try-out with a slider (the possible sixth block).
 
 ## 20. Where your screenshots are kept
 
@@ -33,13 +44,13 @@
 | In ChatGPT's answer | In CometRow |
 | --- | --- |
 | Clear sections, tables, lists, quoted notes | Yes, with the answer design (entry 13) |
-| Coloured cards with a small tag ("Stage 1 · Current era", "Hypothetical") | **Not yet.** Needs a new answer block and one sentence in the model's instructions |
-| A drawn diagram (a flow chart from a text description) | **Not yet.** Needs a diagram drawer in the app and one sentence in the instructions. Charts with numbers are already drawn |
+| Coloured cards with a small tag ("Stage 1 · Current era", "Hypothetical") | Yes, as "steps" with tags, in one accent colour (entry 21) |
+| A drawn diagram (a flow chart from a text description) | Yes, drawn by the app (entry 21) |
 | Pictures from the web | **Not possible under your rules:** the app loads nothing from other sites (no third party sees the user). It would need pictures fetched through our own server, which is a decision for you |
 
-- **My proposal, not built (your list for this round ends at item 6):** two new answer blocks, "cards" and "diagram", each behind the answer-design switch, with a measured cost per request, tried on the real sample answers first. Say yes and it is the next piece of work.
+- **Built after your yes (entries 21 and 22):** coloured cards became "steps" and "notes", the drawn diagram became the "diagram" block.
 - **What I took from the screenshots already:** the research card in ChatGPT's form (entry 12) matches your phone screenshots too. The rest is noted against "UI references I need" in the report: numbers 1, 3, 4 and 6 are answered; number 2 partly (I have the text and the end of the answer, not a table on the phone); number 5 (ChatGPT's canvas while editing) is still wanted.
-- **Status:** partly. Recorded and decided; the two new blocks wait for your yes.
+- **Status:** done, except pictures from the web, which stay out by your rule.
 
 ## 18. Loading hang: a test and more investigation
 
@@ -52,7 +63,8 @@
   - **Found on the way, a real fault:** the chart's hidden table for screen readers made a narrow phone screen scroll sideways (CI on Linux fonts caught it). Fixed.
 - **Where:** branch `fix/before-owner-test`. Doc `docs/loading-hang-20261126.md`.
 - **Tests:** the new test passes (60 loads, none over 8 seconds).
-- **Status:** partly. The guard and the diagnostic are in place. **The stall itself is still not explained:** it has not appeared outside the long tour in 820 page loads, and the code that opens saved chats is unchanged since your tag.
+- **What the diagnostic then showed (the same evening):** two stalls named what they waited for. One: the request for the saved chats had no answer for 69 seconds while an old streamed test answer still held a connection (the browser allows six to one server). Two: no request was open at all, so the browser's own database was the thing waiting, most likely held by another page. Both are written up with next steps in `docs/loading-hang-20261126.md`.
+- **Status:** partly. Guard test and diagnostic in place; two causes named. **Not done:** confirming whether a user can hit either one, and the three next steps in the doc (close streams in the tour, report a blocked database with a plain line, a two-tab test).
 
 ## 17. Memory per project
 
