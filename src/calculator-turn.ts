@@ -14,7 +14,7 @@ import {
   type CheckedFailure,
   renderCheckedResponse,
 } from "./checked-response";
-import { consumeReply, IncompleteReplyError } from "./reply-stream";
+import { consumeReply, IncompleteReplyError, reasoningFeed } from "./reply-stream";
 
 const calculatorUnit = z.enum([
   "EUR",
@@ -129,6 +129,9 @@ export async function consumeCalculatorTurn(
         choice.delta.refusal
       )
         throw Error("Unsupported calculator stream");
+      // Activity: this path rebuilds each event and would drop the model's reasoning text; it is passed on here.
+      const thought = (choice.delta as { reasoning_content?: unknown; reasoning?: unknown }).reasoning_content ?? (choice.delta as { reasoning?: unknown }).reasoning;
+      if (typeof thought === "string" && thought) reasoningFeed.on?.(thought);
       const calls = choice.delta.tool_calls;
       if (calls != null && !Array.isArray(calls))
         throw Error("Invalid tool list");
