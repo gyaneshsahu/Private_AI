@@ -314,7 +314,9 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
       return route.fulfill({ json: { text: "Synthetic dictated text for the audit" } });
     if (url.pathname.startsWith("/api/research/")) return fulfill(route, research(url.pathname, route.request().postDataJSON() ?? undefined));
     if (url.pathname === "/api/status" && ready) {
-      const real = await route.fetch();
+      // The relay's first connection to the local server sometimes hangs (seen about once in 300 page loads);
+      // a second try on a fresh connection answers at once.
+      const real = await route.fetch({ timeout: 3000 }).catch(() => route.fetch());
       if (!real.ok()) return route.fulfill({ response: real });
       return route.fulfill({ response: real, json: fakeStatus(await real.json(), options.config) });
     }
