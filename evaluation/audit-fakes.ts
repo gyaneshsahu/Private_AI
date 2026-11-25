@@ -232,6 +232,38 @@ export function createResponder() {
       case "research-plan":
         return stream(sse("1. synthetic notice period for tenants\n2. synthetic deposit rules\n3. synthetic court decisions"));
       case "research-answer":
+        // A report with a lead paragraph, sections, a list and a table: what the report card and panel are judged on.
+        if (cite.length)
+          return stream(
+            sse(
+              [
+                "# Synthetic notice periods for tenants",
+                "",
+                `The notice period is three months for a tenant, whatever the length of the tenancy [${cite[0]}]. For the landlord it grows with the years, and a fee is only due in special cases${cite[1] ? ` [${cite[1]}]` : ""}.`,
+                "",
+                "## Short answer",
+                "",
+                `- **Tenant:** three months, to the end of a month [${cite[0]}].`,
+                "- **Landlord:** three, six or nine months, by length of tenancy.",
+                "- **Fee:** none for an ordinary notice.",
+                "",
+                "## How the period is counted",
+                "",
+                `The notice must arrive by the third working day of a month to count for that month${cite[1] ? ` [${cite[1]}]` : ""}. A Saturday counts as a working day here, which is the usual trap.`,
+                "",
+                "| Tenancy so far | Landlord's notice | Tenant's notice |",
+                "| --- | ---: | ---: |",
+                "| up to 5 years | 3 months | 3 months |",
+                "| 5 to 8 years | 6 months | 3 months |",
+                "| over 8 years | 9 months | 3 months |",
+                "",
+                "## What the sources do not settle",
+                "",
+                `The synthetic sources agree on the periods${cite[2] ? ` [${cite[2]}]` : ""}. They say nothing about furnished rooms, so that case stays open.`,
+              ].join("\n"),
+            ),
+          );
+      // falls through
       case "citations":
         return stream(
           sse(

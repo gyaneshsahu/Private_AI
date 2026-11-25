@@ -28,3 +28,5 @@ export const projectSpacesEnabled = () => on("VITE_PROJECTS");
  * the "Due now" strip and the chat detection. Auto tasks also need the server's switch.
  */
 export const scheduledEnabled = () => on("VITE_SCHEDULED");
+/** Report card (docs/report-card-20261125.md): a deep research answer is a card in the chat and opens in the side panel. */
+export const reportCardEnabled = () => on("VITE_REPORT_CARD");

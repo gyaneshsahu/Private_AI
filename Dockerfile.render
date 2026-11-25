@@ -30,6 +30,8 @@ ARG VITE_MEMORY=
 ARG VITE_PROJECTS=
 ARG VITE_LIVE_VOICE=
 ARG VITE_SCHEDULED=
+# Report card (docs/report-card-20261125.md): off unless built with it set to 1.
+ARG VITE_REPORT_CARD=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).

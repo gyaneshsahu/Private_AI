@@ -1,0 +1,41 @@
+// Reports (docs/report-card-20261125.md): the card in the chat and the report in the side panel.
+import { defineText } from "./core";
+
+export const reportText = defineText({
+  en: {
+    kind: "Research report",
+    open: (title: string) => `Open the report: ${title}`,
+    writing: "Writing the report…",
+    sources: (n: number) => (n === 1 ? "1 source" : `${n} sources`),
+    minutes: (n: number) => `${n} min read`,
+    inReport: "In this report",
+    section: (name: string) => `Go to: ${name}`,
+    panel: "Report",
+    edit: "Edit in canvas",
+    copy: "Copy",
+    copied: "Copied.",
+    copyFailed: "Could not copy. Select the text and copy it yourself.",
+    download: "Download",
+    share: "Share",
+    close: "Close",
+    tooLong: "This report is too long for the canvas. Copy or download it instead.",
+  },
+  de: {
+    kind: "Recherchebericht",
+    open: (title: string) => `Bericht öffnen: ${title}`,
+    writing: "Der Bericht wird geschrieben…",
+    sources: (n: number) => (n === 1 ? "1 Quelle" : `${n} Quellen`),
+    minutes: (n: number) => `${n} Min. Lesezeit`,
+    inReport: "In diesem Bericht",
+    section: (name: string) => `Gehe zu: ${name}`,
+    panel: "Bericht",
+    edit: "Im Canvas bearbeiten",
+    copy: "Kopieren",
+    copied: "Kopiert.",
+    copyFailed: "Kopieren nicht möglich. Markieren Sie den Text und kopieren Sie ihn selbst.",
+    download: "Herunterladen",
+    share: "Teilen",
+    close: "Schließen",
+    tooLong: "Dieser Bericht ist zu lang für das Canvas. Kopieren Sie ihn oder laden Sie ihn herunter.",
+  },
+});
