@@ -74,9 +74,7 @@ export function ChatMenuItems(props: {
           <Icon name="folder" />
           {current ? t.moveToProject : t.addToProject}
           {/* Drawn, not spoken: generated content would become part of the button's name. */}
-          <span className="chat-menu-chevron" aria-hidden="true">
-            ›
-          </span>
+          <span className="chat-menu-chevron" aria-hidden="true" />
         </button>
       )}
       {choosing && (

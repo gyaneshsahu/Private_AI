@@ -72,6 +72,8 @@ export function WorkspaceNavigation(props: {
   ) => void;
   /** Deletes the saved chat after the row menu's confirmation; the entry is shown only when given. */
   onDelete?: (c: Conversation) => void;
+  /** Starts a new chat inside this project, from the project's own menu; the entry is shown only when given. */
+  onNewChatInProject?: (projectId: string) => void;
 }) {
   const {
     open,
@@ -354,8 +356,15 @@ export function WorkspaceNavigation(props: {
                       <Icon name="more" />
                     </summary>
                     <div>
+                      {props.onNewChatInProject && (
+                        <button disabled={busy || newDisabled} onClick={() => props.onNewChatInProject!(p.id)}>
+                          <Icon name="plus" />
+                          {pt.newChat}
+                        </button>
+                      )}
                       {openProject && (
                         <button disabled={busy} onClick={() => openProject(p.id)}>
+                          <Icon name="folder" />
                           {pt.open}
                         </button>
                       )}
@@ -367,15 +376,18 @@ export function WorkspaceNavigation(props: {
                           setCreating(true);
                         }}
                       >
+                        <Icon name="edit" />
                         {t.renameProject}
                       </button>
                       <button
+                        className="chat-menu-danger"
                         disabled={busy}
                         onClick={(e) => {
                           e.currentTarget.closest("details")!.open = false;
                           setDeletingProject(p);
                         }}
                       >
+                        <Icon name="trash" />
                         {pt.delete}
                       </button>
                     </div>

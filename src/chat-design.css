@@ -6066,6 +6066,9 @@
   margin: 0;
 }
 /* A real element marked as not spoken: generated content would become part of the button's name. */
+.chat-design .settings-content .settings-rows .settings-row-arrow::before {
+  content: "›";
+}
 .chat-design .settings-content .settings-rows .settings-row-arrow {
   margin-left: auto;
   color: var(--muted);

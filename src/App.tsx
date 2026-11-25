@@ -288,7 +288,9 @@ export function App() {
           if (
             event instanceof KeyboardEvent ||
             !(event.target instanceof Node) ||
-            !menu.contains(event.target) ||
+            // The path as it was when the click happened: an entry that replaced itself (a field in place of
+            // "New project…") is no longer inside the menu by now, but its click was.
+            !event.composedPath().includes(menu) ||
             // A button closes its menu, except one that opens more of it (the project list of the chat menu).
             (event.target instanceof Element && event.target.closest("button:not([data-keep-menu])"))
           ) {
@@ -2185,6 +2187,16 @@ export function App() {
     }
     return editProject(id);
   }
+  // A new, empty chat that belongs to a project: from the project screen and from the project's menu.
+  async function newChatInProject(projectId: string) {
+    if (!(await allowNew())) return;
+    reset();
+    if (secureOn) setSection(modeOf(projectId) ?? "secure");
+    setConversation({ ...emptyConversation(), projectId });
+    setTab("Conversation");
+    setOpenProject(undefined);
+    setNavigationOpen(false);
+  }
   async function organizeChat(
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -2197,9 +2209,11 @@ export function App() {
       if (current !== epoch.current) return;
       if (conversation.id === c.id) {
         savedBase.current = snapshot;
-        autoSaved.current = plain({ ...conversation, pinned: snapshot.pinned, archived: snapshot.archived, projectId: snapshot.projectId });
+        autoSaved.current = plain({ ...conversation, title: snapshot.title, pinned: snapshot.pinned, archived: snapshot.archived, projectId: snapshot.projectId });
         setConversation((previous) => ({
           ...previous,
+          // A rename of the open chat shows in its title at once.
+          title: snapshot.title,
           pinned: snapshot.pinned,
           archived: snapshot.archived,
           projectId: snapshot.projectId,
@@ -2389,6 +2403,7 @@ export function App() {
         onCreateProject={createProject}
         onEditProject={editProject}
         onDeleteProject={deleteProject}
+        onNewChatInProject={projectSpacesEnabled() ? (id) => void newChatInProject(id) : undefined}
         // The normal list holds Secure projects with Secure on (Secure Max has its own section).
         projectStorage={secureOn ? "secure" : "local"}
         storage={secureOn ? "secure" : "local"}
@@ -2655,14 +2670,7 @@ export function App() {
           chats={saved.filter((c) => c.projectId === openProject)}
           busy={!!busy}
           onClose={() => setOpenProject(undefined)}
-          onNewChat={async () => {
-            if (!(await allowNew())) return;
-            reset();
-            if (secureOn) setSection(modeOf(openProject) ?? "secure");
-            setConversation({ ...emptyConversation(), projectId: openProject });
-            setTab("Conversation");
-            setOpenProject(undefined);
-          }}
+          onNewChat={() => void newChatInProject(openProject!)}
           projects={projects.filter((p) => modeOf(p.id) === modeOf(openProject))}
           onOrganizeChat={(c, change) => void organizeChat(c, change)}
           onDeleteChat={(c) => void deleteSnapshot(c)}
