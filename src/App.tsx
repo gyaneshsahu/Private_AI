@@ -2660,6 +2660,7 @@ export function App() {
             setTab("Conversation");
             setOpenProject(undefined);
           }}
+          onRenameChat={(c, title) => void organizeChat(c, { title })}
           onOpenChat={(c) => {
             setOpenProject(undefined);
             openSaved(c);
@@ -3728,6 +3729,7 @@ export function App() {
         )}
         {tab === "Account" && (
           <>
+            <div className="account-actions">
             {status?.accountId && !status.consumerWorkspace && (
               <button
                 onClick={async () => {
@@ -3746,6 +3748,7 @@ export function App() {
                 {t.signOut}
               </button>
             )}
+            </div>
             <AccountUsage
               storage={secureOn ? "secure" : "local"}
               chatReady={status?.inference.ready}

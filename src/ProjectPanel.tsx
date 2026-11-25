@@ -23,6 +23,7 @@ import {
   type Project,
 } from "./projects";
 import { forStorage, type Storage } from "./text/mode-copy";
+import { messageActionsText } from "./text/message-actions";
 import { projectText } from "./text/projects";
 import { syncFilesText } from "./text/sync-files";
 // From src/sync/files.ts, not the whole sync API: the screen works the same without sync.
@@ -46,6 +47,7 @@ export function ProjectPanel({
   onNewChat,
   onOpenChat,
   onRename,
+  onRenameChat,
   onDelete,
   onChange,
 }: {
@@ -62,6 +64,8 @@ export function ProjectPanel({
   onNewChat: () => void;
   onOpenChat: (c: Conversation) => void;
   onRename: (name: string) => Promise<boolean>;
+  /** Renames one of the project's chats, as the sidebar does. */
+  onRenameChat: (c: Conversation, title: string) => void;
   /** Resolves true when the project is gone; then the screen closes. */
   onDelete: (deleteChats: boolean) => Promise<boolean>;
   /** Writes a change of the project list to the vault; throws when nothing was saved. */
@@ -74,6 +78,19 @@ export function ProjectPanel({
   const heading = useRef<HTMLHeadingElement>(null);
   const id = useId();
   const [renaming, setRenaming] = useState(false);
+  // Rename a chat in place, as in the sidebar: Enter or leaving the field saves, Escape cancels.
+  const ma = messageActionsText[lang];
+  const [chatRenaming, setChatRenaming] = useState<string>();
+  const [chatDraft, setChatDraft] = useState("");
+  const chatRenameRef = useRef<string | undefined>(undefined);
+  const finishChatRename = (c: Conversation, save: boolean, refocus: boolean) => {
+    if (chatRenameRef.current !== c.id) return;
+    chatRenameRef.current = undefined;
+    setChatRenaming(undefined);
+    const title = chatDraft.trim();
+    if (save && title && title !== conversationTitle(c)) onRenameChat(c, title);
+    if (refocus) requestAnimationFrame(() => document.getElementById(`${id}-rename-${c.id}`)?.focus());
+  };
   const [name, setName] = useState(project.name);
   const [instructions, setDraft] = useState(project.instructions ?? "");
   const [deleting, setDeleting] = useState(false);
@@ -204,6 +221,7 @@ export function ProjectPanel({
           {t.rename}
         </button>
         <button type="button" disabled={busy} onClick={() => setDeleting(true)}>
+          <Icon name="trash" />
           {t.delete}
         </button>
       </div>
@@ -364,12 +382,49 @@ export function ProjectPanel({
           <ul className="project-chats">
             {chats.map((c) => (
               <li key={c.id}>
-                <button type="button" disabled={busy} onClick={() => onOpenChat(c)}>
-                  <Icon name="chat" />
-                  <span>{conversationTitle(c)}</span>
-                  {c.archived && <small>{t.archived}</small>}
-                  <small>{new Date(c.createdAt).toLocaleDateString(locale)}</small>
-                </button>
+                {chatRenaming === c.id ? (
+                  <input
+                    className="chat-rename"
+                    autoFocus
+                    aria-label={ma.chatName(conversationTitle(c))}
+                    value={chatDraft}
+                    maxLength={120}
+                    onFocus={(e) => e.currentTarget.select()}
+                    onChange={(e) => setChatDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter" && e.key !== "Escape") return;
+                      // Escape cancels the rename only: it must not close the project screen.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      finishChatRename(c, e.key === "Enter", true);
+                    }}
+                    onBlur={() => finishChatRename(c, true, false)}
+                  />
+                ) : (
+                  <button type="button" className="project-chat-open" disabled={busy} onClick={() => onOpenChat(c)}>
+                    <Icon name="chat" />
+                    <span>{conversationTitle(c)}</span>
+                    {c.archived && <small>{t.archived}</small>}
+                    <small>{new Date(c.createdAt).toLocaleDateString(locale)}</small>
+                  </button>
+                )}
+                {chatRenaming !== c.id && (
+                  <button
+                    type="button"
+                    id={`${id}-rename-${c.id}`}
+                    className="icon-button project-chat-rename"
+                    aria-label={`${ma.rename}: ${conversationTitle(c)}`}
+                    title={ma.rename}
+                    disabled={busy}
+                    onClick={() => {
+                      chatRenameRef.current = c.id;
+                      setChatDraft(conversationTitle(c));
+                      setChatRenaming(c.id);
+                    }}
+                  >
+                    <Icon name="edit" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

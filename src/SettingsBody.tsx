@@ -192,16 +192,26 @@ export function SettingsBody({
             {signedIn ? (
               <>
                 <p className="muted">{s.accountPageNote}</p>
-                <ul className="settings-links">
+                {/* One row per action, one under the other, the same height and edge (owner, 25 November). */}
+                <ul className="settings-rows">
                   <li>
-                    <button type="button" className="text-button" onClick={() => onAccountPage("account-access")}>
+                    <button type="button" className="settings-row-link" onClick={() => onAccountPage("account-access")}>
                       {s.signInMethods}
                     </button>
                   </li>
                   <li>
-                    <button type="button" className="text-button" onClick={() => onAccountPage("account-sessions")}>
+                    <button type="button" className="settings-row-link" onClick={() => onAccountPage("account-sessions")}>
                       {s.activeSessions}
                     </button>
+                  </li>
+                  <li>
+                    <button type="button" disabled={busy} onClick={onSignOut}>
+                      <Icon name="logout" />
+                      {workspaceText[lang].signOut}
+                    </button>
+                  </li>
+                  <li>
+                    <SignOutEverywhere busy={busy} onSignOut={onSignOut} onNotice={onNotice} />
                   </li>
                 </ul>
               </>
@@ -210,13 +220,6 @@ export function SettingsBody({
             )}
             {/* The local vault's passphrase wording: not true of Secure. */}
             {!secureOn && <p>{t.recoverySeparate}</p>}
-            {signedIn && (
-              <button type="button" disabled={busy} onClick={onSignOut}>
-                <Icon name="logout" />
-                {workspaceText[lang].signOut}
-              </button>
-            )}
-            {signedIn && <SignOutEverywhere busy={busy} onSignOut={onSignOut} onNotice={onNotice} />}
           </>
         )}
         {current[0] === "sync" && (

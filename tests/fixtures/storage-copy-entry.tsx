@@ -32,6 +32,7 @@ function Page() {
         onNewChat={() => {}}
         onOpenChat={() => {}}
         onRename={async () => true}
+        onRenameChat={() => {}}
         onDelete={async () => false}
         onChange={async () => {}}
       />

@@ -262,6 +262,26 @@ for (const width of WIDTHS)
         await ui(panel.getByText(p.noFiles)).toBeVisible();
         const chat = panel.locator(".project-chats button").first();
         await ui(chat).toContainText(x.question);
+        // Rename the chat in place (owner, 25 November): Escape keeps the name and the screen, Enter saves.
+        const pencil = panel.locator(".project-chat-rename").first();
+        const renameField = panel.locator(".project-chats .chat-rename");
+        await target(pencil, width);
+        await pencil.click();
+        await ui(renameField).toBeFocused();
+        await renameField.fill("Discarded 2026");
+        await renameField.press("Escape");
+        await ui(panel).toBeVisible();
+        await ui(chat).toContainText(x.question);
+        await ui(pencil).toBeFocused();
+        await pencil.click();
+        await renameField.fill("Lease 2026");
+        await renameField.press("Enter");
+        await ui(chat).toContainText("Lease 2026");
+        // Back to the first name, which the rest of this journey looks for.
+        await pencil.click();
+        await renameField.fill(x.question);
+        await renameField.press("Enter");
+        await ui(chat).toContainText(x.question);
         await target(chat, width);
         await chat.click();
         await ui(panel).toHaveCount(0);
