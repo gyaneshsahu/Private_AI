@@ -56,9 +56,11 @@
 
 1. **The rules are part of the instructions only while the switch is on.** With it off the instructions are the same to the character as before (a test checks this), so the earlier measurements and the frozen wording tests stay valid.
 2. **Blocks work with the answer design off as well**, and in the PDF export.
-3. **Ticks, opened quiz answers and the chosen tab are not saved**; they last while the chat is open.
-4. **The same rules for Fast and Thinking.** Both followed them; a separate, larger rule set for Thinking can come later if you want more from it.
-5. **A live try-out** (a slider that changes a result) is not built. It was the possible sixth block of the proposal.
+3. **While an answer is being written, a block shows the quiet line "Preparing a figure…"** instead of its data arriving letter by letter; when the answer is finished the block is drawn. An answer that was stopped or cut off in the middle of a block shows that block as it was written, never a line that waits forever.
+4. **Read aloud** reads a diagram from its words for screen readers, not from the labels in the drawing; the source check of a search answer ignores the data of blocks and charts.
+5. **Ticks, opened quiz answers and the chosen tab are not saved**; they last while the chat is open.
+6. **The same rules for Fast and Thinking.** Both followed them; a separate, larger rule set for Thinking can come later if you want more from it.
+7. **A live try-out** (a slider that changes a result) is not built. It was the possible sixth block of the proposal.
 
 ## Switch
 
@@ -68,3 +70,5 @@ Render environment variable `VITE_ANSWER_BLOCKS` = `1`, then redeploy. Best toge
 
 - `tests/answer-blocks.test.ts` (5): what counts as each block and what stays code; long labels cut, far too long refused; the layout of a flow and its loop; which labels make a note, English and German; the instructions with the switch on, and unchanged to the character with it off.
 - `tests/answer-blocks-ui.test.ts` (5): a real browser at 375 and 1,280 pixels, light and dark, on one answer that uses every block: the three notes, the flow with its seven boxes and arrows and its words for screen readers, the layers, the steps, the tabs by click and by arrow key, the quick check opening, a malformed block left as code, nothing wider than the screen; and with the switch off, no block at all.
+- `tests/answer-blocks-stream-ui.test.ts` (2): the real app, phone in English and desktop in German: while the answer arrives, the quiet line and no raw data; at the end the blocks drawn; after Stop no line left waiting.
+- The screen tour has the step `answer-blocks` (with the accessibility check).
