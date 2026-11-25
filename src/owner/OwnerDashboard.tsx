@@ -143,6 +143,8 @@ export function OwnerDashboard(props: {
               </dd>
             </div>
           </dl>
+          {/* What testers wrote comes before the long tables. */}
+          {props.children}
           <section>
             <h3>{t.byDay}</h3>
             <div className="owner-scroll" tabIndex={0} role="group" aria-label={t.byDay}>
@@ -179,7 +181,7 @@ export function OwnerDashboard(props: {
           {list(t.limitsHeading, totals(open.days, (d) => d.counters, isLimitCounter))}
         </>
       )}
-      {props.children}
+      {!open && props.children}
     </dialog>
   );
 }

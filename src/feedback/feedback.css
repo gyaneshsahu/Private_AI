@@ -193,3 +193,10 @@
     min-width: 44px;
   }
 }
+@media (max-width: 760px) {
+  /* Every control of the form is a 44 px target on a phone, the close button and the text buttons included. */
+  .chat-design .feedback-dialog :is(.icon-button, .text-button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

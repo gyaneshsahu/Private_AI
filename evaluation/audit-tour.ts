@@ -375,6 +375,14 @@ const STEPS: Step[] = [
     await c.shot("owner-dashboard");
     await c.page.keyboard.press("Escape");
   }, "on"],
+  // Feedback from testers (docs/feedback-20261125.md): the form from the account menu.
+  ["feedback", async (c) => {
+    await c.fresh();
+    await accountMenu(c, "Send feedback");
+    await pause(c.page, 600);
+    await c.shot("feedback-form");
+    await c.page.keyboard.press("Escape");
+  }, "on"],
   ["incognito", async (c) => { await c.fresh(); await c.nav(); await c.click("New incognito chat"); await pause(c.page, 600); await c.shot("incognito-chat"); }],
   ["search-chats", async (c) => {
     await c.fresh();
