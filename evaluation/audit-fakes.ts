@@ -24,6 +24,8 @@ export const AUDIT_ACCOUNT = "a0d17000-0000-4000-8000-000000000001";
 export const ANSWERS = [
   "markdown", "code", "math", "table", "citations", "long", "slow", "error-429", "error-500",
   "error-503", "dropped", "stop", "python", "image", "plain", "chart", "limit",
+  // One word, for the people check of an uploaded photo (src/image-edit/people.ts).
+  "no", "yes",
 ] as const;
 export type AnswerName = (typeof ANSWERS)[number];
 
@@ -47,6 +49,8 @@ const ON_STATUS = {
 
 const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-500" | "error-503" | "limit">, string> = {
   plain: "Synthetic answer.",
+  no: "NO",
+  yes: "YES",
   markdown: [
     "## Synthetic overview",
     "",

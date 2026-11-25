@@ -158,7 +158,7 @@ export function imageEditRoutes(o: {
         {
           image: Buffer.from(request.image, "base64"),
           type: request.type,
-          prompt: request.tool === "erase" ? FIXED_EDIT_PROMPT.erase : request.tool === "resize" ? FIXED_EDIT_PROMPT.resize : request.prompt,
+          prompt: request.tool === "erase" ? (request.mask ? FIXED_EDIT_PROMPT.erase : FIXED_EDIT_PROMPT.eraseMarked) : request.tool === "resize" ? FIXED_EDIT_PROMPT.resize : request.prompt,
           ...(request.mask ? { mask: Buffer.from(request.mask, "base64") } : {}),
           ...(request.tool === "erase" ? { erase: true } : {}),
           ...(size ?? {}),

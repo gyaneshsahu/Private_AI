@@ -456,6 +456,14 @@ export interface Message {
     prompt: string;
     /** "1 email address removed before the description was sent." when identifiers were found. */
     maskedNote?: string;
+    /**
+     * Image editing (docs/image-editing-20261125.md): every other version of this image, oldest
+     * first. The fields above are the version shown; `at` is its place among all of them.
+     */
+    versions?: { type: "image/jpeg" | "image/png" | "image/webp"; data: string; prompt: string }[];
+    at?: number;
+    /** The first version is the user's own photo, not a created image. */
+    source?: "upload";
   };
   /**
    * Local-only result of recalculating the arithmetic the reply writes out

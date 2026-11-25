@@ -139,6 +139,7 @@ export function ChatMessage({
   onCreateImage,
   onRegenerateImage,
   onImagePrivacy,
+  onEditImage,
   onOpenBoard,
   onResize,
   streaming,
@@ -169,6 +170,8 @@ export function ChatMessage({
   /** A created image's Regenerate and its small info icon (absent when image creation is off). */
   onRegenerateImage?: (prompt: string) => void;
   onImagePrivacy?: () => void;
+  /** Opens this message's image full screen for editing; absent where image editing is off. */
+  onEditImage?: () => void;
   /** The whiteboard card on a question that had the board with it (absent when the whiteboard is off). */
   onOpenBoard?: () => void;
   onReport: () => void;
@@ -348,7 +351,7 @@ export function ChatMessage({
         </div>
       ) : (
         message.createdImage ? (
-          <CreatedImageCard image={message.createdImage} onRegenerate={onRegenerateImage} onPrivacy={onImagePrivacy} />
+          <CreatedImageCard image={message.createdImage} onRegenerate={onRegenerateImage} onPrivacy={onImagePrivacy} onEdit={onEditImage} />
         ) : (
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>

@@ -1,5 +1,7 @@
 import { CHAT_IMAGE_BUDGET, chatImageCharacters, CreateImageDialog } from "./CreateImage";
+import { useImageEditing } from "./image-edit/host";
 import { imageCreationText } from "./text/image-creation";
+import { imageEditText } from "./text/image-edit";
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
 import { containDialogFocus } from "./dialog-focus";
@@ -790,6 +792,40 @@ export function App() {
     setNotice(t.newTemporary);
   };
   const fail = (message: string) => setNotice(message);
+  // Image editing (docs/image-editing-20261125.md): everything it needs from the app, in one hook.
+  const imageEditing = useImageEditing({
+    status,
+    conversation,
+    setConversation,
+    countImage: () => setStatus((s) => (s?.imageCreation ? { ...s, imageCreation: { ...s.imageCreation, used: (s.imageCreation.used ?? 0) + 1 } } : s)),
+    fail,
+    setBusy,
+    // The people check for an uploaded photo: one picture question to CometRow's own picture model.
+    askVision:
+      status?.images && status.inference.ready
+        ? async (question, picture) => {
+            let text = "";
+            const { streamReply } = await loadInference();
+            await streamReply(
+              { ...emptyConversation(), messages: [newMessage("user", question)] },
+              status.inference.qualification,
+              status.csrf,
+              AbortSignal.timeout(60_000),
+              (chunk) => {
+                text += chunk;
+              },
+              () => {},
+              undefined,
+              undefined,
+              "primary",
+              status.inference.qualification?.modes ? "fast" : undefined,
+              status.inference.cacheSalt,
+              picture,
+            );
+            return text;
+          }
+        : undefined,
+  });
   async function copyAnswer(text: string, id: string) {
     const current = epoch.current;
     try {
@@ -1675,6 +1711,8 @@ export function App() {
     // While the deep research card is open, its buttons decide; armed, Send opens it for this text.
     if (researchFor !== undefined) return;
     const picture = !!attachedImage || boardGoes;
+    // Right after an image, "make the background white" edits that image; nothing goes to the chat model.
+    if (!asIs && !picture && !busy && imageEditing.followUp(input, () => setInput(""))) return;
     if (researchNext && researchReady && !picture && !busy) {
       setResearchNext(false);
       setResearchFor(input.trim());
@@ -3036,6 +3074,7 @@ export function App() {
                       : undefined
                   }
                   onRegenerateImage={status?.imageCreation ? (prompt) => startImage(prompt) : undefined}
+                  onEditImage={imageEditing.editFor(message)}
                   onOpenBoard={whiteboardEnabled() && conversation.board ? openBoard : undefined}
                   onImagePrivacy={() =>
                     setSource({ id: "privacy-policy", title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) })
@@ -3277,6 +3316,12 @@ export function App() {
                         <button type="button" className="text-button" disabled={!!busy} onClick={() => startImage("")}>
                           <Icon name="sparkle" />
                           {imageCreationText[lang].menu}
+                        </button>
+                      )}
+                      {imageEditing.chooseUpload && (
+                        <button type="button" className="text-button" disabled={!!busy} onClick={imageEditing.chooseUpload}>
+                          <Icon name="edit" />
+                          {imageEditText[lang].menuUpload}
                         </button>
                       )}
                       <button
@@ -3994,6 +4039,7 @@ export function App() {
           onUse={(file) => void importFiles([file])}
         />
       )}
+      {imageEditing.element}
       {status?.imageCreation && createImageFor !== undefined && (
         <CreateImageDialog
           open

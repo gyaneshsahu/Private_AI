@@ -24,6 +24,7 @@ import react from "@vitejs/plugin-react";
 import { chromium, firefox, webkit } from "@playwright/test";
 import { createApp } from "../server/app";
 import { mockImageProvider } from "../server/image-creation";
+import { mockImageEditor } from "../server/image-edit";
 import { MemoryBackgroundStore } from "../server/background-store";
 import { ephemeralKeyRing } from "../server/background-crypto";
 import { SqliteUsageRecords } from "../server/usage-records";
@@ -96,6 +97,7 @@ export async function startServer(config: AuditConfig, client: string, fakesInSe
     ...(on ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
     ...(on ? { code: true } : {}),
     ...(on ? { imageCreation: { provider: mockImageProvider(), dailyImages: 3 } } : {}),
+    ...(on ? { imageEditing: { editor: mockImageEditor(), uploads: true } } : {}),
     ...(on ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
     ...(on ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } } : {}),
     ...(on

@@ -27,6 +27,8 @@ export type EditTool = (typeof EDIT_TOOLS)[number];
 /** The instruction the image model gets for the tools that have no typed text. English: the models follow it best. */
 export const FIXED_EDIT_PROMPT = {
   erase: "Remove what is in the marked area and fill it with the surrounding background, so nothing shows that it was there.",
+  /** Without a provider mask the browser sends a crop with the painted area filled in flat magenta. */
+  eraseMarked: "Remove the solid magenta shape and fill that area with the surrounding background, so nothing shows that anything was there. Change nothing else.",
   resize: "Extend the picture to fill the new frame. Keep everything that is already in the picture unchanged.",
 } as const;
 
