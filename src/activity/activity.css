@@ -1,0 +1,151 @@
+/* Activity (docs/activity-states-20261126.md): calm motion in the brand gradient, off under
+   "reduce motion". Heights are fixed so the page does not move when the content arrives. */
+.chat-design {
+  --brand-a: #22d3ee; /* cyan */
+  --brand-b: #8b5cf6; /* violet */
+}
+.chat-design .activity-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 28px;
+  color: var(--ink2);
+  font-size: 14.5px;
+}
+.chat-design .activity-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+  animation: activity-pulse 1.8s ease-in-out infinite;
+}
+.chat-design .activity-dot.done {
+  width: 8px;
+  height: 8px;
+  animation: none;
+  opacity: 0.75;
+}
+@keyframes activity-pulse {
+  0%,
+  100% {
+    transform: scale(0.82);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.chat-design .activity-pending {
+  min-height: 28px;
+}
+/* "Thought for N s": one quiet line over the answer; opened, the reasoning or the steps. */
+.chat-design details.activity-thought {
+  /* No box of its own: the app's general <details> look does not apply to this one line. */
+  padding: 0;
+  border: 0;
+  /* !important: several general rules give every <details> in a message a surface. */
+  background: transparent !important;
+  margin: 0 0 8px;
+  color: var(--ink2);
+  font-size: 13.5px;
+}
+/* `.message > details > summary` in chat-design.css sets a smaller height: this one is more specific. */
+.chat-design .message > details.activity-thought > summary,
+.chat-design .activity-thought summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* A full-size target on every screen; the negative margin keeps the line as low as it looks. */
+  min-height: 44px;
+  margin: -8px 0;
+  padding: 0;
+  background: transparent;
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+}
+.chat-design .activity-thought summary::-webkit-details-marker {
+  display: none;
+}
+.chat-design .activity-thought summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--base, 0.15s) var(--ease, ease);
+}
+.chat-design details.activity-thought[open] > summary::after {
+  transform: rotate(45deg);
+}
+.chat-design .activity-thought summary:hover {
+  color: var(--ink);
+}
+.chat-design .activity-thought :is(.activity-reasoning, ol) {
+  margin: 4px 0 10px 3px;
+  padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--line);
+  color: var(--ink2);
+  line-height: 1.55;
+}
+.chat-design .activity-reasoning {
+  max-height: 320px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-design .activity-thought ol {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+/* A placeholder in the final size. */
+.chat-design .activity-shimmer {
+  width: 100%;
+  max-width: 512px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(100deg, var(--subtle) 30%, color-mix(in srgb, var(--brand-a) 10%, var(--surface)) 45%, color-mix(in srgb, var(--brand-b) 10%, var(--surface)) 55%, var(--subtle) 70%);
+  background-size: 300% 100%;
+  animation: activity-shimmer 2.4s ease-in-out infinite;
+}
+@keyframes activity-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+/* What arrives where a placeholder was fades in. */
+.chat-design .activity-arrive {
+  animation: activity-arrive 0.35s var(--ease, ease);
+}
+@keyframes activity-arrive {
+  from {
+    opacity: 0;
+  }
+}
+/* Rows in the shape of a list that is loading. */
+.chat-design .activity-skeleton {
+  display: grid;
+  gap: 6px;
+  padding: 6px 8px;
+}
+.chat-design .activity-skeleton > span[aria-hidden] {
+  height: 14px;
+  margin: 11px 0;
+  border-radius: 7px;
+  background: linear-gradient(100deg, var(--hover) 30%, var(--subtle) 50%, var(--hover) 70%);
+  background-size: 300% 100%;
+  animation: activity-shimmer 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-design :is(.activity-dot, .activity-shimmer, .activity-arrive, .activity-skeleton > span) {
+    animation: none;
+  }
+}

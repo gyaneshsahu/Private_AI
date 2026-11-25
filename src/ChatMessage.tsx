@@ -22,8 +22,10 @@ import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
-import { projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { activityEnabled, answerDesignEnabled, errorStatesEnabled, projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { ErrorLine } from "./errors/ErrorLine";
 import { ReportCard } from "./report/ReportCard";
+import { ActivityLine, Thought, useTurn } from "./activity/Activity";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
@@ -200,6 +202,9 @@ export function ChatMessage({
   const sp = sidePanelsText[lang];
   const Answer = answerModule?.Answer ?? LazyAnswer;
   const user = message.role === "user";
+  // Activity: what was done for this answer (kept while the chat is open, never saved).
+  const turn = useTurn(message.id);
+  const activity = activityEnabled() && !user;
   // A report answer is a card that opens the side panel; a stopped or failed one stays in the chat as text.
   const asReport = !user && !!message.report && reportCardEnabled() && !!onOpenReport && (message.status === "complete" || streaming);
   const [draft, setDraft] = useState(message.text);
@@ -295,7 +300,7 @@ export function ChatMessage({
           {message.keptOnDevice} {t.keptNote}
         </p>
       )}
-      {message.failure && (
+      {message.failure && !errorStatesEnabled() && (
         <div className="failure-note">
           <p>{t.failure(message.failure)}</p>
           <details>
@@ -355,6 +360,8 @@ export function ChatMessage({
         </>
       ) : asReport ? (
         <ReportCard message={message} question={conversation.messages[index - 1]?.text ?? ""} onOpen={onOpenReport!} />
+      ) : streaming && !message.text && activity ? (
+        <ActivityLine label={turn?.live} />
       ) : streaming && !message.text ? (
         // Before the first text: moving dots for the eye, a sentence for screen readers.
         <div className="message-text message-waiting">
@@ -376,6 +383,9 @@ export function ChatMessage({
             onOpenPanel={onOpenImagePanel}
           />
         ) : (
+        <>
+        {/* Only over an answer: a failed one with no text has nothing that was thought towards. */}
+        {activity && turn && !!message.text && <Thought turn={turn} />}
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>
             <Answer
@@ -386,8 +396,11 @@ export function ChatMessage({
             />
           </Suspense>
         </LoadBoundary>
+        </>
         )
       )}
+      {/* Error states: one line where the answer would be, after whatever part of it arrived. */}
+      {message.failure && errorStatesEnabled() && <ErrorLine kind={message.failure} partial={!!message.text} onRetry={retry ? () => retry.run() : undefined} />}
       {!user && message.searchedFor && (
         <SearchedWeb
           query={message.searchedFor}
@@ -496,10 +509,12 @@ function SearchedWeb({ query, sources }: { query: string; sources: Source[] }) {
   useLang();
   const web = sources.filter((source) => source.url);
   return (
-    <details className="source-history-note searched-web">
+    <details className={answerDesignEnabled() ? "source-history-note searched-web designed" : "source-history-note searched-web"}>
       <summary>
         <Icon name="globe" />
         {WHEN_TO_SEARCH.searchedWeb}
+        {/* Answer design: how many sources, before opening. */}
+        {answerDesignEnabled() && web.length > 0 && <span className="searched-web-count">{web.length}</span>}
       </summary>
       <p>{WHEN_TO_SEARCH.searchedFor(query)}</p>
       {web.length ? (
@@ -509,6 +524,7 @@ function SearchedWeb({ query, sources }: { query: string; sources: Source[] }) {
               <a href={source.url} target="_blank" rel="noopener noreferrer">
                 {source.title || new URL(source.url!).hostname}
               </a>
+              {answerDesignEnabled() && source.title && <span className="searched-web-host">{new URL(source.url!).hostname.replace(/^www\./, "")}</span>}
             </li>
           ))}
         </ol>

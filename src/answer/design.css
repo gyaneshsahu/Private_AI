@@ -180,3 +180,108 @@
     margin-top: 2px;
   }
 }
+
+/* "Searched the web" under an answer: a quiet pill; opened, a card with what was searched and
+   the sources as rows (title, then where it is from). */
+.chat-design .searched-web.designed {
+  margin: 10px 0 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 13.5px;
+}
+.chat-design .searched-web.designed summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink2);
+  list-style: none;
+}
+.chat-design .searched-web.designed summary::-webkit-details-marker {
+  display: none;
+}
+.chat-design .searched-web.designed summary:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.chat-design .searched-web.designed summary svg {
+  color: var(--accent);
+}
+.chat-design .searched-web-count {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--subtle);
+  color: var(--ink2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 20px;
+  text-align: center;
+}
+.chat-design .searched-web.designed[open] {
+  padding: 10px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .searched-web.designed[open] summary {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.chat-design .searched-web.designed p {
+  margin: 6px 0 8px;
+  color: var(--ink2);
+}
+.chat-design .searched-web.designed ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: source;
+}
+.chat-design .searched-web.designed li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  counter-increment: source;
+}
+.chat-design .searched-web.designed li::before {
+  content: counter(source);
+  min-width: 16px;
+  color: var(--ink3);
+  font-variant-numeric: tabular-nums;
+}
+.chat-design .searched-web.designed li:hover {
+  background: var(--hover);
+}
+.chat-design .searched-web.designed a {
+  color: var(--ink);
+  font-weight: 550;
+  text-decoration: none;
+}
+.chat-design .searched-web.designed a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.chat-design .searched-web-host {
+  color: var(--ink2);
+  font-size: 12.5px;
+}
+@media (max-width: 760px) {
+  .chat-design .searched-web.designed summary {
+    min-height: 44px;
+  }
+  .chat-design .searched-web.designed li {
+    padding: 10px 8px;
+  }
+}

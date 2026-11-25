@@ -4,6 +4,12 @@ import type { ChatCompletionChunk } from "openai/resources/chat/completions";
 import type { Qualification, Usage } from "../shared/contracts";
 import { StreamProtocolError, type StreamFailureCode } from "./stream-failure";
 
+/**
+ * Activity (docs/activity-states-20261126.md): the model's reasoning text, when the provider streams
+ * it beside the answer. One listener, set by the app for the answer in work; never part of the answer.
+ */
+export const reasoningFeed: { on?: (text: string) => void } = {};
+
 export class IncompleteReplyError extends Error {
   constructor(
     message: string,
@@ -66,6 +72,9 @@ export async function consumeReply(
               choice.delta.tool_calls.length > 0)) ||
           choice.delta.function_call != null,
         );
+        // Providers name the field differently and some send both: one of them is taken.
+        const thought = (choice.delta as { reasoning_content?: unknown; reasoning?: unknown }).reasoning_content ?? (choice.delta as { reasoning?: unknown }).reasoning;
+        if (typeof thought === "string" && thought) reasoningFeed.on?.(thought);
         const text = choice.delta.content || choice.delta.refusal;
         if (text) {
           hasText = true;
