@@ -12,6 +12,10 @@ Every decision and every manual step only you can do. Nothing here was done by t
 4. **Your config for the owner test:** the example `deployment/render-config.owner-test.example.json` now says `"plan": "premium"` and 60 searches a day. Your real `render-config.json` on Render is yours to edit: set `"metering": { "enabled": true, "plan": "premium" }` there (premium gives 60 searches a day). Back to `"alpha"` before friends (24 a day).
 5. **Black Forest Labs trains on what is sent** (their EU API terms, 26 August 2026, section 2(b)); you knew this for prompts (D1). It also covers **input images** once image editing is on. An opt-out exists by email to privacy@blackforestlabs.ai, subject "Training Opt Out". Only you can send it. Until a no-training provider is live (Track 4), editing uploaded photos should stay off for friends.
 6. **Wording choice:** the Terms still say "invite-only test phase (alpha)". It is a legal text under the legal read, so I left it. Say if you want "trial" there too.
+12. **Owner dashboard and feedback:** to switch them on you put your Google address into `ownerEmails` (in `inference.analytics` and `inference.feedback`), run the database step once (migrations 0028 and 0029, then the privileges SQL), and have the lawyer read the two Privacy Policy lines in `docs/analytics-20261125.md` and `docs/feedback-20261125.md`.
+13. **Feedback entries stay until you delete them.** The drafted policy line says "until we have dealt with it". Either delete entries as you go, or tell me a fixed period to delete them automatically.
+14. **The no-training image provider needs you:** an Azure subscription, a Foundry resource in Sweden Central or Germany West Central, FLUX.2-pro deployed as **Data Zone Standard** (if only "Global" is offered, stop: the EU promise would not hold), a spending limit, the key in a Render secret file, and Microsoft's written word that the "preview" address is covered by their no-training statement. Steps in `docs/image-provider-eu-20261125.md`. Until then the image provider stays Black Forest Labs, which may train on what is sent.
+15. **Home-screen app: only a real phone can confirm it.** Install on your Android and on an iPhone, and above all sign in with Google from the installed app (list in `docs/pwa-20261125.md`).
 10. **Share links need three things from you before they can be switched on:** your yes (they were on your "not built" list of 16 November), one database step on Render (`apply-pending`, then the privileges SQL: the app's database role needs the new table), and the lawyer's read of the Privacy Policy line in `docs/sharing-20261125.md`. The plain Share button (device menu, Copy, Download) needs none of this.
 11. **After merging any branch that adds a table,** test 26.1 in your list no longer says `"applied":20`. Each new table adds one: share links 0027, analytics 0028, feedback 0029.
 8. **Images per day in your test:** your config has `"imageCreation": { ..., "dailyImages": 3 }`, and the plan does not change that number. With editing on, every edit counts as an image, so three edits end the day. Raise it for your test (for example 20; the config allows up to 50). Each image or edit costs about USD 0.015 at the provider.
@@ -23,8 +27,12 @@ Every decision and every manual step only you can do. Nothing here was done by t
 - Track 0 (`fix/before-owner-test`, head `7bb1478`): done, **CI green** (run 45591198070).
 - Track 1 (`feat/image-editing`, head `d4a74f9`): done, **CI green** (run 45590689598).
 - Projects and chat menu (`feat/projects-ux`, from `fix/before-owner-test`): done, pushed 25 November; read its CI run (`gh run list --branch feat/projects-ux`).
-- Track 1b (`feat/image-share`, **from `feat/image-editing`**, worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-share`, head `537f52e`): built, 22 new tests green, accessibility clean; its full local check was running when this was written (`Private_AI-tracks\sh-*.log`). When green: push, read CI.
-- **Next: Track 2, analytics** (`feat/analytics` from the tag, migration number **0028**), then Track 3 feedback (**0029**), Track 4, 5, 6 (plans: **0030** if it needs a table).
+- Track 1b (`feat/image-share`, from `feat/image-editing`): done, pushed 25 November; read its CI run.
+- Track 2 (`feat/analytics`, from the tag, head `1896ead`, worktree `...\Private_AI-tracks\analytics`): built, tests green, accessibility clean; **its full local check was running when this was written** (`Private_AI-tracks\an-*.log`). When green: push.
+- Track 3 (`feat/feedback`, **from `feat/analytics`**, head `c73eabf`, worktree `...\feedback`): built, server tests green. **To do: run `tests/feedback-ui.test.ts`, look at its screenshots, add a tour step with the accessibility check, full local check, push.**
+- Track 4 (`feat/image-provider-eu`, **from `feat/image-editing`**, head `da9b712`, worktree `...\image-provider`): built, tests green. **To do: full local check, push.**
+- Track 5 (`feat/pwa`, from the tag, head `49e6055`, worktree `...\pwa`): built, file checks green. **To do: run `tests/install-app-ui.test.ts`, full local check, push.**
+- **Then Track 6** (`feat/plans-checkout` from the tag; migration **0030** only if it needs a table), then `preview/all-tracks`, then `docs/owner-test-additions-20261125.md`.
 - Then Track 1b (`feat/image-share`): branch it **from `feat/image-editing`**, not from the tag (it builds on the image card and the editor; written down under Track 1b when started).
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
@@ -61,11 +69,11 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 | 0 Fixes | `fix/before-owner-test` | done, CI green. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `7bb1478` (run 45591198070) |
 | 1 Image editing | `feat/image-editing` | done. Local full run on `d4a74f9`: build green, unit 2,393 passed and 1 failed (`invite-browser`, a 5-second wait; alone it passed 5 of 6 here and 4 of 4 on the fix branch: timing, not this change, but unproven), browser tests 64 of 64, evaluation checks and secret scan green | green on `d4a74f9` (run 45590689598), which includes that test |
 | P Projects and chat menu | `feat/projects-ux` (from the fix branch) | done. Local full run: build green, unit 2,381 passed, browser tests 64 of 64 after one test was updated for the new menu, evaluation checks and secret scan green; accessibility check clean on the changed screens | pushed 25 Nov, run to read |
-| 1b Placement and sharing | `feat/image-share` (from `feat/image-editing`) | built; 22 new tests green (5 server, 4 logic, 12 browser, 1 database test for CI); accessibility clean; full local check running | not pushed yet |
-| 2 Analytics | `feat/analytics` | not started | |
-| 3 Feedback | `feat/feedback` | not started | |
-| 4 No-training image provider | `feat/image-provider-eu` | not started | |
-| 5 PWA | `feat/pwa` | not started | |
+| 1b Placement and sharing | `feat/image-share` (from `feat/image-editing`) | done. Local full run: build green, unit all passed after one older check ("no Share button") was updated for the working Share, browser tests 64 of 64, evaluation checks and secret scan green; accessibility clean | pushed 25 Nov, run to read |
+| 2 Analytics | `feat/analytics` | built; 10 new tests green (4 server, 5 browser, 1 database test for CI); accessibility clean; full local check running | not pushed yet |
+| 3 Feedback | `feat/feedback` (from `feat/analytics`) | built; 3 server tests green, 1 database test for CI; browser test written, not run yet | not pushed yet |
+| 4 No-training image provider | `feat/image-provider-eu` (from `feat/image-editing`) | built; 6 new tests and the config rules green; full local check not run yet | not pushed yet |
+| 5 PWA | `feat/pwa` | built; 4 file checks green; browser test written, not run yet | not pushed yet |
 | 6 Plans and checkout | `feat/plans-checkout` | not started | |
 | All | `preview/all-tracks` | not started | |
 
@@ -127,6 +135,36 @@ Everything is in `docs/sharing-20261125.md` on the branch. In short:
 - **Privacy Policy line:** drafted in English and German in the doc, for the lawyer.
 - **Starts from `feat/image-editing`, not from the tag,** because it builds on the image card and the editor. Merging it brings image editing with it.
 - **Not verified:** the hosted setup (that `/s/…` is reachable signed out on Render), a real phone's share menu, the reader's page in Safari and Firefox.
+
+## Track 2: analytics and the owner's dashboard (`feat/analytics`)
+
+Details: `docs/analytics-20261125.md` on the branch. In short:
+- **An "Owner dashboard" in the account menu**, only for addresses on your owner list: active accounts per day and week, returning accounts, messages per mode, feature use, errors, limits reached, cost per day.
+- **Counts only.** People and cost are counted from the usage records the app already keeps; errors, limits and feature use are day totals with no account in them (one new small table, migration 0028). No content, no third party, no cookie. Day totals are kept 90 days by default.
+- **Off by default** (`inference.analytics`). With it off the browser makes no counting request (tested).
+- **Privacy Policy line** drafted in English and German in the doc.
+
+## Track 3: feedback from testers (`feat/feedback`, on top of analytics)
+
+Details: `docs/feedback-20261125.md` on the branch. In short:
+- **"Send feedback" in the account menu:** what it is about, a text, a rating from 1 to 5 if wanted, a screenshot only if the tester attaches one. The form says what is sent along (the account, the language, the window size).
+- **In the owner's dashboard:** every entry with sender, time, rating, text, the screenshot to open, and Delete (asked first).
+- **Off by default** (`inference.feedback`), migration 0029. Nothing deletes entries by time: you delete them once dealt with (say if you want a fixed period).
+
+## Track 4: a no-training image provider (`feat/image-provider-eu`, on top of image editing)
+
+Details: `docs/image-provider-eu-20261125.md` on the branch. In short:
+- **Chosen: Microsoft Foundry, FLUX.2 [pro], EU Data Zone.** The same model family as today, the same request fields, a written no-training statement. Google's Imagen was retired on 30 June 2026, so it was ruled out.
+- **Editing: yes. Masks: the provider has none;** the app's own crop-and-paste does the job for any provider (tried live on the same model at Black Forest Labs).
+- **Behind a config choice** (`imageCreation.provider: "foundry"` with the resource's address); the default is unchanged.
+- **No live request was made** (no Microsoft account). Three things are unknown until the first one: the exact shape of the answer (the adapter reads every known shape), the price, and whether the EU Data Zone can really be chosen for this model.
+
+## Track 5: CometRow on the home screen (`feat/pwa`)
+
+Details: `docs/pwa-20261125.md` on the branch. In short:
+- The manifest and icons already existed. **New:** the iPhone tags so it opens in its own window with its name, **a start screen** (the mark on the page colour until the app has loaded), and **"Install CometRow" in Settings** behind `VITE_INSTALL_APP`.
+- **No offline mode and no background worker:** not needed to install, and a stale cached copy after a deploy is a known trap.
+- **Not tried on a real phone.** The doc lists what to look at, above all sign-in from the installed app on an iPhone.
 
 ## Projects and the chat menu (`feat/projects-ux`, your message of 25 November)
 
