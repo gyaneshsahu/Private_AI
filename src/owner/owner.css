@@ -121,3 +121,18 @@
     min-height: 44px;
   }
 }
+/* The header's words stay whole: the title may shrink and the range moves to its own line on a phone. */
+.chat-design .owner-dialog > header :is(h2, label span) {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .chat-design .owner-dialog > header h2 {
+    flex: 1 1 60%;
+    font-size: 19px;
+  }
+  .chat-design .owner-dialog > header label {
+    order: 3;
+    flex: 1 1 100%;
+  }
+}

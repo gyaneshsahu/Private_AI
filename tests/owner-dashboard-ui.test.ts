@@ -1,5 +1,5 @@
 // The owner's dashboard in the real app (docs/analytics-20261125.md), every feature on, answers
-// faked: after a message and an opened whiteboard the account menu's "Owner dashboard" shows
+// faked: after a created image and a new project the account menu's "Owner dashboard" shows
 // today's counts; the use of a feature went out as a name and nothing else; and without the
 // switch the app makes no counting request at all. Phone and desktop, English and German.
 import { randomUUID } from "node:crypto";
@@ -11,7 +11,9 @@ import { buildClient, startServer } from "../evaluation/audit-harness";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { setTracking, track } from "../src/owner/track";
 import { appText } from "../src/text/app";
+import { imageCreationText } from "../src/text/image-creation";
 import { ownerFeatureText, ownerText } from "../src/text/owner";
+import { projectText } from "../src/text/projects";
 import { workspaceText } from "../src/text/workspace";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -35,7 +37,7 @@ describe.each([
   [1280, "en"],
   [1280, "de"],
 ] as [number, "en" | "de"][])("owner dashboard at %i px, %s", (width, lang) => {
-  it("shows counts for today after a message and a feature use, and what was sent for the count was a name alone", async () => {
+  it("shows counts for today after a created image and a feature use, and what was sent for the count was a name alone", async () => {
     const phone = width < 700;
     const context = await browser.newContext({ viewport: { width, height: phone ? 812 : 900 }, locale: lang === "de" ? "de-DE" : "en-US", ...(phone ? { hasTouch: true, isMobile: true } : {}) });
     context.setDefaultTimeout(10_000);
@@ -52,30 +54,48 @@ describe.each([
       const a = appText[lang];
       const w = workspaceText[lang];
       const t = ownerText[lang];
-      await page.getByLabel(a.messageInput, { exact: true }).fill("A question with zebracanary4817 in it. audit:plain");
-      await page.getByRole("button", { name: a.sendLabel, exact: true }).click();
-      await page.getByRole("button", { name: a.stopResponse, exact: true }).waitFor({ state: "hidden", timeout: 30_000 });
-      // Use a feature: open the canvas on the answer.
-      await page.locator("article.assistant").last().getByRole("button", { name: /canvas/i }).first().click();
-      await expect.poll(() => events).toEqual([JSON.stringify({ name: "canvas.opened" })]);
-      if (await page.locator(".side-panel").count()) await page.keyboard.press("Escape").catch(() => {});
+      const c = imageCreationText[lang];
+      // A created image goes through the real route and leaves a usage record (the faked chat answers do not).
+      await page.getByLabel(a.tools, { exact: true }).click();
+      await page.locator(".tools-menu .menu-surface").getByRole("button", { name: c.menu, exact: true }).click();
+      const create = page.getByRole("dialog", { name: c.title });
+      await create.getByLabel(c.describe).fill("A lake for zebracanary4817");
+      await create.getByRole("button", { name: c.create, exact: true }).click();
+      await ui(page.locator("figure.created-image")).toBeVisible();
+      // Use a feature: make a project. One counting request goes out, holding the name alone.
+      if (phone) await page.getByLabel(a.openNavigation, { exact: true }).click();
+      await page.getByRole("button", { name: w.createProject, exact: true }).click();
+      await page.getByLabel(w.projectName).fill("zebracanary4817 plans");
+      await page.getByRole("button", { name: w.create, exact: true }).click();
+      await expect.poll(() => events).toEqual([JSON.stringify({ name: "project.created" })]);
+      const project = page.locator("dialog.project-dialog");
+      // A new project opens its screen; close it.
+      await ui(project).toBeVisible();
+      await project.getByRole("button", { name: projectText[lang].close }).click();
       // The account menu has the dashboard for this account, which is on the owner list.
-      if (phone && !(await page.locator(".sidebar").isVisible())) await page.getByLabel(a.openNavigation, { exact: true }).click();
+      await ui(project).toHaveCount(0);
+      if (phone) {
+        // The drawer may be open or closed after the project screen: open it only when its own close button is not there.
+        await page.waitForTimeout(400);
+        if (!(await page.getByRole("button", { name: w.closeNavigation }).isVisible())) await page.getByLabel(a.openNavigation, { exact: true }).click();
+      }
       await page.locator(".account-menu summary").click();
       await page.locator(".account-menu").getByRole("button", { name: t.menu, exact: true }).click();
       const dialog = page.getByRole("dialog", { name: t.title });
       await ui(dialog.getByText(t.intro(90))).toBeVisible();
       // Tiles: one account this week, one today.
       const tile = (label: string) => dialog.locator(".owner-tiles > div").filter({ hasText: label }).locator("dd").first();
-      await ui(tile(t.weeklyActive)).toHaveText("1");
-      await ui(tile(t.activeToday)).toHaveText("1");
+      // At least this account (the server is shared by this file's cases, so others may be counted too).
+      await ui(tile(t.weeklyActive)).toHaveText(/^[1-9]\d*$/);
+      await ui(tile(t.activeToday)).toHaveText(/^[1-9]\d*$/);
       await ui(tile(t.weeklyReturning)).toHaveText("0");
       // By day: 30 rows, today first, with one active account.
       const rows = dialog.locator(".owner-scroll tbody tr");
       await ui(rows).toHaveCount(30);
-      await ui(rows.first().locator("td").first()).toHaveText("1");
+      await ui(rows.first().locator("td").first()).toHaveText(/^[1-9]\d*$/);
       // Feature use names the canvas, in this language.
-      await ui(dialog.getByRole("rowheader", { name: ownerFeatureText[lang]["use.canvas.opened"], exact: true })).toBeVisible();
+      await ui(dialog.getByRole("rowheader", { name: ownerFeatureText[lang]["image-create"], exact: true })).toBeVisible();
+      await ui(dialog.getByRole("rowheader", { name: ownerFeatureText[lang]["use.project.created"], exact: true })).toBeVisible();
       // Another range reloads.
       await dialog.getByLabel(t.range).selectOption("7");
       await ui(rows).toHaveCount(7);
