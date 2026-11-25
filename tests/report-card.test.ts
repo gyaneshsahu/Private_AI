@@ -2,7 +2,7 @@
 // field, and the switch being a build switch that is off unless set.
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { readMinutes, reportSections, reportSummary, reportTitle } from "../src/report/report";
+import { readMinutes, reportPreview, reportSections, reportTitle } from "../src/report/report";
 
 const REPORT = [
   "# Notice periods for tenants",
@@ -28,19 +28,22 @@ it("the title is the report's first heading, or the question when it has none", 
   expect(reportTitle("", "x".repeat(200))).toHaveLength(88);
 });
 
-it("the summary is the first paragraph without Markdown marks or source codes, cut at a sentence", () => {
-  expect(reportSummary(REPORT)).toBe("The notice period is three months for a tenant, whatever the length of the tenancy. For the landlord it grows with the years.");
-  const long = `${"A sentence of some length here. ".repeat(20)}`;
-  const cut = reportSummary(long);
-  expect(cut.length).toBeLessThanOrEqual(320);
-  expect(cut.endsWith(".")).toBe(true);
-  expect(reportSummary("## Only\n- a list\n| a | table |")).toBe("");
-});
-
 it("the sections are the second-level headings outside code, at most eight", () => {
   expect(reportSections(REPORT)).toEqual(["Short answer", "How the period is counted", "What stays open"]);
   expect(reportSections("# One\ntext\n# Two")).toEqual(["One", "Two"]);
   expect(reportSections(Array.from({ length: 12 }, (_, i) => `## S${i}`).join("\n"))).toHaveLength(8);
+});
+
+it("the preview is the beginning in whole lines, never ending inside a code block", () => {
+  expect(reportPreview("short")).toBe("short");
+  expect(reportPreview("Three months [synthetic-0001]. Six [synthetic-0002, page 3]. A [placeholder] stays? No: [recipient] has no digit rule here.")).toContain("Three months. Six.");
+  const long = Array.from({ length: 80 }, (_, i) => `Line ${i} of the report with some words in it.`).join("\n");
+  const cut = reportPreview(long);
+  expect(cut.length).toBeLessThanOrEqual(1600);
+  expect(long.startsWith(cut) && cut.endsWith("in it.")).toBe(true);
+  const fence = "`".repeat(3);
+  const code = ["word ".repeat(300), fence, "x = 1\n".repeat(200) + fence].join("\n");
+  expect(reportPreview(code)).not.toContain(fence);
 });
 
 it("reading time is never under a minute", () => {

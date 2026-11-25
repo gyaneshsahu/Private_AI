@@ -66,15 +66,16 @@ describe.each([
       const answer = page.locator("article.assistant").last();
       const card = answer.getByRole("button", { name: t.open(TITLE), exact: true });
       await ui(card).toBeVisible({ timeout: 40_000 });
-      await ui(card).toContainText(t.kind);
-      await ui(card).toContainText(t.sources(6));
-      await ui(card).toContainText(t.minutes(1));
-      // The report's own first paragraph, without source codes; the report itself is not in the chat.
-      const summary = answer.locator(".report-card-summary");
-      await ui(summary).toContainText("three months for a tenant");
-      expect(await summary.innerText()).not.toMatch(/[\[\]]/);
-      await ui(answer.locator("table")).toHaveCount(0);
-      await ui(answer.locator(".citation")).toHaveCount(0);
+      const meta = answer.locator(".report-card-meta");
+      await ui(meta).toContainText(t.kind);
+      await ui(meta).toContainText(t.sources(6));
+      await ui(meta).toContainText(t.minutes(1));
+      // The card shows the beginning of the report as a picture of it: cut short, and nothing in it takes focus or a click of its own.
+      const preview = answer.locator(".report-preview-body");
+      await ui(preview).toContainText("three months for a tenant");
+      expect((await preview.boundingBox())!.height).toBeLessThanOrEqual(381);
+      await ui(preview.locator("[inert]")).toHaveCount(1);
+      await ui(answer.getByRole("button", { name: t.downloadReport, exact: true })).toBeVisible();
       const sections = answer.getByRole("navigation", { name: t.inReport }).getByRole("button");
       await ui(sections).toHaveCount(3);
 
@@ -83,7 +84,9 @@ describe.each([
       if (phone) {
         await ui(panel).toHaveCount(0);
         expect((await sections.first().boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
-        await page.screenshot({ path: `.local/report/card-${width}-${lang}-${scheme}.png` });
+        await ui(page.locator(".report-preview-body h1")).toBeVisible();
+      await page.waitForTimeout(700); // the message has faded in
+      await page.screenshot({ path: `.local/report/card-${width}-${lang}-${scheme}.png` });
         await card.click();
       }
       await ui(panel).toBeVisible();
@@ -121,7 +124,9 @@ describe.each([
       await page.locator('[id^="chat-row-"]').first().click();
       await ui(page.getByRole("button", { name: t.open(TITLE), exact: true })).toBeVisible();
       await ui(panel).toHaveCount(0);
-      if (!phone) await page.screenshot({ path: `.local/report/card-${width}-${lang}-${scheme}.png` });
+      if (!phone) await ui(page.locator(".report-preview-body h1")).toBeVisible();
+      await page.waitForTimeout(700); // the message has faded in
+      await page.screenshot({ path: `.local/report/card-${width}-${lang}-${scheme}.png` });
     } finally {
       await context.close();
     }

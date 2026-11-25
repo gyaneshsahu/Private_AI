@@ -6,10 +6,11 @@
 
 ## What it is
 
-**In the chat**, a finished deep research is now:
-- **a card:** the report's title, "Research report · 6 sources · 4 min read". A tap opens the report;
-- **the report's own first paragraph** as a short summary, without source codes;
-- **"In this report":** its sections as numbered links. A tap opens the report at that section.
+**In the chat**, a finished deep research is now a document card (the form you preferred from ChatGPT, 25 November):
+- **a line above it:** "Research report · 6 sources · 4 min read";
+- **the card's head:** the report's title, **Download** and **Open**;
+- **the beginning of the report itself** inside the card, fading out at the bottom. A click on it opens the report. Source codes are left out of this preview; the sources open in the report;
+- **"In this report"** under the card: its sections as numbered links. A tap opens the report at that section.
 
 **In the side panel**, the whole report:
 - drawn as the chat would draw it, with tables, lists and **source buttons that open the source**;
@@ -30,7 +31,7 @@
 ## Decisions taken
 
 1. **A reading panel first, the canvas one tap away.** Your words were "open in canvas". The canvas edits raw Markdown, has an 18,000-character limit and asks before replacing what is in it. A report opened straight into it would show pipes and stars instead of a table. So the report opens in a panel made for reading, and "Edit in canvas" is its first button. When the canvas gets a real editor, the report can open there directly.
-2. **The summary comes from the report itself,** not from a second request to the model: no extra cost, and it cannot say something the report does not.
+2. **The card shows the report's own beginning,** not a summary from a second request to the model: no extra cost, and it cannot say something the report does not. Claude writes a separate summary into the chat; that costs one more request per research. Say if you want it.
 3. **A report too long for the canvas** has no "Edit in canvas" button; Copy and Download remain.
 4. **This changes one older decision in placement only:** "deep research in the chat" (16 to 18 November) said the run and the result are in the chat. The run still is; the finished report is now a card there. `docs/owner-decisions.md` was not edited.
 

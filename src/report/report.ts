@@ -30,18 +30,6 @@ export function reportTitle(text: string, question: string): string {
   return title.length > 90 ? `${title.slice(0, 87).trimEnd()}…` : title;
 }
 
-/** The first paragraph of running text, cut at a sentence end near 320 characters. */
-export function reportSummary(text: string): string {
-  const paragraph = proseLines(text)
-    .map((line) => line.trim())
-    .find((line) => line.length > 40 && !/^(#|[-*+]\s|\d+[.)]\s|>|\||[-=_*]{3,}$)/.test(line));
-  const prose = plain(paragraph ?? "");
-  if (prose.length <= 320) return prose;
-  const cut = prose.slice(0, 320);
-  const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
-  return end > 120 ? cut.slice(0, end + 1) : `${cut.slice(0, cut.lastIndexOf(" ")).trimEnd()}…`;
-}
-
 /** The report's sections: its second-level headings (first-level ones when it has no others), at most eight. */
 export function reportSections(text: string): string[] {
   const lines = proseLines(text);
@@ -51,6 +39,24 @@ export function reportSections(text: string): string[] {
     .map((line) => plain(line.slice(level.length)))
     .filter(Boolean)
     .slice(0, 8);
+}
+
+/** The beginning of the report for the card's preview: whole lines, about 1,600 characters, never ending inside a code block. */
+export function reportPreview(full: string): string {
+  // Source codes are left out: the preview is a picture of the text, and its sources open in the report.
+  const text = full.replace(/[ \t]*[\[【][a-zA-Z0-9-]{6,36}(?:[,†][^\]】\n]{0,90})?[\]】]/g, "");
+  if (text.length <= 1600) return text;
+  const cut = text.slice(0, 1600);
+  const whole = cut.slice(0, Math.max(cut.lastIndexOf("\n"), 1));
+  return (whole.match(/^ {0,3}(`{3,}|~{3,})/gm) ?? []).length % 2 ? whole.slice(0, whole.lastIndexOf("```")) : whole;
+}
+
+/** Saves the report as a Markdown file named after its title. */
+export function downloadReport(title: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/markdown;charset=utf-8" }));
+  const name = title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 60) || "report";
+  Object.assign(document.createElement("a"), { href: url, download: `${name}.md` }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /** Reading time at about 220 words a minute, never under one minute. */
