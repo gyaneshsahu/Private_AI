@@ -511,15 +511,16 @@ it("live voice ball: it moves while listening and stands still under reduced mot
 });
 
 describe.each([375, 1280])("states and dialogs at %i px", (width) => {
-  it("a failed answer is a calm rounded note; What this means opens", async () => {
+  // With error states on (docs/error-states-20261126.md) the note is the one error line with Retry.
+  it("a failed answer is one calm rounded line with Retry", async () => {
     const { context, page } = await open(width);
     try {
       await send(page, "SYNTHETIC busy please. audit:error-429");
-      const note = page.locator("article.assistant").last().locator(".failure-note");
-      await ui(note).toContainText("The service is busy right now");
+      const note = page.locator("article.assistant").last().locator(".error-line");
+      await ui(note).toContainText("CometRow is busy right now. Your message is safe.");
       expect(await note.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("12px");
-      await note.getByText("What this means", { exact: true }).click();
-      await ui(note.locator("details")).toHaveAttribute("open", "");
+      await ui(note.getByRole("button", { name: "Retry", exact: true })).toBeVisible();
+      await ui(page.locator(".failure-note")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
     } finally {
       await context.close();
