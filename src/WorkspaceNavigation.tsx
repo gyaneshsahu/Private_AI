@@ -638,7 +638,7 @@ export function WorkspaceNavigation(props: {
             )}
           </div>
         </details>
-        <p>{[unlocked ? t.vaultUnlocked : storage === "secure" ? (loadingNote ? "" : settingsText[lang].loadingChats) : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
+        <p>{[unlocked ? t.vaultUnlocked : storage === "secure" ? (loadingNote || activityEnabled() ? "" : settingsText[lang].loadingChats) : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
         {syncIndicator}
       </nav>
     </aside>

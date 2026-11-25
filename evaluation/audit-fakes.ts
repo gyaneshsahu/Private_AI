@@ -1,6 +1,7 @@
 // Fakes for the audit harness (evaluation/audit-harness.ts), reusable from any Playwright script:
 //
 //   import { installFakes } from "./audit-fakes";
+import { BLOCKS_SAMPLE } from "../tests/fixtures/answer-blocks-sample";
 //   const fakes = await installFakes(context, { origin: "http://localhost:<port>", config: "on" });
 //   fakes.answer("table");            // the next reply is the table answer (a queue; then the default)
 //   ... or type "audit:table" anywhere in a message ...
@@ -26,6 +27,8 @@ export const ANSWERS = [
   "error-503", "dropped", "stop", "python", "image", "plain", "chart", "limit",
   // An answer the model reasoned about first (docs/activity-states-20261126.md).
   "thought",
+  // One answer that uses every answer block (docs/answer-blocks-20261126.md).
+  "blocks",
   // One word, for the people check of an uploaded photo (src/image-edit/people.ts).
   "no", "yes",
 ] as const;
@@ -51,6 +54,7 @@ const ON_STATUS = {
 
 const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-500" | "error-503" | "limit">, string> = {
   thought: "The trip takes **155 minutes**.",
+  blocks: BLOCKS_SAMPLE,
   plain: "Synthetic answer.",
   no: "NO",
   yes: "YES",

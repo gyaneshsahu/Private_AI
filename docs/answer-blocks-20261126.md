@@ -32,7 +32,7 @@
 
 ## The measurement (26 November, live model, made-up questions)
 
-24 questions in English and German, with the product's own settings (Fast: little reasoning; Thinking: at length). 8 should get no block; 16 should get a fitting one.
+24 questions in English and German, with the settings the project's documents name for the two modes (Fast: `glm-5.3-flash` with little reasoning; Thinking: `glm-5.3` reasoning at length). I did not read them from the deployed configuration, which only you can see; if yours differ, the measurement should be run again. 8 should get no block; 16 should get a fitting one.
 
 | | Result |
 | --- | --- |
@@ -42,7 +42,7 @@
 | Blocks the app could not read | 1 (a tabs block with a slip in it; it is shown as written) |
 
 - The two misses: one tabs block the model wrote with an error, and one explanation ("kinds of computer memory") that got a note but no steps or diagram. Neither is wrong, only plainer than it could be.
-- **A first run taught something:** without the product's reasoning setting, the model spent its whole output allowance thinking and five answers came back empty. With the real setting (Fast reasons little) that did not happen. Worth knowing if the setting is ever changed.
+- **A first run taught something:** without a reasoning setting, the model spent its whole output allowance thinking and five answers came back empty. With the real setting (Fast reasons little) that did not happen. Worth knowing if the setting is ever changed.
 - **What I changed after the first run:** "quiz" only when the user asks to be tested or for exercises (it had added one to a plain explanation), and the app now cuts a label that is a little too long instead of refusing the whole diagram.
 - The answers are kept in `evaluation/answer-design/blocks-probe-20261126.json`; `blocks-rescore.mts` scores them again without asking the model.
 

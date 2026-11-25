@@ -149,6 +149,8 @@ const STEPS: Step[] = [
   }],
   ["answer-markdown", (c) => answer(c, "markdown")],
   ["answer-code", (c) => answer(c, "code")],
+  // Answer blocks (docs/answer-blocks-20261126.md): notes, a diagram, steps, tabs and a quick check in one answer.
+  ["answer-blocks", (c) => answer(c, "blocks"), "on"],
   ["answer-math", (c) => answer(c, "math")],
   ["answer-table", (c) => answer(c, "table")],
   ["answer-long", (c) => answer(c, "long")],
