@@ -284,3 +284,6 @@ Use made-up questions. The point of this section is as much what does **not** ap
 | 49.13 | Copy an answer with a diagram, and export it as PDF | Copy gives the text with the diagram's data; the PDF shows the drawn diagram | |
 | 49.14 | If a block ever shows as a grey box of code with curly brackets | The model made a slip and the app showed it as written. Note the question; about 1 in 16 in my measurement | |
 | 49.15 | Write down which blocks you find useful and which you would drop | Each can be removed from the rules on its own | |
+| 49.16 | 49.2 again, and watch while the answer is being written | Where the diagram will be, a quiet line "Preparing a figure…"; no curly brackets flying by. When the answer is finished the diagram appears | |
+| 49.17 | 49.2 again, and press Stop while that line is showing | The line goes away. What had arrived of the block is shown as written (a grey box), with the calm "stopped" line and Retry | |
+| 49.18 | Read aloud an answer with a diagram | The diagram is read once, in words ("… leads to …"), not as loose labels | |
