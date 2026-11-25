@@ -1,0 +1,118 @@
+/* Plans (docs/plans-20261125.md): three cards side by side, one under the other on a phone. */
+.chat-design dialog.plans-dialog {
+  width: min(960px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 20px 22px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.chat-design .plans-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 4px;
+}
+.chat-design .plans-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.chat-design .plans-note {
+  min-height: 1.5em;
+  margin: 0 0 8px;
+}
+.chat-design .plans-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chat-design .plans-list .plan {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.chat-design .plans-list .plan.mine {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.chat-design .plans-list h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 18px;
+}
+.chat-design .plan-yours {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.chat-design .plan-price {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+}
+.chat-design .plans-list .plan > p {
+  margin: 0;
+}
+.chat-design .plans-list .plan ul {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  flex: 1;
+  margin: 4px 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+.chat-design .plans-list .plan ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.chat-design .plans-list .plan ul svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  color: var(--accent);
+}
+.chat-design .plans-list .plan > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 550;
+}
+.chat-design .plans-list .plan > button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+@media (max-width: 760px) {
+  .chat-design .plans-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .chat-design .plans-dialog :is(.icon-button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

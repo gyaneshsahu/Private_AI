@@ -23,6 +23,7 @@ import { build } from "vite";
 import react from "@vitejs/plugin-react";
 import { chromium, firefox, webkit } from "@playwright/test";
 import { createApp } from "../server/app";
+import { fakeCheckoutProvider, MemoryPlanStore } from "../server/plans";
 import { mockImageProvider } from "../server/image-creation";
 import { mockImageEditor } from "../server/image-edit";
 import { MemoryShareStore } from "../server/share-links";
@@ -106,6 +107,7 @@ export async function startServer(config: AuditConfig, client: string, fakesInSe
     // The audit account is the owner here, so the tour reaches the owner's dashboard.
     ...(on ? { analytics: { store: new MemoryAnalyticsStore(), ownerEmails: ["audit@example.test"], retentionDays: 90, start: false } } : {}),
     ...(on ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
+    ...(on ? { plans: { store: new MemoryPlanStore(), provider: fakeCheckoutProvider() } } : {}),
     ...(on ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } } : {}),
     ...(on
       ? {

@@ -564,6 +564,8 @@ export interface Conversation {
 }
 export interface AppStatus {
   billingRehearsal?: boolean;
+  /** Plans are switched on (off by default; docs/plans-20261125.md): the account menu offers "Plans". */
+  plans?: true;
   consumerWorkspace?: boolean;
   requestAllowance?: RequestAllowance;
   accountId?: string;
