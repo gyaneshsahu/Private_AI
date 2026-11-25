@@ -37,6 +37,8 @@ import { manifestPaused, PROVIDER_UPDATE_PAUSE } from "./manifest-watch";
 import { takeVoiceAnswer, VOICE_PATH, voiceRoute, voiceUsage, type VoiceSettings, type VoiceTurns } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import { IMAGE_PROMPT_MAX, ImageCapacity, ImageRefused, refuseImagePrompt, type ImageProvider } from "./image-creation";
+import { imageEditRoutes, type ImageEditor } from "./image-edit";
+import { sharePublicRoutes, shareRoutes, type ShareStore } from "./share-links";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
 import { declaredResearch, researchAllowed, ResearchTickets, type ResearchSettings } from "./research-admission";
 import { RESEARCH_KINDS, RESEARCH_LIMITS } from "../shared/deep-research";
@@ -104,6 +106,8 @@ export interface Config {
    * goes to `provider`; the server keeps neither it nor the image. `dailyImages`: per account a day.
    */
   imageCreation?: { provider: ImageProvider; dailyImages: number };
+  /** Image editing (docs/image-editing-20261125.md); absent means off. It needs `imageCreation`, whose daily count it shares. */
+  imageEditing?: { editor: ImageEditor; uploads: boolean };
   /** Code execution on the user's device: the status says so and follow-up requests get their credit; absent means off. */
   code?: boolean;
   /** Deep research (docs/deep-research-20261114.md); absent means off. It also needs search. */
@@ -116,6 +120,8 @@ export interface Config {
   vaultSync?: SyncSettings & { store: SyncStore };
   /** Secure mode: saved content stored under a server-held key (docs/secure-store-20261116.md); absent means off. */
   secureStore?: SecureSettings;
+  /** Encrypted share links (docs/sharing-20261125.md); absent means off. The store holds ciphertext only. */
+  shareLinks?: { store: ShareStore };
   /** Closed-account purge days, for the status only (docs/account-purge-20261116.md); absent means off. */
   accountPurge?: { graceDays: number };
   /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
@@ -314,6 +320,8 @@ export function createApp(config: Config) {
   );
   // Terms and Privacy Policy are public: the sign-in page links to them before any session.
   app.use(legalPages(() => parseQualification()?.provider ?? config.providerDisclosureDraft));
+  // A shared link opens without a session: its ciphertext is public to whoever holds the link.
+  if (config.shareLinks) app.use(sharePublicRoutes(config.shareLinks.store));
   if (config.invites) app.use(inviteAccess(config.origin, config.invites));
   const approvals =
     config.consumer?.approvals ??
@@ -504,6 +512,9 @@ export function createApp(config: Config) {
       ...(config.imageCreation && (res.locals.accountId || config.dev)
         ? { imageCreation: { limit: config.imageCreation.dailyImages, used: createDay.used(String(res.locals.accountId ?? "local-development")) } }
         : {}),
+      ...(config.imageCreation && config.imageEditing && (res.locals.accountId || config.dev)
+        ? { imageEditing: { masks: config.imageEditing.editor.masks, uploads: config.imageEditing.uploads } }
+        : {}),
       // Only where records are kept (a signed-in account), so the meter has something to show.
       ...(metering && meterAccount(res)
         ? { metering: { plan: metering.plan.id, weightsVersion: metering.weights().version } }
@@ -514,6 +525,7 @@ export function createApp(config: Config) {
         : {}),
       ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices, ...(config.vaultSync.blobs ? { files: true } : {}) } } : {}),
       ...(config.secureStore ? { secureStore: { quotaBytes: config.secureStore.quotaBytes, filesQuotaBytes: config.secureStore.filesQuotaBytes } } : {}),
+      ...(config.shareLinks && (res.locals.accountId || config.dev) ? { shareLinks: true as const } : {}),
       ...(config.accountPurge ? { accountPurge: { graceDays: config.accountPurge.graceDays } } : {}),
       ...(config.backgroundTasks
         ? {
@@ -1058,6 +1070,23 @@ export function createApp(config: Config) {
     app.use(syncRoutes(config.vaultSync.store, config.vaultSync, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   if (config.secureStore)
     app.use(secureRoutes(config.secureStore, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
+  if (config.shareLinks)
+    app.use(shareRoutes({ store: config.shareLinks.store, account: (res) => (res.locals.accountId ?? (config.dev ? "local-development" : undefined)) as string | undefined }));
+  // Before the 8 KB body parser: an edit carries its picture.
+  if (config.imageCreation && config.imageEditing)
+    app.use(
+      imageEditRoutes({
+        editor: config.imageEditing.editor,
+        uploads: config.imageEditing.uploads,
+        dailyImages: config.imageCreation.dailyImages,
+        day: createDay,
+        account: (res) => (res.locals.accountId ?? (config.dev ? "local-development" : undefined)) as string | undefined,
+        record: (res, entry) => {
+          const who = meterAccount(res);
+          if (metering && who) metering.record({ ...entry, accountId: who, feature: "image-create", units: 0 });
+        },
+      }),
+    );
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   if (metering) app.use(metering.router);

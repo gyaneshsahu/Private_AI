@@ -157,6 +157,10 @@ export function createRenderBridge(config: {
       ? 32 * 1024 * 1024 // maxFileMb is at most 25
       : /^\/api\/(sync|secure)\/items\//.test(path)
         ? 6 * 1024 * 1024
+        : path === "/api/share"
+        ? 5 * 1024 * 1024 // one encrypted snapshot (shared/share-links.ts)
+        : path === "/api/images/edit"
+        ? 3 * 1024 * 1024 // one picture as base64 (shared/image-edit.ts)
         : 1024 * 1024;
     let bytes = 0;
     let oversized = false;
@@ -187,7 +191,7 @@ export function createRenderBridge(config: {
           headers,
           // Socket idle limit. Image creation sends nothing until the picture is ready (the provider
           // may take up to its 60 s limit), so that one path gets 75 s; streams are never quiet that long.
-          timeout: path === "/api/images/create" ? 75_000 : 15_000,
+          timeout: path === "/api/images/create" || path === "/api/images/edit" ? 75_000 : 15_000,
         },
         (answer) => {
           if (health) {

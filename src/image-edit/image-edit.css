@@ -1,0 +1,253 @@
+/* The full-screen image editor (docs/image-editing-20261125.md). Loaded with the editor only. */
+.chat-design dialog.image-editor {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+}
+.chat-design dialog.image-editor[open] {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  /* One column no wider than the screen: without this the widest row sets the width. */
+  grid-template-columns: minmax(0, 1fr);
+}
+.chat-design .image-editor-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.chat-design .image-editor-tools,
+.chat-design .image-editor-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.chat-design .image-editor-sizes {
+  grid-row: 2;
+  justify-content: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.chat-design .image-editor :is(.image-editor-back, .image-editor-tools > button, .image-editor-tools > a, .image-editor-sizes > button, .image-editor-form .icon-only) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.chat-design .image-editor :is(.image-editor-tools > button, .image-editor-form .icon-only).icon-only {
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+.chat-design .image-editor :is(.image-editor-back, .image-editor-tools > button, .image-editor-tools > a, .image-editor-sizes > button):hover:not(:disabled) {
+  background: var(--hover);
+}
+.chat-design .image-editor .image-editor-tools > button[aria-pressed="true"],
+.chat-design .image-editor .image-editor-tools > button[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+.chat-design .image-editor-stage {
+  grid-row: 3;
+  min-height: 0;
+  overflow: auto;
+  /* flex with an auto margin on the child: centred when it fits, fully scrollable when zoomed. */
+  display: flex;
+  padding: 12px;
+  background: color-mix(in srgb, var(--ink) 6%, var(--surface));
+}
+.chat-design .image-editor-picture {
+  position: relative;
+  flex: 0 0 auto;
+  margin: auto;
+  max-width: 100%;
+  line-height: 0;
+}
+.chat-design .image-editor-picture:has(img[style]) {
+  max-width: none;
+}
+/* Fit: as large as the stage allows. Zoomed, the picture gets its width from the editor. */
+.chat-design .image-editor-picture img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 250px);
+  border-radius: 8px;
+}
+/* The paint layer covers the picture exactly: same box, its own pixels are the picture's. */
+.chat-design .image-editor-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  touch-action: none;
+  border-radius: 8px;
+}
+.chat-design .image-editor-stage:not([data-tool="describe"]) .image-editor-overlay {
+  cursor: crosshair;
+}
+.chat-design .image-editor-foot {
+  grid-row: 4;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+.chat-design .image-editor-paint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-size: 13.5px;
+}
+.chat-design .image-editor-paint p {
+  flex: 1 1 24ch;
+  margin: 0;
+  color: var(--muted);
+}
+.chat-design .image-editor-paint label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.chat-design .image-editor-versions {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  overflow-x: auto;
+}
+.chat-design .image-editor-versions button {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.chat-design .image-editor-versions button[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+.chat-design .image-editor-versions img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.chat-design .image-editor-versions span {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  min-width: 16px;
+  padding: 0 3px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+.chat-design .image-editor-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.chat-design .image-editor-form {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.chat-design .image-editor-form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 16px; /* 16 px: phones do not zoom into the field */
+}
+.chat-design .image-editor-form .primary {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+}
+.chat-design .image-editor-form .icon-only {
+  min-height: 44px;
+  min-width: 44px;
+}
+@media (max-width: 760px) {
+  /* Phones: the tools keep their names and wrap onto a second line; every target is at least 44 px. */
+  .chat-design .image-editor-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .chat-design .image-editor-back {
+    align-self: flex-start;
+  }
+  .chat-design .image-editor-tools {
+    justify-content: flex-start;
+  }
+  .chat-design .image-editor .image-editor-tools > a > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* The form's own button is in the list so this rule is as specific as the one it overrides. */
+  .chat-design .image-editor :is(.image-editor-back, .image-editor-tools > button, .image-editor-tools > a, .image-editor-sizes > button, .image-editor-form .icon-only) {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+  }
+  .chat-design .image-editor-picture img {
+    max-height: calc(100dvh - 300px);
+  }
+}
+/* The app's general dialog rules add margins and fix field widths; the editor is its own layout. */
+.chat-design dialog.image-editor > :is(header, div, footer) {
+  margin: 0;
+}
+.chat-design dialog.image-editor .image-editor-form input[type="text"] {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  margin: 0;
+}
+.chat-design dialog.image-editor .image-editor-form .primary {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chat-design dialog.image-editor .image-editor-versions,
+.chat-design dialog.image-editor .image-editor-versions li {
+  margin: 0;
+}

@@ -13,6 +13,7 @@ import "./focus-origin"; // starts remembering focus before any on-demand dialog
 import "./styles.css";
 import "./chat-design.css";
 const AccountLab = retryLazy(() => importFresh(() => import("./AccountLab")));
+const ShareViewer = React.lazy(() => import("./share/ShareViewer").then((m) => ({ default: m.ShareViewer })));
 const LoadingAccount = () => <p role="status">{useText(themeText).loadingAccount}</p>;
 const pageUrl = new URL(window.location.href);
 const lab =
@@ -22,7 +23,12 @@ const lab =
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <LangProvider>
-    {lab || pageUrl.pathname === "/account" ? (
+    {pageUrl.pathname.startsWith("/s/") ? (
+      // A shared link (docs/sharing-20261125.md): its own small page, no sign-in, nothing of the app loaded.
+      <Suspense fallback={null}>
+        <ShareViewer />
+      </Suspense>
+    ) : lab || pageUrl.pathname === "/account" ? (
       <AccountTheme>
         <Suspense
           fallback={

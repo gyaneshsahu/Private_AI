@@ -65,6 +65,22 @@ const conversationBody = z.object({
           model: z.string().max(64),
           prompt: z.string().max(1000),
           maskedNote: z.string().max(300).optional(),
+          // Image editing: the other versions (IMAGE_EDIT.versions at most, with the one above) and the shown one's place.
+          versions: z
+            .array(
+              z
+                .object({
+                  type: z.enum(["image/jpeg", "image/png", "image/webp"]),
+                  data: z.string().max(4_000_000).regex(/^[A-Za-z0-9+/]+=*$/),
+                  prompt: z.string().max(1000),
+                })
+                .strict(),
+            )
+            .max(11)
+            .optional(),
+          at: z.number().int().min(0).max(11).optional(),
+          source: z.literal("upload").optional(),
+          edited: z.literal(true).optional(),
         })
         .strict()
         .optional(),

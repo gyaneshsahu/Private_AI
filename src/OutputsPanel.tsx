@@ -15,6 +15,8 @@ type Props = {
   onDownloadBoard(): void;
   onOpenCanvas(): void;
   onShowMessage(messageId: string): void;
+  /** Shows a created image in this same panel (one thing at a time). */
+  onOpenImage?(messageId: string): void;
   onOpenFiles(): void;
   onClose(): void;
 };
@@ -63,11 +65,12 @@ function Row(props: { item: OutputItem; preview: ReactNode; onPrimary(): void; c
   );
 }
 
-function ImageRow(props: { item: Extract<OutputItem, { kind: "image" }>; onShow(): void }) {
+function ImageRow(props: { item: Extract<OutputItem, { kind: "image" }>; onShow(): void; onOpen?(): void }) {
   const t = useText(outputsText);
   const url = useImageUrl(props.item.image);
   return (
-    <Row item={props.item} preview={url && <img src={url} alt="" />} onPrimary={props.onShow}>
+    <Row item={props.item} preview={url && <img src={url} alt="" />} onPrimary={props.onOpen ?? props.onShow}>
+      {props.onOpen && <Action icon="open" label={t.open} onClick={props.onOpen} />}
       <Action icon="chat" label={t.showInChat} onClick={props.onShow} />
       <a className="outputs-action" href={url || undefined} download={`cometrow-image.${extension(props.item.image.type)}`} aria-label={t.download} title={t.download}>
         <Icon name="download" />
@@ -103,7 +106,7 @@ export function OutputsPanel(props: Props) {
           </Row>
         );
       case "image":
-        return <ImageRow key={item.id} item={item} onShow={() => props.onShowMessage(item.id)} />;
+        return <ImageRow key={item.id} item={item} onShow={() => props.onShowMessage(item.id)} onOpen={props.onOpenImage ? () => props.onOpenImage!(item.id) : undefined} />;
       case "file":
         return (
           <Row key={item.id} item={item} preview={<Icon name="files" />} onPrimary={props.onOpenFiles}>

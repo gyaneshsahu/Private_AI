@@ -1,0 +1,43 @@
+/* The image card in the chat (docs/image-editing-20261125.md): its own file, loaded with the card. */
+/* The picture itself opens the editor. */
+.chat-design .created-image-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+/* Edit, Download, Regenerate and the info icon: equal targets with room between them. */
+.chat-design .created-image-actions {
+  gap: 4px;
+}
+.chat-design .created-image-actions .icon-action {
+  display: inline-grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+}
+.chat-design .created-image-actions .icon-action:hover {
+  background: var(--hover);
+}
+@media (max-width: 760px) {
+  .chat-design .created-image-actions .icon-action {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .chat-design .created-image figcaption {
+    flex-wrap: wrap;
+  }
+}
+/* "Open in side panel" only where a panel sits beside the chat; on smaller screens the picture opens full screen. */
+@media (max-width: 1099px) {
+  .chat-design .created-image-actions .icon-action.created-image-panel {
+    display: none;
+  }
+}

@@ -1,7 +1,11 @@
 import { CHAT_IMAGE_BUDGET, chatImageCharacters, CreateImageDialog } from "./CreateImage";
 import { ChatHeaderOrganize } from "./ChatHeaderOrganize";
 import { chatMenuText } from "./text/chat-menu";
+import { useImageEditing } from "./image-edit/host";
+import { ImageSidePanel, useShare } from "./share/parts";
+import { shareText } from "./text/share";
 import { imageCreationText } from "./text/image-creation";
+import { imageEditText } from "./text/image-edit";
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
 import { containDialogFocus } from "./dialog-focus";
@@ -426,7 +430,9 @@ export function App() {
   const [editId, setEditId] = useState<string>();
   // The right-hand panel (canvas, whiteboard or "In this chat"); one at a time. Another conversation
   // closes it, except the chat it was opened with (Whiteboard in the menu starts a chat with it).
-  const [side, setSide] = useState<"canvas" | "board" | "outputs">();
+  const [side, setSide] = useState<"canvas" | "board" | "outputs" | "image">();
+  // The image shown in the side panel (its message's id), while `side` is "image".
+  const [sideImage, setSideImage] = useState<string>();
   const sideChat = useRef("");
   useEffect(() => {
     if (sideChat.current !== conversation.id) setSide(undefined);
@@ -795,6 +801,43 @@ export function App() {
     setNotice(t.newTemporary);
   };
   const fail = (message: string) => setNotice(message);
+  // Sharing (docs/sharing-20261125.md): one dialog for answers, the chat and images. No link from incognito or Secure Max.
+  const share = useShare({ status, conversation, blocked: !!conversation.incognito || (secureOn && mode === "max") });
+  // Image editing (docs/image-editing-20261125.md): everything it needs from the app, in one hook.
+  const imageEditing = useImageEditing({
+    status,
+    conversation,
+    setConversation,
+    countImage: () => setStatus((s) => (s?.imageCreation ? { ...s, imageCreation: { ...s.imageCreation, used: (s.imageCreation.used ?? 0) + 1 } } : s)),
+    fail,
+    setBusy,
+    share: share.image,
+    // The people check for an uploaded photo: one picture question to CometRow's own picture model.
+    askVision:
+      status?.images && status.inference.ready
+        ? async (question, picture) => {
+            let text = "";
+            const { streamReply } = await loadInference();
+            await streamReply(
+              { ...emptyConversation(), messages: [newMessage("user", question)] },
+              status.inference.qualification,
+              status.csrf,
+              AbortSignal.timeout(60_000),
+              (chunk) => {
+                text += chunk;
+              },
+              () => {},
+              undefined,
+              undefined,
+              "primary",
+              status.inference.qualification?.modes ? "fast" : undefined,
+              status.inference.cacheSalt,
+              picture,
+            );
+            return text;
+          }
+        : undefined,
+  });
   async function copyAnswer(text: string, id: string) {
     const current = epoch.current;
     try {
@@ -1705,6 +1748,9 @@ export function App() {
         : undefined;
     if (wanted) setRemember({ text: wanted, draft: true });
     else if (planned) setScheduleCard({ text: input, found: planned });
+    // Right after an image, "make the background white" edits that image; nothing goes to the chat
+    // model. After the memory and scheduled-task offers, which never cost anything.
+    else if (!asIs && !picture && !busy && imageEditing.followUp(input, () => setInput(""))) return;
     // A picture question goes straight to the model: no search step in between.
     else if (picture && status?.images) void send();
     else {
@@ -2828,6 +2874,12 @@ export function App() {
                 conversation={conversation}
                 disabled={!conversation.messages.length}
               />
+              {tab === "Conversation" && (
+                <button disabled={!conversation.messages.length} onClick={share.chat}>
+                  <Icon name="share" />
+                  {shareText[lang].share}
+                </button>
+              )}
               {/* A saved chat can be organised from here too: rename, pin, project, archive, delete. */}
               {tab === "Conversation" &&
                 !conversation.incognito &&
@@ -3089,6 +3141,17 @@ export function App() {
                       : undefined
                   }
                   onRegenerateImage={status?.imageCreation ? (prompt) => startImage(prompt) : undefined}
+                  onEditImage={imageEditing.editFor(message)}
+                  onShare={message.role === "assistant" ? () => share.answer(message) : undefined}
+                  onShareImage={message.createdImage ? () => share.image(message.createdImage!) : undefined}
+                  onOpenImagePanel={
+                    message.createdImage
+                      ? () => {
+                          setSideImage(message.id);
+                          setSide("image");
+                        }
+                      : undefined
+                  }
                   onOpenBoard={whiteboardEnabled() && conversation.board ? openBoard : undefined}
                   onImagePrivacy={() =>
                     setSource({ id: "privacy-policy", title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) })
@@ -3330,6 +3393,12 @@ export function App() {
                         <button type="button" className="text-button" disabled={!!busy} onClick={() => startImage("")}>
                           <Icon name="sparkle" />
                           {imageCreationText[lang].menu}
+                        </button>
+                      )}
+                      {imageEditing.chooseUpload && (
+                        <button type="button" className="text-button" disabled={!!busy} onClick={imageEditing.chooseUpload}>
+                          <Icon name="edit" />
+                          {imageEditText[lang].menuUpload}
                         </button>
                       )}
                       <button
@@ -4011,9 +4080,28 @@ export function App() {
           />
         </>
       )}
+      {share.element}
+      {side === "image" &&
+        tab === "Conversation" &&
+        (() => {
+          const shown = conversation.messages.find((m) => m.id === sideImage);
+          return shown?.createdImage ? (
+            <ImageSidePanel
+              image={shown.createdImage}
+              onEdit={imageEditing.editFor(shown)}
+              onShare={() => share.image(shown.createdImage!)}
+              onList={() => setSide(whiteboardEnabled() ? "outputs" : undefined)}
+              onClose={() => setSide(undefined)}
+            />
+          ) : null;
+        })()}
       {whiteboardEnabled() && side === "outputs" && tab === "Conversation" && (
         <OutputsPanel
           conversation={conversation}
+          onOpenImage={(id) => {
+            setSideImage(id);
+            setSide("image");
+          }}
           onOpenBoard={openBoard}
           onDownloadBoard={() => void downloadBoard()}
           onOpenCanvas={() => setSide("canvas")}
@@ -4049,6 +4137,7 @@ export function App() {
           onUse={(file) => void importFiles([file])}
         />
       )}
+      {imageEditing.element}
       {status?.imageCreation && createImageFor !== undefined && (
         <CreateImageDialog
           open

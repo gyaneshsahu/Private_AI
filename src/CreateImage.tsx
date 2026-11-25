@@ -8,6 +8,9 @@ import { Icon } from "./Icon";
 import { useLang, useText } from "./i18n";
 import { prepareSearchQuery } from "./identifier-masking";
 import { imageCreationText } from "./text/image-creation";
+import { imageEditText } from "./text/image-edit";
+import { shareText } from "./text/share";
+import "./image-edit/image-card.css";
 
 export type CreatedImage = NonNullable<Message["createdImage"]>;
 /**
@@ -18,7 +21,10 @@ export type CreatedImage = NonNullable<Message["createdImage"]>;
  */
 export const CHAT_IMAGE_BUDGET = 2_000_000;
 export const chatImageCharacters = (messages: readonly Message[]) =>
-  messages.reduce((sum, m) => sum + (m.createdImage?.data.length ?? 0), 0);
+  messages.reduce(
+    (sum, m) => sum + (m.createdImage?.data.length ?? 0) + (m.createdImage?.versions ?? []).reduce((n, v) => n + v.data.length, 0),
+    0,
+  );
 type Failure = "refusedRealPerson" | "refusedMinors" | "refusedProvider" | "limit" | "capacity" | "unavailable" | "signin";
 
 /** Calls the server once. Throws a failure key the dialog turns into a sentence. */
@@ -127,8 +133,18 @@ export function CreateImageDialog(props: {
 }
 
 /** A created image in the chat: the picture, Download, Regenerate, and a small info icon to Privacy. */
-export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(prompt: string): void; onPrivacy?(): void }) {
+export function CreatedImageCard(props: {
+  image: CreatedImage;
+  onRegenerate?(prompt: string): void;
+  onPrivacy?(): void;
+  onEdit?(): void;
+  onShare?(): void;
+  /** Desktop only: shows the image in the side panel (the app passes it only where a panel fits). */
+  onOpenPanel?(): void;
+}) {
+  const sh = useText(shareText);
   const t = useText(imageCreationText);
+  const e = useText(imageEditText);
   // Made in an effect, not a memo: StrictMode's second mount would otherwise keep a revoked URL.
   const [url, setUrl] = useState<string>();
   useEffect(() => {
@@ -138,16 +154,42 @@ export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(pro
     return () => URL.revokeObjectURL(made);
   }, [props.image.data, props.image.type]);
   const extension = props.image.type === "image/png" ? "png" : props.image.type === "image/webp" ? "webp" : "jpg";
+  // An uploaded photo, a follow-up edit and a later version were not created from `prompt`: no Regenerate, and their own words.
+  const original = !props.image.source && !props.image.edited && !props.image.at;
+  const alt = original ? t.alt(props.image.prompt) : props.image.prompt ? e.altEdited(props.image.prompt) : e.uploaded;
   return (
     <figure className="created-image">
-      {url && <img src={url} alt={t.alt(props.image.prompt)} />}
+      {url &&
+        (props.onEdit ? (
+          // A click on the picture opens it full screen, where it can be edited.
+          <button type="button" className="created-image-open" aria-label={e.open} onClick={props.onEdit}>
+            <img src={url} alt={alt} />
+          </button>
+        ) : (
+          <img src={url} alt={alt} />
+        ))}
       <figcaption>
-        <span className="created-image-prompt">{props.image.prompt}</span>
+        <span className="created-image-prompt">{props.image.prompt || e.uploaded}</span>
         <span className="created-image-actions">
+          {props.onEdit && (
+            <button type="button" className="icon-action" aria-label={e.edit} title={e.edit} onClick={props.onEdit}>
+              <Icon name="edit" />
+            </button>
+          )}
           <a className="icon-action" href={url} download={`cometrow-image.${extension}`} aria-label={t.download} title={t.download}>
             <Icon name="download" />
           </a>
-          {props.onRegenerate && (
+          {props.onShare && (
+            <button type="button" className="icon-action" aria-label={sh.share} title={sh.share} onClick={props.onShare}>
+              <Icon name="share" />
+            </button>
+          )}
+          {props.onOpenPanel && (
+            <button type="button" className="icon-action created-image-panel" aria-label={sh.openInPanel} title={sh.openInPanel} onClick={props.onOpenPanel}>
+              <Icon name="panel" />
+            </button>
+          )}
+          {props.onRegenerate && original && (
             <button type="button" className="icon-action" aria-label={t.regenerate} title={t.regenerate} onClick={() => props.onRegenerate!(props.image.prompt)}>
               <Icon name="retry" />
             </button>

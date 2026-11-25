@@ -456,6 +456,16 @@ export interface Message {
     prompt: string;
     /** "1 email address removed before the description was sent." when identifiers were found. */
     maskedNote?: string;
+    /**
+     * Image editing (docs/image-editing-20261125.md): every other version of this image, oldest
+     * first. The fields above are the version shown; `at` is its place among all of them.
+     */
+    versions?: { type: "image/jpeg" | "image/png" | "image/webp"; data: string; prompt: string }[];
+    at?: number;
+    /** The first version is the user's own photo, not a created image. */
+    source?: "upload";
+    /** Made by a follow-up request from another image: `prompt` is the edit's words, not a description to create from. */
+    edited?: true;
   };
   /**
    * Local-only result of recalculating the arithmetic the reply writes out
@@ -582,6 +592,14 @@ export interface AppStatus {
    * `limit`: images a day on this plan; `used`: in the last 24 hours (absent when unknown).
    */
   imageCreation?: { limit: number; used?: number };
+  /**
+   * Image editing is switched on (off by default; docs/image-editing-20261125.md). `masks`: the provider
+   * changes only a painted area itself; false means the browser crops, edits and pastes back.
+   * `uploads`: the user's own photos may be edited, not only created images.
+   */
+  imageEditing?: { masks: boolean; uploads: boolean };
+  /** Encrypted share links are switched on (off by default; docs/sharing-20261125.md). */
+  shareLinks?: true;
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

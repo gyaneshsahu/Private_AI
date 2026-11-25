@@ -10,6 +10,8 @@ import {
 import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { bflImageProvider } from "./image-creation";
+import { bflImageEditor } from "./image-edit";
+import { PostgresShareStore } from "./share-links";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
@@ -86,6 +88,10 @@ export interface ProductionInferenceConfig {
   code?: boolean;
   /** Image creation with Black Forest Labs (EU endpoint); absent means off. */
   imageCreation?: { apiKey: string; model: string; dailyImages: number };
+  /** Encrypted share links (migration 0027); absent means off. */
+  shareLinks?: true;
+  /** Image editing with image creation's provider; absent means off. */
+  imageEditing?: { uploads: boolean; providerMasks: boolean };
   /** Deep research cost, caps and optional account list; absent means off. */
   research?: import("./research-admission").ResearchSettings;
   /** Usage metering with this plan and an optional pinned weights version (docs/usage-metering-20261115.md); absent means off. */
@@ -150,6 +156,15 @@ export function createProductionConsumerCandidate(
                 imageCreation: {
                   provider: bflImageProvider({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model }),
                   dailyImages: inference.imageCreation.dailyImages,
+                },
+              }
+            : {}),
+          ...(inference.shareLinks ? { shareLinks: { store: new PostgresShareStore(config.database) } } : {}),
+          ...(inference.imageCreation && inference.imageEditing
+            ? {
+                imageEditing: {
+                  editor: bflImageEditor({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model, fill: inference.imageEditing.providerMasks }),
+                  uploads: inference.imageEditing.uploads,
                 },
               }
             : {}),

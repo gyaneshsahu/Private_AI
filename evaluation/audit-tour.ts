@@ -367,6 +367,34 @@ const STEPS: Step[] = [
     await pause(c.page, 1000);
     await c.shot("project-screen");
   }],
+  // Image editing (docs/image-editing-20261125.md): the card with Edit, the full-screen editor, a tool.
+  ["image-edit", async (c) => {
+    await c.fresh();
+    await tools(c, "Create image");
+    await c.label("Describe the image").fill("A calm lake at sunrise");
+    await c.click("Create");
+    await pause(c.page, 1200);
+    await c.shot("image-card");
+    await vis(c.page.locator("figure.created-image").getByRole("button", { name: c.tr("Edit"), exact: true })).click();
+    await pause(c.page, 800);
+    await c.shot("image-editor");
+    await c.click("Select area");
+    await pause(c.page, 300);
+    await c.shot("image-editor-select-area");
+    await c.click("Back");
+  }, "on"],
+  // Sharing (docs/sharing-20261125.md): the dialog on an answer, with a link made.
+  ["share", async (c) => {
+    await c.fresh();
+    await c.send("Something to share. audit:plain", undefined, true);
+    await vis(c.page.locator("article.assistant").last().getByRole("button", { name: c.tr("Share"), exact: true })).click();
+    await pause(c.page, 500);
+    await c.shot("share-dialog");
+    await c.click("Create link");
+    await pause(c.page, 800);
+    await c.shot("share-link");
+    await c.page.keyboard.press("Escape");
+  }, "on"],
   ["incognito", async (c) => { await c.fresh(); await c.nav(); await c.click("New incognito chat"); await pause(c.page, 600); await c.shot("incognito-chat"); }],
   ["search-chats", async (c) => {
     await c.fresh();

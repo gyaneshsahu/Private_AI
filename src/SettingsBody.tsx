@@ -1,6 +1,7 @@
 // The Settings dialog's tabs and their content (SS-05, SS-15; docs/settings-structure-20261116.md).
 // src/App.tsx keeps the <dialog>, its title, close button and focus handling, and closes Settings
 // before anything here leaves it (another tab of the app, the account page, sign out).
+import { SharedLinksList } from "./share/parts";
 import { useId, useState, type ReactNode } from "react";
 import { accountRequest } from "./account-request";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -162,6 +163,7 @@ export function SettingsBody({
             {/* SS-01: the binding summary says "we never can" read: only true without Secure. */}
             <p>{secureOn ? modeCopyText[lang].privacySummary_secure : privacySummary(lang)}</p>
             {secureOn && <p className="muted">{modes.secureLong}</p>}
+            {status?.shareLinks && <SharedLinksList csrf={status.csrf} />}
             {onArchived && (
               <p>
                 <button type="button" className="text-button" onClick={onArchived}>

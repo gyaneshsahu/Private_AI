@@ -59,6 +59,8 @@ const tables = (literal: string): [string, string][] => [
   ["custody_keys", `account_id IN ${target}`],
   // The accepted Terms and Privacy versions (migration 0026).
   ["consent_records", `account_id IN ${target}`],
+  // Encrypted share links (migration 0027): ciphertext only.
+  ["share_links", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
 
@@ -105,6 +107,8 @@ export function operatorSql(command: Command, email: string): string {
         "custody_keys",
         // The consent record (migration 0026) goes with the account.
         "consent_records",
+        // Encrypted share links (migration 0027) go with the account.
+        "share_links",
         "usage_metrics",
         "usage_records",
         "usage_requests",

@@ -114,7 +114,7 @@ const press = async (page: Page, control: Locator, key = "Enter") => {
 
 for (const width of WIDTHS)
   for (const lang of LANGS)
-    it(`${width} px, ${lang}: time and copy on the own message, copy as text, no Share, delete asks first`, async () => {
+    it(`${width} px, ${lang}: time and copy on the own message, copy as text, one working Share, delete asks first`, async () => {
       const a = appText[lang];
       const s = savedListText[lang];
       const l = libraryText[lang];
@@ -136,11 +136,13 @@ for (const width of WIDTHS)
         expect(await clipboard(page)).toBe(QUESTION);
         await noSidewaysScroll(page);
 
-        // The dead Share button is gone, in the header and in the menu.
+        // The dead Share preview button is gone from the header.
         await ui(page.locator(".share-preview")).toHaveCount(0);
         const menu = page.locator(".conversation-menu");
         await press(page, menu.locator("summary"));
-        await ui(menu.getByRole("button", { name: /Share|Teilen/ })).toHaveCount(0);
+        // Since 25 November the menu has a Share that works (docs/sharing-20261125.md): exactly one, and it is enabled.
+        await ui(menu.getByRole("button", { name: /^(Share|Teilen)$/ })).toHaveCount(1);
+        await ui(menu.getByRole("button", { name: /^(Share|Teilen)$/ })).toBeEnabled();
 
         // Copy conversation as text, by keyboard. The menu stays open and says "Copied".
         const copyAll = menu.getByRole("button", { name: s.copyConversation });
