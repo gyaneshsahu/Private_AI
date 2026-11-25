@@ -4,7 +4,7 @@ This file is the single record of the autonomous run while the owner is in exams
 
 ## Needs you
 
-**Start here:** the run is finished. Look at `preview/all-tracks`, then do your owner test with `docs/owner-live-test-list-20261118.md` plus the new `docs/owner-test-additions-20261125.md`. Items 16 to 19 are the newest.
+**Start here:** the run is finished. Look at `preview/all-tracks`, then do your owner test with `docs/owner-live-test-list-20261118.md` plus the new `docs/owner-test-additions-20261125.md`. Items 16 to 19 are the newest. What you asked and what was done for it, request by request, is in `docs/owner-requests-log.md`.
 
 16. **Database step when you take the new tables:** after merging, run the usual apply-pending step and the privileges SQL once. Test 26.1 then says `"applied":23` with all three new tables (0027 share links, 0028 analytics, 0029 feedback).
 17. **Plans: I need three numbers from you.** Free, Plus and Pro are built with a test checkout (no money can move), but every price and limit is a proposal. Prices follow ChatGPT's (EUR 20 and EUR 200); I would not launch Pro at EUR 200, EUR 40 to 60 fits what CometRow offers. The limits are shown and not yet applied per account, and no payment company is connected, so this cannot be switched on at Render. Try it on your PC (section 41 of the new test list), then tell me prices, limits and the payment company.
@@ -28,6 +28,17 @@ Every decision and every manual step only you can do. Nothing here was done by t
 8. **Images per day in your test:** your config has `"imageCreation": { ..., "dailyImages": 3 }`, and the plan does not change that number. With editing on, every edit counts as an image, so three edits end the day. Raise it for your test (for example 20; the config allows up to 50). Each image or edit costs about USD 0.015 at the provider.
 9. **Projects and the chat menu (your message of 25 November):** being redesigned on its own branch, `feat/projects-ux`. Project-level memory is not built: see that track's notes for what it would take.
 7. **Two older decisions the new work touches** (I did not edit `docs/owner-decisions.md`): item 17 of 16 November lists shared links as "not built because of your rules", and the 13 November constraint says images are never stored after the answer. Share links (Track 1b, step 2) and image versions (Track 1) are built behind off-switches because you asked for them on 25 November; confirm before switching them on.
+
+### UI references I need
+
+Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in `docs/working-rules.md`). I build my best version meanwhile; send screenshots when you can, any of the three apps is fine.
+
+1. **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
+2. **A long normal answer** with headings, a list and a table (filled; light and dark; phone and desktop). To compare: spacing, heading sizes, how a table looks on a phone, the row of buttons under the answer.
+3. **An answer that used web search** (filled; phone): how sources are shown inside the text and as a list. To compare: our source chips and the "Searched the web" line.
+4. **The opened document from a file card**, as in your Claude screenshot (filled; desktop and phone): the panel or page that opens when you tap "NetEcon Question Bank". To compare: our report panel and canvas.
+5. **Editing a text document in ChatGPT's canvas** (filled; desktop): the toolbar, and what happens when you select a sentence. To compare: our canvas, which edits raw Markdown today.
+6. **The three-dot menu on a chat and an open project page** (filled; desktop and phone), ChatGPT or Claude. To compare: the menu and project page built on 25 November.
 
 ## Next
 
