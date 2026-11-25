@@ -110,7 +110,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(19);
+      ).toBe(21);
     } finally {
       await db.dispose();
     }
