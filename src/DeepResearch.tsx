@@ -8,6 +8,8 @@
 // conversation for the sent draft, started at once; every ending closes the card and the answer is
 // already in the chat.
 import { useEffect, useRef, useState } from "react";
+import { activityEnabled } from "./device-features";
+import { ActivityLine } from "./activity/Activity";
 import { createPortal } from "react-dom";
 import type { Source } from "../shared/contracts";
 import { RESEARCH_LIMITS } from "../shared/deep-research";
@@ -218,7 +220,7 @@ export function DeepResearch(props: {
           <>
             <p className="research-question">{question.trim()}</p>
             <div className="research-progress">
-              <span aria-live="polite">{progress}</span>
+              {activityEnabled() ? <ActivityLine label={progress} /> : <span aria-live="polite">{progress}</span>}
               {phase === "running" && (
                 <button className="research-stop" onClick={() => abort.current?.abort()}>
                   {t.stop}

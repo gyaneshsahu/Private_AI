@@ -1,4 +1,6 @@
 import { sidePanelsText } from "./text/side-panels";
+import { activityEnabled } from "./device-features";
+import { SkeletonRows } from "./activity/Activity";
 import { BrandLockup } from "./CometMark";
 import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
@@ -554,7 +556,7 @@ export function WorkspaceNavigation(props: {
           <h2>{t.yourConversations}</h2>
           {/* Secure opens by itself after sign-in: nothing to unlock, only a short wait. */}
           {storage === "secure" ? (
-            <p>{loadingNote ?? settingsText[lang].loadingChats}</p>
+            activityEnabled() && !loadingNote ? <SkeletonRows label={settingsText[lang].loadingChats} /> : <p>{loadingNote ?? settingsText[lang].loadingChats}</p>
           ) : (
             <>
               <p>{t.unlockNote}</p>

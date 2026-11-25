@@ -34,6 +34,8 @@ ARG VITE_SCHEDULED=
 ARG VITE_REPORT_CARD=
 # Answer design (docs/answer-design-20261125.md): off unless built with it set to 1.
 ARG VITE_ANSWER_DESIGN=
+# Activity (docs/activity-states-20261126.md): off unless built with it set to 1.
+ARG VITE_ACTIVITY=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).

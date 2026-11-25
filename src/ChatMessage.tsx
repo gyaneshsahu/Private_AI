@@ -22,8 +22,9 @@ import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
-import { answerDesignEnabled, projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { activityEnabled, answerDesignEnabled, projectSpacesEnabled, reportCardEnabled } from "./device-features";
 import { ReportCard } from "./report/ReportCard";
+import { ActivityLine, Thought, useTurn } from "./activity/Activity";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
@@ -200,6 +201,9 @@ export function ChatMessage({
   const sp = sidePanelsText[lang];
   const Answer = answerModule?.Answer ?? LazyAnswer;
   const user = message.role === "user";
+  // Activity: what was done for this answer (kept while the chat is open, never saved).
+  const turn = useTurn(message.id);
+  const activity = activityEnabled() && !user;
   // A report answer is a card that opens the side panel; a stopped or failed one stays in the chat as text.
   const asReport = !user && !!message.report && reportCardEnabled() && !!onOpenReport && (message.status === "complete" || streaming);
   const [draft, setDraft] = useState(message.text);
@@ -355,6 +359,8 @@ export function ChatMessage({
         </>
       ) : asReport ? (
         <ReportCard message={message} question={conversation.messages[index - 1]?.text ?? ""} onOpen={onOpenReport!} />
+      ) : streaming && !message.text && activity ? (
+        <ActivityLine label={turn?.live} />
       ) : streaming && !message.text ? (
         // Before the first text: moving dots for the eye, a sentence for screen readers.
         <div className="message-text message-waiting">
@@ -376,6 +382,8 @@ export function ChatMessage({
             onOpenPanel={onOpenImagePanel}
           />
         ) : (
+        <>
+        {activity && turn && <Thought turn={turn} />}
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>
             <Answer
@@ -386,6 +394,7 @@ export function ChatMessage({
             />
           </Suspense>
         </LoadBoundary>
+        </>
         )
       )}
       {!user && message.searchedFor && (

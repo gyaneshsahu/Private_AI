@@ -3,6 +3,8 @@
 // The server keeps nothing; the image is saved with the conversation in the vault as base64 (not as a
 // data URL: the vault refuses those, which keeps picture questions out of saved chats).
 import { useEffect, useMemo, useRef, useState } from "react";
+import { activityEnabled } from "./device-features";
+import { Shimmer } from "./activity/Activity";
 import type { Message } from "../shared/contracts";
 import { Icon } from "./Icon";
 import { useLang, useText } from "./i18n";
@@ -113,10 +115,14 @@ export function CreateImageDialog(props: {
             {failureText}
           </p>
         )}
-        {busy && (
-          <p className="create-image-busy" role="status">
-            {t.creating}
-          </p>
+        {busy && activityEnabled() ? (
+          <Shimmer label={t.creating} className="create-image-placeholder" />
+        ) : (
+          busy && (
+            <p className="create-image-busy" role="status">
+              {t.creating}
+            </p>
+          )
         )}
         <div className="create-image-actions">
           <button type="button" className="text-button" onClick={props.onClose}>
@@ -163,10 +169,10 @@ export function CreatedImageCard(props: {
         (props.onEdit ? (
           // A click on the picture opens it full screen, where it can be edited.
           <button type="button" className="created-image-open" aria-label={e.open} onClick={props.onEdit}>
-            <img src={url} alt={alt} />
+            <img src={url} alt={alt} className={activityEnabled() ? "activity-arrive" : undefined} />
           </button>
         ) : (
-          <img src={url} alt={alt} />
+          <img src={url} alt={alt} className={activityEnabled() ? "activity-arrive" : undefined} />
         ))}
       <figcaption>
         <span className="created-image-prompt">{props.image.prompt || e.uploaded}</span>

@@ -158,7 +158,11 @@ import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
-import { reportCardEnabled, scheduledEnabled } from "./device-features";
+import { activityEnabled, reportCardEnabled, scheduledEnabled } from "./device-features";
+import { PendingActivity } from "./activity/Activity";
+import * as activity from "./activity/store";
+import { activityText } from "./text/activity";
+import { reasoningFeed } from "./reply-stream";
 import { detectSchedule, type DetectedSchedule } from "./schedule-detection";
 import { addTask, markRun, newTask, skipTask, taskProblem } from "./scheduled";
 import {
@@ -1095,6 +1099,15 @@ export function App() {
     lastMessage?.role === "assistant" &&
     lastMessage.status === "partial" &&
     !lastMessage.failure;
+  // Activity (docs/activity-states-20261126.md): the status of the request in work goes to one live
+  // line in the chat. The transport's own statuses ("Preparing…", "Receiving…") are all "Thinking".
+  const turnLive = activityEnabled() && tab === "Conversation" && !!controller.current && (!!busy || answering);
+  useEffect(() => {
+    if (!activityEnabled()) return;
+    const quiet = busy === t.preparing || Object.values(chatErrorText[lang]).includes(busy as never);
+    activity.observe({ active: turnLive, step: quiet ? "" : busy, answerId: answering ? lastMessage!.id : undefined, hasText: answering && !!lastMessage!.text });
+    reasoningFeed.on = turnLive ? activity.addReasoning : undefined;
+  }, [turnLive, busy, answering, lastMessage?.id, !!lastMessage?.text]);
   // New chat while an answer streams asks first, in one question that also covers unsaved changes.
   const allowNew = () =>
     answering ? ask(q.stopTitle, unsaved ? cc.stopForNewUnsaved : cc.stopForNew, q.stop) : allowReplace();
@@ -1648,6 +1661,7 @@ export function App() {
             attachment.sources.map((source) => source.id),
           ),
         );
+        if (sources.length) activity.note(activityText[lang].readSources(sources.length));
         const attachment: Attachment | undefined = sources.length
           ? {
               id: crypto.randomUUID(),
@@ -2935,7 +2949,7 @@ export function App() {
         <AnswerAnnouncement last={conversation.messages.at(-1)} />
         {dropping && <div className="drop-target">{ct.dropHere}</div>}
         {!inDock && noticeLine}
-        {busy && (
+        {busy && !turnLive && (
           <div role="status" className="progress">
             <span className="spinner" />
             {busy}
@@ -3125,6 +3139,7 @@ export function App() {
                   onResize={follow.hold}
                 />
               ))}
+              {activityEnabled() && <PendingActivity />}
               {/* The deep research card of this chat (FE-07) is drawn here; it lives outside the tab. */}
               <div ref={setResearchSlot} />
               <div ref={outputEnd} />

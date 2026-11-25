@@ -24,6 +24,8 @@ export const AUDIT_ACCOUNT = "a0d17000-0000-4000-8000-000000000001";
 export const ANSWERS = [
   "markdown", "code", "math", "table", "citations", "long", "slow", "error-429", "error-500",
   "error-503", "dropped", "stop", "python", "image", "plain", "chart", "limit",
+  // An answer the model reasoned about first (docs/activity-states-20261126.md).
+  "thought",
   // One word, for the people check of an uploaded photo (src/image-edit/people.ts).
   "no", "yes",
 ] as const;
@@ -48,6 +50,7 @@ const ON_STATUS = {
 };
 
 const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-500" | "error-503" | "limit">, string> = {
+  thought: "The trip takes **155 minutes**.",
   plain: "Synthetic answer.",
   no: "NO",
   yes: "YES",
@@ -154,9 +157,12 @@ const LONG = Array.from(
 ).join("\n\n");
 
 /** One reply as the relay would stream it: content frames, a finish frame with usage, [DONE]. */
-export function sse(text: string, { done = true, wordsPerFrame = 3 } = {}): string {
+export function sse(text: string, { done = true, wordsPerFrame = 3, reasoning = "" } = {}): string {
   const words = text.split(/(?<= )/);
   const frames: string[] = [];
+  // The model's reasoning comes before the answer, in both field names, as Privatemode sends it.
+  for (const part of reasoning ? reasoning.split(/(?<= )/) : [])
+    frames.push(JSON.stringify({ choices: [{ index: 0, delta: { reasoning: part, reasoning_content: part }, finish_reason: null }] }));
   for (let i = 0; i < words.length; i += wordsPerFrame)
     frames.push(JSON.stringify({ choices: [{ index: 0, delta: { content: words.slice(i, i + wordsPerFrame).join("") }, finish_reason: null }] }));
   if (done) {
@@ -277,6 +283,9 @@ export function createResponder() {
       case "stop":
         // Streams slowly for about a minute: long enough to press Stop.
         return stream(sse(LONG, { wordsPerFrame: 2 }), { "x-audit-frame-ms": "150" });
+      case "thought":
+        await new Promise((r) => setTimeout(r, 1500));
+        return stream(sse("The trip takes **155 minutes**.", { reasoning: "From 09:17 to 11:17 is 2 hours, which is 120 minutes. From 11:17 to 11:52 is 35 minutes. Together 155." }));
       case "slow":
         await new Promise((r) => setTimeout(r, 6000));
         return stream(sse(TEXT.slow));
