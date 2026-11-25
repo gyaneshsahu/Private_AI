@@ -109,9 +109,9 @@ test("projects, pin/archive, account menus and isolation through the rendered wo
     title,
   );
   await actions.click();
-  await page
-    .getByLabel(`Project for ${title}`, { exact: true })
-    .selectOption({ label: "Product launch" });
+  // The chat menu (docs/projects-ux-20261125.md): "Add to project" opens the list of projects in place.
+  await page.getByRole("button", { name: "Add to project", exact: true }).click();
+  await page.locator(".chat-menu-projects").getByRole("button", { name: "Product launch", exact: true }).click();
   await page.keyboard.press("Escape");
   await page
     .locator(".project-list")

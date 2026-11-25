@@ -127,6 +127,18 @@ for (const lang of LANGS)
         await ui(settings.getByRole("button", { name: s.activeSessions })).toBeVisible();
         await ui(settings.getByRole("button", { name: w.signOut, exact: true })).toBeVisible();
         await ui(settings.getByRole("button", { name: s.signOutEverywhere })).toBeVisible();
+        // The four Security actions are equal rows, one under the other; the confirmation inside the last row keeps its own buttons.
+        const rows = await Promise.all((await settings.locator(".settings-rows > li > button").all()).map((b) => b.boundingBox()));
+        expect(rows).toHaveLength(4);
+        expect(new Set(rows.map((r) => Math.round(r!.x))).size).toBe(1);
+        expect(new Set(rows.map((r) => Math.round(r!.width))).size).toBe(1);
+        expect(new Set(rows.map((r) => Math.round(r!.height))).size).toBe(1);
+        await settings.getByRole("button", { name: s.signOutEverywhere }).click();
+        const confirm = page.locator("dialog.confirm-dialog");
+        const cancel = (await confirm.getByRole("button", { name: s.cancel }).boundingBox())!;
+        expect(cancel.width).toBeLessThan(rows[0]!.width / 2);
+        await page.screenshot({ path: `.local/owner-polish/security-confirm-${Math.round(rows[0]!.width)}.png` });
+        await confirm.getByRole("button", { name: s.cancel }).click();
         await noSidewaysScroll(page);
 
         // Account: the e-mail, plan and usage, delete account.

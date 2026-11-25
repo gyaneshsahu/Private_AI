@@ -146,6 +146,8 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     sourcesNotKept: "The search results are not kept with a saved chat.",
     automaticFailed:
       "The web search did not complete, so this answer does not use web results.",
+    dailyCapReached:
+      "Today's web searches are used up, so this answer does not use web results. Searching works again within 24 hours.",
   },
   de: {
     lookUpLabel: "Online nachschlagen",
@@ -156,6 +158,8 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     sourcesNotKept: "Die Suchergebnisse werden mit einem gespeicherten Chat nicht aufbewahrt.",
     automaticFailed:
       "Die Websuche wurde nicht abgeschlossen, daher nutzt diese Antwort keine Ergebnisse aus der Websuche.",
+    dailyCapReached:
+      "Die Websuchen für heute sind aufgebraucht, daher nutzt diese Antwort keine Ergebnisse aus der Websuche. Die Suche funktioniert innerhalb von 24 Stunden wieder.",
   },
 });
 /** The block in the current interface language, read at each use. */

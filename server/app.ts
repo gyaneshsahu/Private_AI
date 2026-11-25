@@ -19,7 +19,7 @@ import {
   validateQualification,
   type Qualification,
 } from "../shared/contracts";
-import { Approvals, fetchPage, type ResearchApprovals } from "./research";
+import { Approvals, fetchPage, SearchCreditExhausted, type ResearchApprovals } from "./research";
 import { request as upstreamRequest } from "undici";
 import type { UsageMetrics } from "./usage-metrics";
 import {
@@ -1172,7 +1172,14 @@ export function createApp(config: Config) {
         sources: top?.source ? [...sources, top.source] : sources,
         ...(top ? { topPage: { url: top.url, outcome: top.outcome, ...(top.official ? { official: true } : {}), ...(top.tier ? { tier: top.tier } : {}) } } : {}),
       });
-    } catch {
+    } catch (error) {
+      // No credit at the search provider: the app answers without a search and shows no error
+      // (owner, 25 November). The hourly count line tells the operator.
+      if (error instanceof SearchCreditExhausted) {
+        count("search.no_credit");
+        res.status(402).json({ error: "Web search is not available right now. No results were used." });
+        return;
+      }
       count("search.failed");
       res.status(400).json({
         error:

@@ -1,4 +1,6 @@
 import { CHAT_IMAGE_BUDGET, chatImageCharacters, CreateImageDialog } from "./CreateImage";
+import { ChatHeaderOrganize } from "./ChatHeaderOrganize";
+import { chatMenuText } from "./text/chat-menu";
 import { imageCreationText } from "./text/image-creation";
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
@@ -286,8 +288,11 @@ export function App() {
           if (
             event instanceof KeyboardEvent ||
             !(event.target instanceof Node) ||
-            !menu.contains(event.target) ||
-            (event.target instanceof Element && event.target.closest("button"))
+            // The path as it was when the click happened: an entry that replaced itself (a field in place of
+            // "New project…") is no longer inside the menu by now, but its click was.
+            !event.composedPath().includes(menu) ||
+            // A button closes its menu, except one that opens more of it (the project list of the chat menu).
+            (event.target instanceof Element && event.target.closest("button:not([data-keep-menu])"))
           ) {
             menu.open = false;
             if (event instanceof KeyboardEvent) event.preventDefault();
@@ -916,8 +921,9 @@ export function App() {
       window.location.assign("/auth?reason=expired");
     }
     if (!response.ok)
-      throw new Error(
-        result.error ? serverMessage(result.error, lang) : t.requestFailed,
+      throw Object.assign(
+        new Error(result.error ? serverMessage(result.error, lang) : t.requestFailed),
+        { status: response.status },
       );
     return result;
   }
@@ -1566,7 +1572,7 @@ export function App() {
   // One automatic search: its masked text goes to the server, its results join the chat.
   async function research(
     approved: Disclosure,
-  ): Promise<{ attachment?: Attachment } | "failed" | undefined> {
+  ): Promise<{ attachment?: Attachment } | "failed" | "capped" | "quiet" | undefined> {
     if (busy) return;
     setSearchSent("");
     setBusy(t.retrieving);
@@ -1619,6 +1625,11 @@ export function App() {
       }
     } catch (e) {
       if (current === epoch.current && !abort.signal.aborted) {
+        // The day's searches are used up (429), or the search service has no credit left (402):
+        // the question is answered without a search, never with an error (owner, 25 November).
+        const code = (e as { status?: number }).status;
+        if (approved.kind === "search" && (code === 429 || code === 402))
+          return code === 429 ? "capped" : "quiet";
         fail(e instanceof Error ? e.message : t.researchFailed);
         return "failed";
       }
@@ -1650,8 +1661,10 @@ export function App() {
     if (limit) return void setNotice(limit);
     const outcome = await research({ kind: "search", value });
     if (!outcome) return;
-    if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed);
+    if (outcome === "failed" || outcome === "capped" || outcome === "quiet") {
+      // "quiet": the search service is out of credit; the answer comes without a note.
+      if (outcome !== "quiet")
+        setSearchSent(outcome === "capped" ? WHEN_TO_SEARCH.dailyCapReached : WHEN_TO_SEARCH.automaticFailed);
       return send(base, text, draft, asked?.mode, undefined, asked?.voiceTurn);
     }
     return send(
@@ -2174,6 +2187,16 @@ export function App() {
     }
     return editProject(id);
   }
+  // A new, empty chat that belongs to a project: from the project screen and from the project's menu.
+  async function newChatInProject(projectId: string) {
+    if (!(await allowNew())) return;
+    reset();
+    if (secureOn) setSection(modeOf(projectId) ?? "secure");
+    setConversation({ ...emptyConversation(), projectId });
+    setTab("Conversation");
+    setOpenProject(undefined);
+    setNavigationOpen(false);
+  }
   async function organizeChat(
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -2186,9 +2209,11 @@ export function App() {
       if (current !== epoch.current) return;
       if (conversation.id === c.id) {
         savedBase.current = snapshot;
-        autoSaved.current = plain({ ...conversation, pinned: snapshot.pinned, archived: snapshot.archived, projectId: snapshot.projectId });
+        autoSaved.current = plain({ ...conversation, title: snapshot.title, pinned: snapshot.pinned, archived: snapshot.archived, projectId: snapshot.projectId });
         setConversation((previous) => ({
           ...previous,
+          // A rename of the open chat shows in its title at once.
+          title: snapshot.title,
           pinned: snapshot.pinned,
           archived: snapshot.archived,
           projectId: snapshot.projectId,
@@ -2378,6 +2403,7 @@ export function App() {
         onCreateProject={createProject}
         onEditProject={editProject}
         onDeleteProject={deleteProject}
+        onNewChatInProject={projectSpacesEnabled() ? (id) => void newChatInProject(id) : undefined}
         // The normal list holds Secure projects with Secure on (Secure Max has its own section).
         projectStorage={secureOn ? "secure" : "local"}
         storage={secureOn ? "secure" : "local"}
@@ -2644,14 +2670,10 @@ export function App() {
           chats={saved.filter((c) => c.projectId === openProject)}
           busy={!!busy}
           onClose={() => setOpenProject(undefined)}
-          onNewChat={async () => {
-            if (!(await allowNew())) return;
-            reset();
-            if (secureOn) setSection(modeOf(openProject) ?? "secure");
-            setConversation({ ...emptyConversation(), projectId: openProject });
-            setTab("Conversation");
-            setOpenProject(undefined);
-          }}
+          onNewChat={() => void newChatInProject(openProject!)}
+          projects={projects.filter((p) => modeOf(p.id) === modeOf(openProject))}
+          onOrganizeChat={(c, change) => void organizeChat(c, change)}
+          onDeleteChat={(c) => void deleteSnapshot(c)}
           onOpenChat={(c) => {
             setOpenProject(undefined);
             openSaved(c);
@@ -2753,8 +2775,23 @@ export function App() {
             {tab === "Conversation" &&
               projects.some((p) => p.id === conversation.projectId) && (
                 <p className="project-breadcrumb">
-                  <Icon name="folder" />
-                  {projects.find((p) => p.id === conversation.projectId)?.name}
+                  {projectSpacesEnabled() ? (
+                    // The project's name leads back to the project.
+                    <button
+                      type="button"
+                      className="project-breadcrumb-link"
+                      aria-label={chatMenuText[lang].openProject(projects.find((p) => p.id === conversation.projectId)?.name ?? "")}
+                      onClick={() => setOpenProject(conversation.projectId)}
+                    >
+                      <Icon name="folder" />
+                      {projects.find((p) => p.id === conversation.projectId)?.name}
+                    </button>
+                  ) : (
+                    <>
+                      <Icon name="folder" />
+                      {projects.find((p) => p.id === conversation.projectId)?.name}
+                    </>
+                  )}
                 </p>
               )}
             {tab === "Conversation" && conversation.messages.length > 0 && (
@@ -2791,6 +2828,22 @@ export function App() {
                 conversation={conversation}
                 disabled={!conversation.messages.length}
               />
+              {/* A saved chat can be organised from here too: rename, pin, project, archive, delete. */}
+              {tab === "Conversation" &&
+                !conversation.incognito &&
+                (() => {
+                  const kept = saved.find((c) => c.id === conversation.id);
+                  return kept ? (
+                    <ChatHeaderOrganize
+                      chat={kept}
+                      projects={secureOn ? projects.filter((p) => inMax(p.id) === inMax(kept.id)) : projects}
+                      busy={!!busy}
+                      onOrganize={(c, change) => void organizeChat(c, change)}
+                      onCreateProject={projectSpacesEnabled() ? (name) => createProject(name, secureOn && inMax(kept.id) ? "max" : undefined) : undefined}
+                      onDelete={(c) => void deleteSnapshot(c)}
+                    />
+                  ) : null;
+                })()}
               <button onClick={() => setTab("Saved")}>
                 <Icon name="edit" />
                 {t.renameSave}
@@ -3720,6 +3773,7 @@ export function App() {
         )}
         {tab === "Account" && (
           <>
+            <div className="account-actions">
             {status?.accountId && !status.consumerWorkspace && (
               <button
                 onClick={async () => {
@@ -3738,6 +3792,7 @@ export function App() {
                 {t.signOut}
               </button>
             )}
+            </div>
             <AccountUsage
               storage={secureOn ? "secure" : "local"}
               chatReady={status?.inference.ready}

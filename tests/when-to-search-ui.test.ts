@@ -57,7 +57,7 @@ it("searches a time-sensitive question automatically with the masked text, shows
     const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
     const searches: unknown[] = [];
     const executed: unknown[] = [];
-    let failNext = false;
+    let failNext: number | false = false;
     await page.route("**/*", (route) => {
       const url = new URL(route.request().url());
       if (url.origin !== origin) return route.abort();
@@ -76,8 +76,9 @@ it("searches a time-sensitive question automatically with the masked text, shows
       if (url.pathname === "/api/research/execute") {
         executed.push(route.request().postDataJSON());
         if (failNext) {
+          const status = failNext;
           failNext = false;
-          return route.fulfill({ status: 502, json: { error: "Synthetic search failure." } });
+          return route.fulfill({ status, json: { error: "Synthetic search failure." } });
         }
         return route.fulfill({
           json: {
@@ -189,7 +190,7 @@ it("searches a time-sensitive question automatically with the masked text, shows
     expect(listed.every((title) => title.endsWith(` ${searches.length}`))).toBe(true);
 
     // A failed search: the note says so, and the question is still answered.
-    failNext = true;
+    failNext = 502;
     const failed = "What is the latest synthetic news today?";
     await message.fill(failed);
     await send.click();
@@ -198,6 +199,25 @@ it("searches a time-sensitive question automatically with the masked text, shows
     await ui(searchedWeb(answers.last())).toHaveCount(0);
     expect(searches).toHaveLength(4);
 
+    // The day's searches are used up: one calm line, and the question is still answered.
+    failNext = 429;
+    const capped = "What is the latest synthetic weather today?";
+    await message.fill(capped);
+    await send.click();
+    await ui(page.getByRole("status").filter({ hasText: s.dailyCapReached })).toBeVisible();
+    await ui(answers).toHaveCount(6);
+    await ui(searchedWeb(answers.last())).toHaveCount(0);
+
+    // The search service has no credit left: answered without a search, with no note and no error.
+    failNext = 402;
+    const noCredit = "What is the latest synthetic score today?";
+    await message.fill(noCredit);
+    await send.click();
+    await ui(answers).toHaveCount(7);
+    await ui(searchedWeb(answers.last())).toHaveCount(0);
+    await ui(page.locator("p.notice.composer-note")).toHaveCount(0);
+    await ui(page.getByText("Synthetic search failure.")).toHaveCount(0);
+
     await expect.poll(sent).toEqual([
       ["Explain recursion", 0],
       // Searched with the masked text; the question is sent as typed.
@@ -205,6 +225,8 @@ it("searches a time-sensitive question automatically with the masked text, shows
       [wage, 2],
       [asked, 3],
       [failed, 3],
+      [capped, 3],
+      [noCredit, 3],
     ]);
 
     // Switched off: stored on this device, kept over a reload, and a time-sensitive question is

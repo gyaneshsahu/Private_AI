@@ -221,9 +221,9 @@ for (const viewport of [
         await actions.click();
         await page.getByRole("button", { name: "Pin", exact: true }).click();
         await actions.click();
-        await page
-          .getByLabel("Project for JOURNEY_PRIVATE_TITLE", { exact: true })
-          .selectOption({ label: "JOURNEY_Renamed" });
+        // The chat menu (docs/projects-ux-20261125.md): "Add to project" opens the list of projects in place.
+        await page.getByRole("button", { name: "Add to project", exact: true }).click();
+        await page.locator(".chat-menu-projects").getByRole("button", { name: "JOURNEY_Renamed", exact: true }).click();
         await page.keyboard.press("Escape");
         await actions.click();
         await page

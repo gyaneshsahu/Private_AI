@@ -90,7 +90,7 @@ export interface ProductionAccountCandidateConfig {
   /** Inactive authenticated proxy alternative; never enables Express trust proxy. */
   ingress?: {
     peerCertificateSha256: readonly string[];
-    admission?: "client-ip" | "shared";
+    admission?: "client-ip" | "shared" | "shared-ip";
   };
 }
 
@@ -126,6 +126,7 @@ export function createProductionAccountCandidate(
           origin: productionAccountTarget.origin,
           peerCertificateSha256: config.ingress.peerCertificateSha256,
           admission: config.ingress.admission,
+          visitorKey: config.secret,
         })
       : undefined,
   });

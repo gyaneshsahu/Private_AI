@@ -62,6 +62,7 @@ const GERMAN: Record<string, string> = {
   "This deep research run is no longer open. Start a new one. No request was forwarded.": `Diese Tiefenrecherche ist nicht mehr offen. Starten Sie eine neue. ${NOTHING_SENT}`,
   "Deep research is not switched on for this account. No request was forwarded.": `Die Tiefenrecherche ist für dieses Konto nicht eingeschaltet. ${NOTHING_SENT}`,
   "The daily search limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Websuchen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
+  "Web search is not available right now. No results were used.": "Die Websuche ist im Moment nicht verfügbar. Es wurden keine Ergebnisse verwendet.",
   "The daily search limit is reached. It frees up within 24 hours. No query was sent.": "Das Tageslimit für Websuchen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. Es wurde keine Suchanfrage gesendet.",
   "The daily picture limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Bilder ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "Only encrypted requests to the qualified destination are accepted.":
@@ -78,7 +79,7 @@ const GERMAN: Record<string, string> = {
   "Session limit reached.": "Die Höchstzahl an Sitzungen ist erreicht.",
   "Request authorization failed.": "Die Anfrage konnte nicht autorisiert werden.",
   "Evaluation request limit reached.": "Das Anfragelimit für die Erprobung ist erreicht.",
-  "Trial request limit reached.": "Das Anfragelimit für den Test ist erreicht.",
+  "Trial request limit reached.": "Das Anfragelimit für die Testphase ist erreicht.",
   "Session unavailable or request limit reached. Sign in again if expired.":
     "Die Sitzung ist nicht verfügbar oder das Anfragelimit ist erreicht. Melden Sie sich erneut an, falls sie abgelaufen ist.",
   "Individual access expired or revoked. Sign in again.":

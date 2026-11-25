@@ -14,6 +14,7 @@ import { projectText } from "./text/projects";
 import { projectSpacesEnabled } from "./device-features";
 import { scheduledText } from "./text/scheduled";
 import { messageActionsText } from "./text/message-actions";
+import { ChatMenuItems } from "./ChatMenuItems";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
 import { shortcutsText } from "./text/shortcuts";
@@ -71,6 +72,8 @@ export function WorkspaceNavigation(props: {
   ) => void;
   /** Deletes the saved chat after the row menu's confirmation; the entry is shown only when given. */
   onDelete?: (c: Conversation) => void;
+  /** Starts a new chat inside this project, from the project's own menu; the entry is shown only when given. */
+  onNewChatInProject?: (projectId: string) => void;
 }) {
   const {
     open,
@@ -353,8 +356,15 @@ export function WorkspaceNavigation(props: {
                       <Icon name="more" />
                     </summary>
                     <div>
+                      {props.onNewChatInProject && (
+                        <button disabled={busy || newDisabled} onClick={() => props.onNewChatInProject!(p.id)}>
+                          <Icon name="plus" />
+                          {pt.newChat}
+                        </button>
+                      )}
                       {openProject && (
                         <button disabled={busy} onClick={() => openProject(p.id)}>
+                          <Icon name="folder" />
                           {pt.open}
                         </button>
                       )}
@@ -366,15 +376,18 @@ export function WorkspaceNavigation(props: {
                           setCreating(true);
                         }}
                       >
+                        <Icon name="edit" />
                         {t.renameProject}
                       </button>
                       <button
+                        className="chat-menu-danger"
                         disabled={busy}
                         onClick={(e) => {
                           e.currentTarget.closest("details")!.open = false;
                           setDeletingProject(p);
                         }}
                       >
+                        <Icon name="trash" />
                         {pt.delete}
                       </button>
                     </div>
@@ -454,7 +467,7 @@ export function WorkspaceNavigation(props: {
                       className="chat-item-menu"
                       onToggle={(event) => {
                         const menu = event.currentTarget;
-                        if (menu.open) requestAnimationFrame(() => menu.scrollIntoView({ block: "nearest" }));
+                        if (menu.open) requestAnimationFrame(() => (menu.querySelector(".chat-item-actions") ?? menu).scrollIntoView({ block: "nearest" }));
                       }}
                     >
                       <summary
@@ -463,84 +476,21 @@ export function WorkspaceNavigation(props: {
                       >
                         <Icon name="more" />
                       </summary>
-                      <div className="chat-item-actions">
-                        <button
-                          disabled={busy}
-                          onClick={(e) => {
-                            e.currentTarget.closest("details")!.open = false;
+                      <div className="chat-item-actions chat-menu-popover">
+                        <ChatMenuItems
+                          chat={c}
+                          projects={projects}
+                          busy={busy}
+                          close={() => document.getElementById(`chat-menu-${c.id}`)?.closest("details")?.removeAttribute("open")}
+                          onOrganize={onOrganize}
+                          onRename={() => {
                             renameRef.current = c.id;
                             setRenameDraft(conversationTitle(c));
                             setRenaming(c.id);
                           }}
-                        >
-                          <Icon name="edit" />
-                          {ma.rename}
-                        </button>
-                        <button
-                          disabled={busy}
-                          onClick={() =>
-                            onOrganize(c, { title: c.title, pinned: !c.pinned })
-                          }
-                        >
-                          <Icon name="pin" />
-                          {c.pinned ? t.unpin : t.pin}
-                        </button>
-                        <button
-                          disabled={busy}
-                          onClick={() =>
-                            onOrganize(c, {
-                              title: c.title,
-                              archived: !c.archived,
-                            })
-                          }
-                        >
-                          <Icon name="archive" />
-                          {c.archived ? t.restoreChat : t.archive}
-                        </button>
-                        <label>
-                          {t.moveToProject}
-                          <select
-                            aria-label={t.projectFor(conversationTitle(c))}
-                            disabled={busy}
-                            value={c.projectId ?? ""}
-                            onChange={(e) =>
-                              onOrganize(c, {
-                                title: c.title,
-                                projectId: e.target.value || undefined,
-                              })
-                            }
-                          >
-                            <option value="">{t.noProject}</option>
-                            {projects.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <button
-                          disabled={busy}
-                          onClick={() => {
-                            onOpen(c);
-                            onNavigate("Saved");
-                          }}
-                        >
-                          {/* Opens Saved, which the account menu marks with the same icon (one icon per meaning). */}
-                          <Icon name="drive" />
-                          {ma.manageHistory}
-                        </button>
-                        {onDelete && (
-                          <button
-                            disabled={busy}
-                            onClick={(e) => {
-                              e.currentTarget.closest("details")!.open = false;
-                              setDeleting(c);
-                            }}
-                          >
-                            <Icon name="trash" />
-                            {ma.delete}
-                          </button>
-                        )}
+                          onCreateProject={onCreateProject}
+                          onDelete={onDelete ? () => setDeleting(c) : undefined}
+                        />
                       </div>
                     </details>
                   </div>

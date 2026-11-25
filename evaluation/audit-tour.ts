@@ -429,7 +429,7 @@ const STEPS: Step[] = [
   ["manage-history", async (c) => {
     await c.fresh();
     await c.send("Something to save. audit:plain", undefined, true);
-    await conversationMenu(c, "Rename, save & manage history");
+    await conversationMenu(c, "Manage saved history");
     await pause(c.page, 600);
     await c.shot("manage-history");
   }],

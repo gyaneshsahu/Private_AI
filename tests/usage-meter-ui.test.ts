@@ -98,6 +98,8 @@ for (const lang of LANGS)
       try {
         // The full meter on the usage page.
         const full = page.getByRole("region", { name: t.heading });
+        await ui(full).toBeVisible();
+        await page.screenshot({ path: `.local/owner-polish/usage-${lang}-${width}.png`, fullPage: true });
         await ui(full.getByText(t.week(12, 150))).toBeVisible();
         await ui(full.getByText(t.left(138)).first()).toBeVisible();
         await ui(full.getByRole("meter", { name: t.week(12, 150) })).toHaveAttribute("value", "12");

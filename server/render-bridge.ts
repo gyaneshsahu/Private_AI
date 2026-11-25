@@ -1,5 +1,6 @@
 import { createServer, type IncomingHttpHeaders } from "node:http";
 import { request } from "node:https";
+import { isIP } from "node:net";
 
 /** Render's edge is a platform trust boundary, not an authenticated mTLS peer. */
 /** Request headers the bridge passes to the app. The app checks each one itself (CSRF against
@@ -46,6 +47,35 @@ export const BRIDGE_REQUEST_HEADERS = [
   "privatemode-jwt",
 ] as const;
 
+/** Headers Render's edge may use for the visitor's address. Render documents none of them, so
+ * one is used only when the owner names it (renderBridge.clientIpHeader) after /edge-check on the
+ * live site showed that a visitor cannot set it (docs/render-client-ip-20261125.md). */
+export const EDGE_IP_HEADERS = ["cf-connecting-ip", "true-client-ip"] as const;
+/** The address /edge-check looks for: from the range reserved for documentation, never a real visitor. */
+export const EDGE_CHECK_ADDRESS = "203.0.113.9";
+const sole = (rawHeaders: readonly string[], name: string) => {
+  const values: string[] = [];
+  for (let i = 0; i < rawHeaders.length; i += 2)
+    if (rawHeaders[i].toLowerCase() === name) values.push(rawHeaders[i + 1]);
+  return values.length === 1 ? values[0] : undefined;
+};
+/** The visitor's address from the named edge header: exactly one value, a plain IP, else nothing. */
+export function edgeClientIp(rawHeaders: readonly string[], header: string | undefined) {
+  const value = header && sole(rawHeaders, header)?.trim();
+  return value && value.length <= 45 && !value.includes("%") && isIP(value) ? value : undefined;
+}
+/** For each candidate header: did one arrive, and is it the value the checking script sent?
+ * `forgeable: true` means the edge passed a visitor's own header through, so it must not be used.
+ * No address is ever returned. */
+export function edgeCheck(rawHeaders: readonly string[]) {
+  return Object.fromEntries(
+    EDGE_IP_HEADERS.map((name) => {
+      const value = sole(rawHeaders, name);
+      return [name, { present: value !== undefined, forgeable: value?.trim() === EDGE_CHECK_ADDRESS }];
+    }),
+  );
+}
+
 const IMMUTABLE = "public, max-age=31536000, immutable";
 export const IMMUTABLE_PATH =
   /^\/(?:assets\/[^/?#]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)|api\/inference\/privatemode\/privatemode-[0-9a-f]{64}\.wasm|vendor\/pyodide\/\d+\.\d+\.\d+\/[\w.-]+\.(?:mjs|wasm|zip|json))$/;
@@ -56,6 +86,8 @@ export function createRenderBridge(config: {
   key: Buffer;
   cert: Buffer;
   servername: string;
+  /** One of EDGE_IP_HEADERS, set only after the live check; absent means no visitor address. */
+  clientIpHeader?: (typeof EDGE_IP_HEADERS)[number];
 }) {
   if (!Number.isInteger(config.port) || config.port < 1 || config.port > 65535)
     throw Error("Invalid bridge upstream.");
@@ -72,6 +104,20 @@ export function createRenderBridge(config: {
     };
     // Health checks expose only readiness, never account data or redirects.
     const health = req.method === "GET" && req.url === "/healthz";
+    if (req.method === "GET" && req.url === "/edge-check") {
+      // Authored by the bridge itself, so it carries the fixed headers like /healthz.
+      res
+        .writeHead(200, {
+          "Content-Type": "application/json",
+          "Referrer-Policy": "no-referrer",
+          "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "DENY",
+          "Permissions-Policy": "camera=(self), microphone=(self), geolocation=()",
+          "Content-Security-Policy": "default-src 'none'",
+        })
+        .end(JSON.stringify(edgeCheck(req.rawHeaders)));
+      return;
+    }
     const requestOrigin = single("origin");
     const hasOrigin = req.rawHeaders.some(
       (value, i) => i % 2 === 0 && value.toLowerCase() === "origin",
@@ -100,6 +146,9 @@ export function createRenderBridge(config: {
     if (!health)
       for (const name of BRIDGE_REQUEST_HEADERS as readonly string[])
         if (req.headers[name] !== undefined) headers[name] = req.headers[name];
+    // Sign-in rate limits count per visitor only with an address (server/account-auth.ts).
+    const visitor = health ? undefined : edgeClientIp(req.rawHeaders, config.clientIpHeader);
+    if (visitor) headers["x-privateai-edge-client-ip"] = visitor;
     // Sync bodies are ciphertext the app limits itself: items up to 4 MB (as base64 JSON),
     // project-file blobs up to the configured file size. Everything else stays at 1 MB.
     const path = req.url.split("?")[0];

@@ -5967,3 +5967,170 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+/* Owner-test polish, 25 November: project screen, Settings > Security rows, usage and plan. */
+/* Project screen: the sidebar's .project-row rule stretched these buttons onto their own line. */
+.chat-design .project-dialog .project-row > button {
+  flex: 0 0 auto;
+  width: auto;
+}
+.chat-design .project-dialog :is(.project-dialog-actions, .project-row, .project-rename .row, .project-file-actions) > button:not(.primary) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+.chat-design .project-dialog :is(.project-dialog-actions, .project-row, .project-rename .row, .project-file-actions) > button:not(.primary):hover:not(:disabled) {
+  background: var(--hover);
+}
+.chat-design .project-dialog .project-row > span {
+  flex: 1 1 12ch;
+  min-width: 0;
+  font-size: 13.5px;
+}
+.chat-design .project-chats li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.chat-design .project-chats .project-chat-open {
+  flex: 1;
+  min-width: 0;
+}
+.chat-design .project-chats .chat-rename {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  margin: 0;
+  font-size: 14px;
+}
+.chat-design .project-chats .project-chat-rename {
+  flex: 0 0 36px;
+  width: 36px;
+  min-height: 36px;
+  justify-content: center;
+}
+@media (max-width: 760px) {
+  /* Phones: the three actions share one line when they fit, each at least 44 px high. */
+  .chat-design .project-dialog-actions > button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .chat-design .project-dialog-actions > button.primary {
+    flex-basis: 100%;
+  }
+  .chat-design .project-chats :is(.chat-rename, .project-chat-rename) {
+    min-height: 44px;
+  }
+  .chat-design .project-chats .project-chat-rename {
+    flex-basis: 44px;
+    width: 44px;
+  }
+}
+/* Settings > Security: one full-width row per action, the same height and left edge. */
+.chat-design .settings-content .settings-rows {
+  list-style: none;
+  margin: 8px 0 16px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.chat-design .settings-content .settings-rows li + li {
+  border-top: 1px solid var(--line);
+}
+/* Direct children only: the "Sign out everywhere" confirmation renders inside its row and keeps its own buttons. */
+.chat-design .settings-content .settings-rows > li > button:not(.primary):not(.danger):not([role="switch"]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 14.5px;
+  font-weight: 500;
+  text-align: left;
+}
+.chat-design .settings-content .settings-rows > li > button svg {
+  flex: 0 0 auto;
+  margin: 0;
+}
+/* A real element marked as not spoken: generated content would become part of the button's name. */
+.chat-design .settings-content .settings-rows .settings-row-arrow::before {
+  content: "›";
+}
+.chat-design .settings-content .settings-rows .settings-row-arrow {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+}
+.chat-design .settings-content .settings-rows > li > button:focus-visible {
+  outline-offset: -3px;
+}
+/* Usage and plan: limits as aligned rows, not bullets; notes in one quiet block. */
+.usage-meter .usage-caps {
+  list-style: none;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.usage-meter .usage-caps li {
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.usage-meter .usage-line + .usage-line {
+  margin-top: 0.75rem;
+}
+.chat-design .settings-content .content-view > h2 {
+  margin: 16px 0 10px;
+  font-size: 17px;
+}
+.chat-design .content-view > .panel + p,
+.chat-design .content-view > p {
+  max-width: 68ch;
+}
+.chat-design .account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.chat-design .account-actions > button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+.chat-design .account-actions > button:hover:not(:disabled) {
+  background: var(--hover);
+}
+@media (max-width: 760px) {
+  .chat-design .account-actions > button {
+    min-height: 44px;
+  }
+}
+@media (max-width: 760px) {
+  /* 44 px touch targets on phones: the pill style above must not shrink them. */
+  .chat-design .project-dialog :is(.project-dialog-actions, .project-row, .project-rename .row, .project-file-actions) > button:not(.primary) {
+    min-height: 44px;
+  }
+}
+/* Plan panel: its buttons sit in one row with a gap. */
+.chat-design .content-view .panel > button + button {
+  margin-left: 8px;
+}

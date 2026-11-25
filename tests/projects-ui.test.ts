@@ -8,6 +8,7 @@ import { createServer, type ViteDevServer } from "vite";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { appText } from "../src/text/app";
+import { chatMenuText } from "../src/text/chat-menu";
 import { projectText } from "../src/text/projects";
 import { workspaceText } from "../src/text/workspace";
 import { answerQuestions } from "./fixtures/app-questions";
@@ -137,6 +138,7 @@ for (const width of WIDTHS)
       const a = appText[lang];
       const p = projectText[lang];
       const w = workspaceText[lang];
+      const cm = chatMenuText[lang];
       const x = WORDS[lang];
       const { page, outside } = await open(origin, width, lang);
       const menu = page.locator(".conversation-menu");
@@ -262,6 +264,33 @@ for (const width of WIDTHS)
         await ui(panel.getByText(p.noFiles)).toBeVisible();
         const chat = panel.locator(".project-chats button").first();
         await ui(chat).toContainText(x.question);
+        // The chat's own menu inside the project: the same entries as in the sidebar, each a proper target.
+        const dots = panel.locator(".project-chat-menu summary").first();
+        const chatMenu = panel.locator(".project-chat-menu[open] .chat-menu-items");
+        const renameField = panel.locator(".project-chats .chat-rename");
+        await panel.locator(".project-chats li").first().hover();
+        await dots.click();
+        await ui(chatMenu.getByRole("button")).toHaveText([cm.rename, cm.pin, cm.removeFrom(x.project), cm.archive, cm.delete]);
+        for (const item of await chatMenu.getByRole("button").all()) await target(item, width);
+        // Rename in place: Escape keeps the name and the screen, Enter saves.
+        await chatMenu.getByRole("button", { name: cm.rename, exact: true }).click();
+        await ui(renameField).toBeFocused();
+        await renameField.fill("Discarded 2026");
+        await renameField.press("Escape");
+        await ui(panel).toBeVisible();
+        await ui(chat).toContainText(x.question);
+        await ui(dots).toBeFocused();
+        await dots.click();
+        await chatMenu.getByRole("button", { name: cm.rename, exact: true }).click();
+        await renameField.fill("Lease 2026");
+        await renameField.press("Enter");
+        await ui(chat).toContainText("Lease 2026");
+        // Back to the first name, which the rest of this journey looks for.
+        await dots.click();
+        await chatMenu.getByRole("button", { name: cm.rename, exact: true }).click();
+        await renameField.fill(x.question);
+        await renameField.press("Enter");
+        await ui(chat).toContainText(x.question);
         await target(chat, width);
         await chat.click();
         await ui(panel).toHaveCount(0);
@@ -275,7 +304,7 @@ for (const width of WIDTHS)
         await sidebar();
         await page.getByRole("button", { name: w.recent, exact: true }).click();
         await page.getByLabel(w.chatActions(x.question), { exact: true }).click();
-        await page.getByLabel(w.projectFor(x.question), { exact: true }).selectOption("");
+        await page.locator(".chat-item-menu[open]").getByRole("button", { name: cm.removeFrom(x.project), exact: true }).click();
         await ui(page.getByText(a.organized)).toBeVisible();
         if (width < 760) await page.getByRole("button", { name: w.closeNavigation }).click();
         await ui(page.locator(".project-breadcrumb")).toHaveCount(0);
@@ -318,7 +347,12 @@ for (const width of WIDTHS)
         await sidebar();
         await page.getByRole("button", { name: w.recent, exact: true }).click();
         await page.getByLabel(w.chatActions(x.question), { exact: true }).click();
-        await page.getByLabel(w.projectFor(x.question), { exact: true }).selectOption({ label: x.renamed });
+        const rowMenu = page.locator(".chat-item-menu[open]");
+        // Not in a project now: "Add to project" opens the list, with "New project…" at its end.
+        await ui(rowMenu.getByRole("button", { name: cm.removeFrom(x.renamed) })).toHaveCount(0);
+        await rowMenu.getByRole("button", { name: cm.addToProject, exact: true }).click();
+        await ui(rowMenu.getByRole("button", { name: cm.newProject, exact: true })).toBeVisible();
+        await rowMenu.locator(".chat-menu-projects").getByRole("button", { name: x.renamed, exact: true }).click();
         await ui(page.getByText(a.organized)).toBeVisible();
         if (width < 760) await page.getByRole("button", { name: w.closeNavigation }).click();
         await openProject(x.renamed);
