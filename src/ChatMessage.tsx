@@ -391,6 +391,7 @@ export function ChatMessage({
             <Answer
               text={message.text}
               complete={message.status === "complete"}
+              writing={streaming}
               sources={message.sourceSnapshot ?? []}
               open={openSource}
             />

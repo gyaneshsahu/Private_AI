@@ -29,6 +29,8 @@ export const ANSWERS = [
   "thought",
   // One answer that uses every answer block (docs/answer-blocks-20261126.md).
   "blocks",
+  // The same answer arriving slowly: long enough to see a block being written, and to press Stop.
+  "blocks-slow",
   // One word, for the people check of an uploaded photo (src/image-edit/people.ts).
   "no", "yes",
 ] as const;
@@ -55,6 +57,7 @@ const ON_STATUS = {
 const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-500" | "error-503" | "limit">, string> = {
   thought: "The trip takes **155 minutes**.",
   blocks: BLOCKS_SAMPLE,
+  "blocks-slow": BLOCKS_SAMPLE,
   plain: "Synthetic answer.",
   no: "NO",
   yes: "YES",
@@ -287,6 +290,8 @@ export function createResponder() {
       case "stop":
         // Streams slowly for about a minute: long enough to press Stop.
         return stream(sse(LONG, { wordsPerFrame: 2 }), { "x-audit-frame-ms": "150" });
+      case "blocks-slow":
+        return stream(sse(BLOCKS_SAMPLE, { wordsPerFrame: 4 }), { "x-audit-frame-ms": "60" });
       case "thought":
         await new Promise((r) => setTimeout(r, 1500));
         return stream(sse("The trip takes **155 minutes**.", { reasoning: "From 09:17 to 11:17 is 2 hours, which is 120 minutes. From 11:17 to 11:52 is 35 minutes. Together 155." }));

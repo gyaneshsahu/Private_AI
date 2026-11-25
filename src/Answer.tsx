@@ -53,12 +53,15 @@ export function Answer({
   sources,
   open,
   complete = false,
+  writing = false,
   designed = answerDesignEnabled(),
 }: {
   text: string;
   sources: Source[];
   open: (source: Source) => void;
   complete?: boolean;
+  /** The answer is arriving right now. A stopped or cut-off answer is neither writing nor complete. */
+  writing?: boolean;
   /** Answer design (docs/answer-design-20261125.md); the print view passes false and stays as it was. */
   designed?: boolean;
 }) {
@@ -86,7 +89,7 @@ export function Answer({
         if (chart) return <AnswerChart chart={chart} />;
         // Answer blocks: while the answer is still being written, a block's data is not shown as it arrives;
         // a quiet line holds its place until it can be drawn.
-        if (!complete && answerBlocksEnabled() && BLOCK_NAMES.has(language))
+        if (writing && answerBlocksEnabled() && BLOCK_NAMES.has(language))
           return (
             <div className="answer-block-pending" role="status">
               {t.drawing}
@@ -183,7 +186,7 @@ export function Answer({
           }
         : {}),
     }),
-    [complete, t, designed],
+    [complete, writing, t, designed],
   );
   const audit = sources.some((source) => source.url)
     ? // The data of a chart or an answer block is full of quoted words that are not quotations from a source.
