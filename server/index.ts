@@ -1,4 +1,5 @@
 import { bflImageProvider, mockImageProvider } from "./image-creation";
+import { bflImageEditor, mockImageEditor } from "./image-edit";
 import { readFile } from "node:fs/promises";
 import { createServer as createHttpsServer } from "node:https";
 import { resolve } from "node:path";
@@ -82,6 +83,18 @@ const app = createApp({
             ? bflImageProvider({ apiKey: process.env.IMAGE_API_KEY, model: process.env.IMAGE_MODEL ?? "flux-2-klein" })
             : mockImageProvider(),
           dailyImages: Number(process.env.IMAGE_DAILY ?? 3),
+        },
+      }
+    : {}),
+  // Image editing (docs/image-editing-20261125.md): off unless "1", and only with image creation.
+  // PRIVATEAI_IMAGE_UPLOAD_EDITING=1 also allows the user's own photos.
+  ...(process.env.PRIVATEAI_IMAGE_EDITING === "1" && process.env.PRIVATEAI_IMAGE_CREATION === "1" && (process.env.IMAGE_API_KEY || dev)
+    ? {
+        imageEditing: {
+          editor: process.env.IMAGE_API_KEY
+            ? bflImageEditor({ apiKey: process.env.IMAGE_API_KEY, model: process.env.IMAGE_MODEL ?? "flux-2-klein" })
+            : mockImageEditor(),
+          uploads: process.env.PRIVATEAI_IMAGE_UPLOAD_EDITING === "1",
         },
       }
     : {}),

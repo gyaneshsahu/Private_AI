@@ -582,6 +582,12 @@ export interface AppStatus {
    * `limit`: images a day on this plan; `used`: in the last 24 hours (absent when unknown).
    */
   imageCreation?: { limit: number; used?: number };
+  /**
+   * Image editing is switched on (off by default; docs/image-editing-20261125.md). `masks`: the provider
+   * changes only a painted area itself; false means the browser crops, edits and pastes back.
+   * `uploads`: the user's own photos may be edited, not only created images.
+   */
+  imageEditing?: { masks: boolean; uploads: boolean };
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

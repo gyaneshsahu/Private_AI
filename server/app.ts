@@ -37,6 +37,7 @@ import { manifestPaused, PROVIDER_UPDATE_PAUSE } from "./manifest-watch";
 import { takeVoiceAnswer, VOICE_PATH, voiceRoute, voiceUsage, type VoiceSettings, type VoiceTurns } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import { IMAGE_PROMPT_MAX, ImageCapacity, ImageRefused, refuseImagePrompt, type ImageProvider } from "./image-creation";
+import { imageEditRoutes, type ImageEditor } from "./image-edit";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
 import { declaredResearch, researchAllowed, ResearchTickets, type ResearchSettings } from "./research-admission";
 import { RESEARCH_KINDS, RESEARCH_LIMITS } from "../shared/deep-research";
@@ -104,6 +105,8 @@ export interface Config {
    * goes to `provider`; the server keeps neither it nor the image. `dailyImages`: per account a day.
    */
   imageCreation?: { provider: ImageProvider; dailyImages: number };
+  /** Image editing (docs/image-editing-20261125.md); absent means off. It needs `imageCreation`, whose daily count it shares. */
+  imageEditing?: { editor: ImageEditor; uploads: boolean };
   /** Code execution on the user's device: the status says so and follow-up requests get their credit; absent means off. */
   code?: boolean;
   /** Deep research (docs/deep-research-20261114.md); absent means off. It also needs search. */
@@ -503,6 +506,9 @@ export function createApp(config: Config) {
       // Its own partner and allowance: not tied to the chat provider being ready.
       ...(config.imageCreation && (res.locals.accountId || config.dev)
         ? { imageCreation: { limit: config.imageCreation.dailyImages, used: createDay.used(String(res.locals.accountId ?? "local-development")) } }
+        : {}),
+      ...(config.imageCreation && config.imageEditing && (res.locals.accountId || config.dev)
+        ? { imageEditing: { masks: config.imageEditing.editor.masks, uploads: config.imageEditing.uploads } }
         : {}),
       // Only where records are kept (a signed-in account), so the meter has something to show.
       ...(metering && meterAccount(res)
@@ -1058,6 +1064,21 @@ export function createApp(config: Config) {
     app.use(syncRoutes(config.vaultSync.store, config.vaultSync, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   if (config.secureStore)
     app.use(secureRoutes(config.secureStore, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
+  // Before the 8 KB body parser: an edit carries its picture.
+  if (config.imageCreation && config.imageEditing)
+    app.use(
+      imageEditRoutes({
+        editor: config.imageEditing.editor,
+        uploads: config.imageEditing.uploads,
+        dailyImages: config.imageCreation.dailyImages,
+        day: createDay,
+        account: (res) => (res.locals.accountId ?? (config.dev ? "local-development" : undefined)) as string | undefined,
+        record: (res, entry) => {
+          const who = meterAccount(res);
+          if (metering && who) metering.record({ ...entry, accountId: who, feature: "image-create", units: 0 });
+        },
+      }),
+    );
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   if (metering) app.use(metering.router);

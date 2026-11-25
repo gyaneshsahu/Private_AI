@@ -121,6 +121,16 @@ const schema = z
           .strict()
           .optional(),
         /**
+         * Image editing, its own switch, off unless enabled (docs/image-editing-20261125.md). It uses
+         * image creation's provider, key and daily count, so it does nothing without `imageCreation`.
+         * `uploads`: the user's own photos may be edited too. `providerMasks`: use the provider's two
+         * mask addresses instead of the browser's crop-and-paste (only after one live check).
+         */
+        imageEditing: z
+          .object({ enabled: z.boolean(), uploads: z.boolean().default(false), providerMasks: z.boolean().default(false) })
+          .strict()
+          .optional(),
+        /**
          * Usage metering, its own switch, off unless enabled (docs/usage-metering-20261115.md): weights
          * from shared/usage-weights.json, a usage record per request, the usage meter. `plan` (default
          * alpha) names a plan in shared/usage-plans.json whose quotas then replace `allowance` and the
@@ -465,6 +475,9 @@ export async function loadDeploymentConfig(file: string) {
                       dailyImages: inference.imageCreation.dailyImages,
                     },
                   }
+                : {}),
+              ...(inference.imageCreation?.enabled && inference.imageEditing?.enabled
+                ? { imageEditing: { uploads: inference.imageEditing.uploads, providerMasks: inference.imageEditing.providerMasks } }
                 : {}),
               ...(inference.vaultSync?.enabled
                 ? {
