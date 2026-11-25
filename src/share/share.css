@@ -51,9 +51,10 @@
   text-decoration: none;
 }
 .chat-design :is(.share-dialog, .image-side-panel) .share-actions > button.primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
+  /* The theme's own button colours: white on the accent is too pale in dark mode. */
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--primary-ink);
 }
 .chat-design :is(.share-dialog, .share-list, .image-side-panel) .share-actions > :is(button, a):hover:not(:disabled, .primary) {
   background: var(--hover);
