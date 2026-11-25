@@ -636,6 +636,8 @@ export async function runTour(o: {
   browsers: (readonly [string, BrowserType | undefined])[];
   widths: number[];
   langs: Lang[];
+  /** The whole tour in dark (the browser asks for dark, the app's appearance stays "System"); light when absent. */
+  scheme?: "dark" | "light";
   /** Run only these steps (names as in STEPS); all when absent. */
   only?: string[];
   /** axe-core's file: each screenshot also gets an accessibility check (WCAG 2.2 A and AA rules). */
@@ -666,6 +668,7 @@ export async function runTour(o: {
           const context = await browser.newContext({
             viewport: { width, height: width < 700 ? 812 : width < 1000 ? 1024 : 900 },
             locale: lang === "de" ? "de-DE" : "en-US",
+            ...(o.scheme ? { colorScheme: o.scheme } : {}),
             // axe is injected as a script, which the branded pages' strict CSP would block.
             ...(o.axe ? { bypassCSP: true } : {}),
             ...(width < 700 && engineName !== "firefox" ? { hasTouch: true, isMobile: engineName === "chromium" } : {}),
