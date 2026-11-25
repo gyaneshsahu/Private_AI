@@ -8,6 +8,16 @@
 
 ---
 
+## 11. Deep research: side panel, not the canvas (a correction, with a Claude screenshot)
+
+- **Date:** 25 November 2026, evening.
+- **You asked:** you had said "canvas" but meant the side panel, as in the Claude screenshot you sent (research status and a written summary in the chat, the document in a panel on the right). Do what is best for our platform.
+- **What I did:** this is what entry 6 had built: the report opens in a side panel, and the canvas is one button away. From your screenshot I took one thing ours lacked: **the report's main points in the chat**, each with its bold opening, under the card. They are read from the report's own first list (its "Short answer" or summary section), so there is no second request to the model and no extra cost. The report text in the panel now also stays a readable column, as a document does.
+- **What I did not copy:** Claude writes a separate, longer summary for the chat with a second model request. That costs a request per research; say if you want it.
+- **Where:** branch `feat/report-card`.
+- **Tests:** 6 logic tests green; the browser test is extended and runs after the long check that was going on.
+- **Status:** partly: built; browser test, push and merge into the preview follow. Your screenshot also answers "UI references I need" number 1.
+
 ## 10. Two standing rules: UI references and this log
 
 - **Date:** 25 November 2026, evening.

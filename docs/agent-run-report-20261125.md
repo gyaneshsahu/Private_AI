@@ -33,7 +33,7 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in `docs/working-rules.md`). I build my best version meanwhile; send screenshots when you can, any of the three apps is fine.
 
-1. **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
+1. **Received on 25 November for desktop (Claude); the phone view is still wanted.** **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
 2. **A long normal answer** with headings, a list and a table (filled; light and dark; phone and desktop). To compare: spacing, heading sizes, how a table looks on a phone, the row of buttons under the answer.
 3. **An answer that used web search** (filled; phone): how sources are shown inside the text and as a list. To compare: our source chips and the "Searched the web" line.
 4. **The opened document from a file card**, as in your Claude screenshot (filled; desktop and phone): the panel or page that opens when you tap "NetEcon Question Bank". To compare: our report panel and canvas.
