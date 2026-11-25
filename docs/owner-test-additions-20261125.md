@@ -13,6 +13,8 @@
 | No-training image provider (38) | `imageCreation.provider: "foundry"` and `endpoint` | An Azure Foundry resource (report, "Needs you") |
 | Install row (39) | Render variable `VITE_INSTALL_APP=1`, then redeploy | |
 | Plans (41) | none on Render: only on your PC, see section 41 | |
+| Report card (42) | Render variable `VITE_REPORT_CARD=1`, then redeploy | Deep research on |
+| Answer design (43) | Render variable `VITE_ANSWER_DESIGN=1`, then redeploy | |
 
 **Cost:** every edit counts as one image of the day (about EUR 0.01 to 0.03 each). Sections 32 and 33 together use about 12. Raise `dailyImages` for your test day or spread them over two days.
 
@@ -162,3 +164,32 @@
 | 41.7 | Switch to Free | Asks once more ("Yes, switch to Free"); then Free is yours | |
 | 41.8 | Phone width (narrow the window) | The three plans one under the other; nothing cut off | |
 | 41.9 | Use the app on Plus and on Free | The limits do **not** change with the plan yet. That is expected and written in the doc | |
+
+## 42. Deep research as a report card (with `VITE_REPORT_CARD` on; replaces what C.22 and section 6 say about the report in the chat)
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 42.1 | PC, wide window: "+" > **Deep research**: "Compare heat pumps and gas heating for a German flat in 2026" | The progress line as before. When writing starts, the report opens **beside the chat** and is written there; the chat shows a card "Writing the report…" | |
+| 42.2 | When it is finished, look at the chat | A card with the report's title and "Research report · N sources · N min read", a short summary under it, and "In this report" with the sections. No long report text in the chat | |
+| 42.3 | Tap a section under "In this report" | The report jumps to that section | |
+| 42.4 | In the report, tap a source button | The source opens, as in a normal answer | |
+| 42.5 | **Edit in canvas** | The canvas opens with the report's text; "Ask for changes" works on it | |
+| 42.6 | **Copy**, **Download**, **Share** | The text on the clipboard; a `.md` file; the share dialog | |
+| 42.7 | Close the report, reload, open the chat again | The card is there; a tap opens the report | |
+| 42.8 | Ask a normal follow-up question in the same chat | The answer uses the report (it is still part of the conversation) | |
+| 42.9 | Phone: the same research | Nothing opens by itself; the card says "Writing the report…", then shows the summary; a tap opens the report over the chat | |
+| 42.10 | Stop a research halfway | What was written stays in the chat as text, no card | |
+| 42.11 | Dark mode: 42.2 and the open report | Everything readable; the buttons are not pale | |
+
+## 43. How answers look (with `VITE_ANSWER_DESIGN` on; a first pass, see `docs/answer-design-20261125.md`)
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 43.1 | "My electricity bills were 82, 91, 77, 95, 88 and 102 euros from January to June. How did they develop, and what is the average?" | The opening sentence slightly larger; total and average as two tiles; a chart | |
+| 43.2 | "Should I lease or buy a car if I drive 8,000 km a year?" | The verdict first; bold lines before lists shown as quiet labels | |
+| 43.3 | "Make me a 10-day study plan with daily goals and a checklist" | A table with a calm header and banded rows; a check-list whose boxes you can tick (a ticked line is struck through) | |
+| 43.4 | **Copy table** over the table, paste into Excel or Google Sheets | The cells land in cells | |
+| 43.5 | A long answer with a title and sections ("Explain in detail how a heat pump works") | A title with a line under it, clear sections | |
+| 43.6 | All of the above on the phone and in dark mode | Nothing cut off; everything readable | |
+| 43.7 | Export one of these answers as PDF | The PDF looks as before (black on white) | |
+| 43.8 | Write down what you like and what you do not | This is a first pass; your reaction decides the next one | |
