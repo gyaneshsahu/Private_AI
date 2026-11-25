@@ -82,7 +82,7 @@ export async function startDeployment(render = false) {
       tls: config.tls,
       ingress: {
         peerCertificateSha256: config.peerCertificateSha256,
-        admission: render ? "shared" : "client-ip",
+        admission: !render ? "client-ip" : config.renderBridge?.clientIpHeader ? "shared-ip" : "shared",
       },
       emailEnabled: false,
       deliverCode: async () => {

@@ -14,7 +14,7 @@ export interface ProductionRuntimeConfig extends ProductionAccountCandidateConfi
   inference?: ProductionInferenceConfig;
   ingress: {
     peerCertificateSha256: readonly string[];
-    admission?: "client-ip" | "shared";
+    admission?: "client-ip" | "shared" | "shared-ip";
   };
   tls: { key: Buffer; cert: Buffer; ca: Buffer };
   assets: string;

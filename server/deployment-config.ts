@@ -25,6 +25,9 @@ const schema = z
         certFile: path,
         caFile: path,
         servername: z.string().min(1).max(253),
+        // The edge header that carries the visitor's address; set only after the live check
+        // (docs/render-client-ip-20261125.md). Absent: sign-in limits share one bucket, as before.
+        clientIpHeader: z.enum(["cf-connecting-ip", "true-client-ip"]).optional(),
       })
       .strict()
       .optional(),
@@ -414,6 +417,7 @@ export async function loadDeploymentConfig(file: string) {
             cert: await boundedFile(config.renderBridge.certFile),
             ca: await boundedFile(config.renderBridge.caFile),
             servername: config.renderBridge.servername,
+            clientIpHeader: config.renderBridge.clientIpHeader,
           }
         : undefined,
       social: config.socialCredentialsFile
