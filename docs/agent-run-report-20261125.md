@@ -12,6 +12,8 @@ Every decision and every manual step only you can do. Nothing here was done by t
 4. **Your config for the owner test:** the example `deployment/render-config.owner-test.example.json` now says `"plan": "premium"` and 60 searches a day. Your real `render-config.json` on Render is yours to edit: set `"metering": { "enabled": true, "plan": "premium" }` there (premium gives 60 searches a day). Back to `"alpha"` before friends (24 a day).
 5. **Black Forest Labs trains on what is sent** (their EU API terms, 26 August 2026, section 2(b)); you knew this for prompts (D1). It also covers **input images** once image editing is on. An opt-out exists by email to privacy@blackforestlabs.ai, subject "Training Opt Out". Only you can send it. Until a no-training provider is live (Track 4), editing uploaded photos should stay off for friends.
 6. **Wording choice:** the Terms still say "invite-only test phase (alpha)". It is a legal text under the legal read, so I left it. Say if you want "trial" there too.
+10. **Share links need three things from you before they can be switched on:** your yes (they were on your "not built" list of 16 November), one database step on Render (`apply-pending`, then the privileges SQL: the app's database role needs the new table), and the lawyer's read of the Privacy Policy line in `docs/sharing-20261125.md`. The plain Share button (device menu, Copy, Download) needs none of this.
+11. **After merging any branch that adds a table,** test 26.1 in your list no longer says `"applied":20`. Each new table adds one: share links 0027, analytics 0028, feedback 0029.
 8. **Images per day in your test:** your config has `"imageCreation": { ..., "dailyImages": 3 }`, and the plan does not change that number. With editing on, every edit counts as an image, so three edits end the day. Raise it for your test (for example 20; the config allows up to 50). Each image or edit costs about USD 0.015 at the provider.
 9. **Projects and the chat menu (your message of 25 November):** being redesigned on its own branch, `feat/projects-ux`. Project-level memory is not built: see that track's notes for what it would take.
 7. **Two older decisions the new work touches** (I did not edit `docs/owner-decisions.md`): item 17 of 16 November lists shared links as "not built because of your rules", and the 13 November constraint says images are never stored after the answer. Share links (Track 1b, step 2) and image versions (Track 1) are built behind off-switches because you asked for them on 25 November; confirm before switching them on.
@@ -20,7 +22,9 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 - Track 0 (`fix/before-owner-test`, head `7bb1478`): done, **CI green** (run 45591198070).
 - Track 1 (`feat/image-editing`, head `d4a74f9`): done, **CI green** (run 45590689598).
-- Projects and chat menu (`feat/projects-ux`, from `fix/before-owner-test`, worktree `C:\Gyanesh\Startups\Private_AI-tracks\projects-ux`): built, 12 new browser tests green; the wider regression and the accessibility check were running when this was written (`Private_AI-tracks\px-areas.log`, `px-axe.log`). When green: full local check, push, read CI.
+- Projects and chat menu (`feat/projects-ux`, from `fix/before-owner-test`): done, pushed 25 November; read its CI run (`gh run list --branch feat/projects-ux`).
+- Track 1b (`feat/image-share`, **from `feat/image-editing`**, worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-share`, head `537f52e`): built, 22 new tests green, accessibility clean; its full local check was running when this was written (`Private_AI-tracks\sh-*.log`). When green: push, read CI.
+- **Next: Track 2, analytics** (`feat/analytics` from the tag, migration number **0028**), then Track 3 feedback (**0029**), Track 4, 5, 6 (plans: **0030** if it needs a table).
 - Then Track 1b (`feat/image-share`): branch it **from `feat/image-editing`**, not from the tag (it builds on the image card and the editor; written down under Track 1b when started).
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
@@ -56,8 +60,8 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 | --- | --- | --- | --- |
 | 0 Fixes | `fix/before-owner-test` | done, CI green. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `7bb1478` (run 45591198070) |
 | 1 Image editing | `feat/image-editing` | done. Local full run on `d4a74f9`: build green, unit 2,393 passed and 1 failed (`invite-browser`, a 5-second wait; alone it passed 5 of 6 here and 4 of 4 on the fix branch: timing, not this change, but unproven), browser tests 64 of 64, evaluation checks and secret scan green | green on `d4a74f9` (run 45590689598), which includes that test |
-| P Projects and chat menu | `feat/projects-ux` (from the fix branch) | built; 12 new browser tests green; regression running | not pushed yet |
-| 1b Placement and sharing | `feat/image-share` | not started | |
+| P Projects and chat menu | `feat/projects-ux` (from the fix branch) | done. Local full run: build green, unit 2,381 passed, browser tests 64 of 64 after one test was updated for the new menu, evaluation checks and secret scan green; accessibility check clean on the changed screens | pushed 25 Nov, run to read |
+| 1b Placement and sharing | `feat/image-share` (from `feat/image-editing`) | built; 22 new tests green (5 server, 4 logic, 12 browser, 1 database test for CI); accessibility clean; full local check running | not pushed yet |
 | 2 Analytics | `feat/analytics` | not started | |
 | 3 Feedback | `feat/feedback` | not started | |
 | 4 No-training image provider | `feat/image-provider-eu` | not started | |
@@ -112,6 +116,18 @@ Everything is in `docs/image-editing-20261125.md` on the branch: what a user get
 - **Limits you should know:** about 8 to 12 versions fit in one chat (the 4 MB limit of a synced chat); painting needs a mouse, finger or pen.
 - **Tests:** 32 new (6 server, 10 logic, 16 real-browser at 375 and 1,280 px in English and German). The accessibility check is clean on the card and the editor. Re-run and green: images, chat, Canvas, Whiteboard, limits, Secure and Secure Max, sign-in-free areas (245 tests in 30 files).
 
+## Track 1b: image placement and sharing (`feat/image-share`)
+
+Everything is in `docs/sharing-20261125.md` on the branch. In short:
+
+- **Images:** Edit, Download and Share on every image; a click opens it full screen; on a computer "Open in side panel" shows it where the canvas and the whiteboard go, one thing at a time, switched through "In this chat".
+- **Share, step 1 (no switch):** a Share button on answers, in the chat's menu, on images, in the editor and in the side panel. One dialog: the device's own share menu, Copy, Download. A test checks that none of them sends anything to a server.
+- **Share, step 2 (switch off):** an encrypted link. The snapshot is encrypted in the browser, the key is only in the link after `#`, the server stores bytes it cannot read. "Anyone with the link can see this.", an end date (1, 7 or 30 days), Delete in the dialog and in Settings > Data controls. No links from Incognito or Secure Max. A test opens a link in a second, signed-out browser and checks that the key is in no request.
+- **Database:** migration `0027-share-links.sql`. Needs `apply-pending` and the privileges SQL once before the switch goes on (Needs you).
+- **Privacy Policy line:** drafted in English and German in the doc, for the lawyer.
+- **Starts from `feat/image-editing`, not from the tag,** because it builds on the image card and the editor. Merging it brings image editing with it.
+- **Not verified:** the hosted setup (that `/s/…` is reachable signed out on Render), a real phone's share menu, the reader's page in Safari and Firefox.
+
 ## Projects and the chat menu (`feat/projects-ux`, your message of 25 November)
 
 Everything is in `docs/projects-ux-20261125.md` on the branch: what was there before, what it is now, five decisions, what is not built and what it would take. In short:
@@ -133,7 +149,9 @@ Everything is in `docs/projects-ux-20261125.md` on the branch: what was there be
 | `server/image-creation.ts` (fix) and `server/image-edit.ts` (image-editing) | both map `flux-2-klein` to the provider's `flux-2-klein-4b` | none: separate files; fold together after merging |
 | `src/chat-design.css` | fix (appended at the end); projects-ux changes three of those appended lines (it contains the fix branch, so no conflict). Tracks keep their styles in their own files | none so far |
 | `src/App.tsx`, `src/ProjectPanel.tsx`, `src/WorkspaceNavigation.tsx`, `src/SettingsBody.tsx` | projects-ux (on top of fix); image-editing touches `src/App.tsx` in other places | low; check the "+" menu and the send function after combining |
-| `evaluation/audit-tour.ts` | image-editing (one new step), projects-ux (one renamed entry) | low |
+| `evaluation/audit-tour.ts` | image-editing (one new step), image-share (one more step beside it), projects-ux (one renamed entry) | low |
+| `server/account-migrations.ts`, `server/account-privileges.ts`, `scripts/account-operator.ts`, `scripts/test-durable.mjs`, `tests/account-migrations.test.ts` | every branch that adds a table appends at the same place (image-share 0027; analytics 0028 and feedback 0029 to come) | **certain conflict when combined**, simple to resolve: keep all lines in number order and set the count in the test to 20 plus the number of new tables |
+| `src/CreateImage.tsx`, `src/ChatMessage.tsx`, `src/OutputsPanel.tsx`, `src/SettingsBody.tsx`, `src/main.tsx` | image-share (on top of image-editing); `src/SettingsBody.tsx` also fix and projects-ux (Security rows) | low: different sections |
 | `tests/deployment-inference-config.test.ts`, `deployment/render-config.owner-test.example.json` | fix only so far | later tracks that add a switch to the example will touch the same line |
 
 *(filled in per track)*
