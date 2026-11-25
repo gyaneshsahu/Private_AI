@@ -11,6 +11,8 @@ import type { Lang } from "./i18n";
 import { choosePassages } from "./passage-retrieval";
 import { boardNote } from "../shared/whiteboard";
 import { memoriesFor, memoryBlock } from "./memory";
+import { answerBlocksEnabled } from "./device-features";
+import { answerBlockRules } from "./answer/rules";
 import { isProjectFile, projectInstructionsBlock, withProjectFiles } from "./projects";
 
 const textBlocks = textBlock({
@@ -268,6 +270,7 @@ export function composeContext(
       content:
         variant === undefined
           ? productHead +
+            (answerBlocksEnabled() ? answerBlockRules : "") +
             answerLanguagePolicy(lang) +
             productDate(now) +
             (web ? productWebPolicy : productKnowledgeDate) +

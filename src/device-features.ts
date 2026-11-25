@@ -38,5 +38,7 @@ export const answerDesignEnabled = () => on("VITE_ANSWER_DESIGN");
 export const activityEnabled = () => on("VITE_ACTIVITY");
 /** Error states (docs/error-states-20261126.md): one friendly line with Retry where an answer or image failed. */
 export const errorStatesEnabled = () => on("VITE_ERROR_STATES");
+/** Answer blocks (docs/answer-blocks-20261126.md): notes, steps, diagrams, quick checks and tabs in an answer, and the rules that tell the model when. */
+export const answerBlocksEnabled = () => on("VITE_ANSWER_BLOCKS");
 /** Report card (docs/report-card-20261125.md): a deep research answer is a card in the chat and opens in the side panel. */
 export const reportCardEnabled = () => on("VITE_REPORT_CARD");

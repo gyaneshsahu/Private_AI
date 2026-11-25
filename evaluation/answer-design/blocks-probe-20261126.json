@@ -1,0 +1,701 @@
+{
+  "capturedAt": "2026-11-25T19:48:58.454Z",
+  "listPriceEuros": 0.0474,
+  "correct": 21,
+  "of": 24,
+  "shouldHaveNone": 8,
+  "hadNone": 8,
+  "shouldHaveOne": 16,
+  "hadOne": 13,
+  "malformed": [
+    "webapp: diagram",
+    "sorting: explore"
+  ],
+  "rows": [
+    {
+      "id": "capital",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1084,
+        "total_tokens": 1094,
+        "completion_tokens": 10,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "What is the capital of Australia?",
+      "answer": "Canberra is the capital of Australia."
+    },
+    {
+      "id": "percent",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1087,
+        "total_tokens": 1099,
+        "completion_tokens": 12,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "How much is 15% of 240?",
+      "answer": "15% of 240 is **36**."
+    },
+    {
+      "id": "note",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1091,
+        "total_tokens": 1186,
+        "completion_tokens": 95,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Write a short thank-you note to my neighbour for watering my plants.",
+      "answer": "Dear [Neighbour's name],\n\nThank you so much for watering my plants while I was away. It's such a relief to come home to them healthy and thriving, and I really appreciate you taking the time to help out. Please let me know if there's ever anything I can do in return.\n\nWarm regards,\n[Your name]\n\nFeel free to tell me the names or adjust the tone (more casual, shorter, etc.), and I'll tailor it."
+    },
+    {
+      "id": "translate",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1090,
+        "total_tokens": 1105,
+        "completion_tokens": 15,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Translate into German: The meeting is moved to Thursday at ten.",
+      "answer": "Die Besprechung wird auf Donnerstag um zehn Uhr verlegt."
+    },
+    {
+      "id": "dinner",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1090,
+        "total_tokens": 1283,
+        "completion_tokens": 193,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Gib mir drei Ideen für ein Abendessen ohne Fleisch.",
+      "answer": "Hier sind drei Ideen für ein Abendessen ohne Fleisch:\n\n1. **Gemüse-Frittata** – Eier mit Zucchini, Paprika, Tomaten und Käse verquirlen, in der Pfanne stocken lassen. Dazu ein grüner Salat.\n2. **Linsen-Bolognese** – Rote Linsen mit Tomatenpassata, Knoblauch, Zwiebeln und Kräutern köcheln, über Pasta oder mit Brot servieren.\n3. **Ofengemüse mit Halloumi und Kichererbsen** – Süßkartoffeln, Brokkoli und Kichererbsen mit Olivenöl und Gewürzen im Ofen rösten, am Ende Halloumi-Scheiben dazu. Mit Joghurt-Dip servieren.\n\nSoll ich zu einer der Ideen ein einfaches Rezept mit Mengenangaben geben?"
+    },
+    {
+      "id": "steuer-id",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1088,
+        "total_tokens": 1177,
+        "completion_tokens": 89,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Was ist eine Steuer-ID, in zwei Sätzen?",
+      "answer": "Eine Steuer-ID (Steueridentifikationsnummer) ist eine dauerhaft gültige, bundesweit eindeutige elfstellige Nummer, die jeder Person in Deutschland einmalig vom Bundeszentralamt für Steuern zugeteilt wird. Sie identifiziert dich eindeutig gegenüber dem Finanzamt und bleibt ein Leben lang gleich, auch bei Heirat, Umzug oder Namensänderung."
+    },
+    {
+      "id": "email",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1096,
+        "total_tokens": 1265,
+        "completion_tokens": 169,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Schreib mir eine kurze Absage für ein Vorstellungsgespräch am Freitag.",
+      "answer": "Gerne! Hier ein kurzer Text zum Absagen:\n\n---\n\nBetreff: Absage – Vorstellungsgespräch am [Datum]\n\nSehr geehrte/r Frau/Herr [Name],\n\nvielen Dank für die Einladung zum Vorstellungsgespräch am Freitag, den [Datum], um [Uhrzeit]. Leider muss ich das Gespräch absagen, da sich meine Umstände kurzfristig geändert haben.\n\nIch bedauere dies sehr und danke Ihnen für Ihr Verständnis.\n\nMit freundlichen Grüßen\n[Ihr Name]\n\n---\n\nFalls du stattdessen einen **Terminverschiebungs**-Wunsch hast (also nicht ganz absagen willst), sag Bescheid – dann formuliere ich dir eine Variante mit neuem Terminvorschlag."
+    },
+    {
+      "id": "grammar",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": "none",
+      "found": [],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1090,
+        "total_tokens": 1146,
+        "completion_tokens": 56,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Fix the grammar: me and him goes to the store yesterday.",
+      "answer": "Corrected: **\"He and I went to the store yesterday.\"**\n\nFixes:\n- \"Me and him\" → \"He and I\" (subject of the sentence)\n- \"goes\" → \"went\" (past tense, matching \"yesterday\")"
+    },
+    {
+      "id": "ci",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "diagram"
+      ],
+      "found": [
+        "diagram",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1097,
+        "total_tokens": 2280,
+        "completion_tokens": 1183,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Explain in detail how a CI/CD pipeline works, including what happens when the tests fail.",
+      "answer": "# How a CI/CD Pipeline Works\n\n**CI/CD** stands for Continuous Integration and Continuous Delivery (or Deployment). It's the practice of automatically building, testing, and releasing code whenever developers push changes, so problems are caught early and releases are routine rather than risky.\n\n## The Big Picture\n\nA pipeline is a series of automated stages triggered by a code change. Each stage must pass before the next one runs.\n\n```diagram\n{\"type\":\"flow\",\"nodes\":[{\"id\":\"commit\",\"label\":\"Commit / Push\"},{\"id\":\"build\",\"label\":\"Build\"},{\"id\":\"test\",\"label\":\"Automated Tests\"},{\"id\":\"staging\",\"label\":\"Deploy to Staging\"},{\"id\":\"approve\",\"label\":\"Manual Approval?\",\"decision\":true},{\"id\":\"prod\",\"label\":\"Deploy to Production\"},{\"id\":\"fix\",\"label\":\"Fix & Re-run\"}],\"edges\":[{\"from\":\"commit\",\"to\":\"build\",\"label\":\"trigger\"},{\"from\":\"build\",\"to\":\"test\",\"label\":\"artifact\"},{\"from\":\"test\",\"to\":\"staging\",\"label\":\"all pass\"},{\"from\":\"staging\",\"to\":\"approve\",\"label\":\"validate\"},{\"from\":\"approve\",\"to\":\"prod\",\"label\":\"approved\"},{\"from\":\"approve\",\"to\":\"fix\",\"label\":\"rejected\"},{\"from\":\"test\",\"to\":\"fix\",\"label\":\"failure\"}]}\n```\n\n## Stage by Stage\n\n### 1. Trigger\nA developer pushes a commit or opens a merge/pull request. The CI server (e.g., GitHub Actions, GitLab CI, Jenkins) detects the event and starts the pipeline. Many teams also run nightly scheduled pipelines.\n\n### 2. Checkout & Environment Setup\nThe pipeline clones the repository at that exact commit and prepares a clean, reproducible environment (a container or VM). Dependencies are restored from a cache to speed things up.\n\n### 3. Build\nThe code is compiled or packaged (e.g., `npm run build`, `mvn package`, `docker build`). This catches syntax errors, missing files, and dependency problems. The output is an **artifact** — a versioned, immutable package (a JAR, a Docker image, a bundle) that every later stage uses, so you test exactly what you'll ship.\n\n### 4. Automated Testing\nThe artifact is tested in layers, usually fast tests first:\n\n- **Unit tests** — individual functions/classes; seconds to run.\n- **Integration tests** — components together, often with real or simulated databases.\n- **End-to-end (E2E) tests** — the whole app driven like a user.\n- **Static checks** — linters, type checkers, security scanners (SAST), dependency vulnerability scans. These often run in parallel with tests.\n\n### 5. Deploy to Staging\nIf everything passes, the artifact is deployed to a staging environment that mirrors production as closely as possible. Smoke tests verify the deployment itself worked (the service starts, key endpoints respond).\n\n### 6. Release / Deployment\nDepending on the team's maturity:\n\n- **Continuous Delivery** — the pipeline stops before production; a human approves the release.\n- **Continuous Deployment** — every passing change goes to production automatically.\n\nProduction rollouts use safety techniques like **canary releases** (route a small percentage of traffic to the new version), **blue-green deployment** (two environments, switch over instantly), or **feature flags** (deploy code dark, enable gradually).\n\n### 7. Post-Deployment Verification\nHealth checks, monitoring, and alerting watch the new version. If error rates spike, the pipeline or an on-call engineer **rolls back** to the previous artifact — which is why artifacts are immutable and versioned.\n\n## What Happens When Tests Fail\n\nThis is where CI earns its keep. A failure is treated as a **stopping condition, not a warning**:\n\n1. **The pipeline halts immediately.** Later stages never run — a broken build is never deployed, not even to staging.\n2. **The commit is marked as failed.** The CI dashboard shows red, and the merge/pull request is typically blocked from being merged (branch protection rules).\n3. **Notifications go out** — to the author (and sometimes the whole team) via Slack, email, or the PR itself, with logs and which specific tests failed.\n4. **The developer fixes and re-pushes.** The pipeline runs again from the start on the new commit. There's no \"partial resume\" — the whole pipeline must pass cleanly.\n5. **The main branch stays green.** If a failure slips into `main` anyway, fixing it becomes top priority; many teams treat a broken main branch as a team-wide stop-the-line event.\n\nGood teams also distinguish failure types:\n\n- **Genuine bugs** — fix the code.\n- **Flaky tests** — tests that pass/fail nondeterministically. These get quarantined and fixed, because repeated false alarms train people to ignore red builds.\n- **Infrastructure issues** — e.g., a test database timing out; the pipeline may be safely re-run.\n\n```chart\n{\"type\":\"bar\",\"title\":\"Typical pipeline duration by stage\",\"unit\":\"minutes\",\"labels\":[\"Build\",\"Unit tests\",\"Integration tests\",\"E2E tests\",\"Deploy\"],\"values\":[5,4,10,15,3],\"source\":\"Illustrative example\"}\n```\n\n> **Key idea:** A failed test isn't an exception to the process — it *is* the process working. The pipeline's job is to turn \"broken code\" from a production incident into a red X on a merge request within minutes.\n\n**CI vs. CD vs. CD in one line:** CI = every change is built and tested automatically; Continuous Delivery = releases are automated up to a human approval gate; Continuous Deployment = releases to production are fully automatic."
+    },
+    {
+      "id": "oauth",
+      "lang": "en",
+      "model": "glm-5.3",
+      "expected": [
+        "diagram"
+      ],
+      "found": [
+        "diagram",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1101,
+        "total_tokens": 5204,
+        "completion_tokens": 4103,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 1024,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2830
+        }
+      },
+      "question": "Explain in detail how signing in with Google works on another website, step by step, including when something is refused.",
+      "answer": "## Sign in with Google: the short version\n\n\"Sign in with Google\" is a standardized login flow (OpenID Connect, built on OAuth 2.0). Three parties are involved:\n\n- **You**, in your browser\n- **The website** you want to log into (the \"relying party\")\n- **Google**, which confirms who you are and vouches for you\n\n> **Key idea:** The website never sees or receives your Google password. Google only hands it a cryptographically signed proof that says \"this specific Google account clicked Allow.\"\n\n## The step-by-step flow\n\n1. **You click \"Sign in with Google\"** on the website. The site sends your browser to a Google page (`accounts.google.com`), along with details identifying the site: its registered client ID, where Google should send you back (the `redirect_uri`), what data it wants (the *scopes*, e.g. name, email, profile picture), and a one-time `state` value used to prevent tampering.\n2. **Google checks the site's registration** before showing anything: Is this client ID known? Is the return address on its allowlist? Is the app in good standing? If not, the flow stops with an error page (more below).\n3. **You authenticate to Google itself** — password, and possibly 2-Step Verification — if you aren't already signed in. This happens entirely on Google's pages; the website only waits.\n4. **Google shows the consent screen**: which site is asking, and which pieces of your data it requests. (For well-known first-party apps this may be skipped.)\n5. **You approve.** Google redirects your browser back to the website carrying a short-lived, one-time **authorization code** plus the original `state` value, which the site checks matches.\n6. **Behind the scenes**, the site's server exchanges that code at Google's token endpoint (proving its identity with a client secret or PKCE) for an **ID token** — a signed statement containing your stable Google account ID (`sub`), and depending on scopes your email, name, and picture.\n7. **The site verifies the ID token**: Google's cryptographic signature, that the token was issued to *this* site, that it hasn't expired, and that it isn't a replay. Only a valid token counts as proof.\n8. **The site creates its own local session** (a login cookie on its own domain), linked to your Google account ID or email. From now on, Google is out of the picture until next time.\n\nSo the site ends up with: your account ID, possibly your email and profile data — and nothing else.\n\n## When something is refused\n\nRefusals can happen at nearly every stage, and what you see differs:\n\n- **Before you log in (Google rejects the site):** unknown client ID, a return address not on the allowlist (the \"Error 400: redirect_uri_mismatch\" page — a deliberate security stop), a suspended or policy-blocked app, or a scope the app isn't allowed to request. You see a Google error page and never proceed.\n- **At Google's login step:** wrong password, failed 2-Step Verification, a locked or disabled account, or a Workspace admin blocking third-party apps. Google simply doesn't authenticate you; there's nothing to send back.\n- **At the consent screen — you refuse:** if you click Cancel or \"Don't allow,\" Google redirects back with `error=access_denied` and the site shows its own \"sign-in failed\" message. With granular consent you can also untick individual permissions (e.g. email only, no picture); the site then gets partial data and may refuse login if something it requires is missing. An \"unverified app\" warning lets you back out too.\n- **At the code exchange:** the code expires (minutes), was already used once, or the site's credentials are wrong — the exchange fails and the site can't complete login.\n- **At token verification:** a bad signature, wrong recipient, or expired token means the site treats the login as invalid and refuses, even though Google approved.\n- **After login:** you can revoke the site any time under *Google Account → Security → Third-party connections*. That kills future data access, though the site's existing session usually persists until it expires or you log out there.\n\n```diagram\n{\"type\":\"flow\",\"nodes\":[{\"id\":\"click\",\"label\":\"Click \\\"Sign in with Google\\\"\"},{\"id\":\"check\",\"label\":\"Google checks the app\",\"decision\":true},{\"id\":\"login\",\"label\":\"Log in to Google (2FA)\"},{\"id\":\"consent\",\"label\":\"Consent screen\",\"decision\":true},{\"id\":\"code\",\"label\":\"One-time code returned\"},{\"id\":\"token\",\"label\":\"Exchange code for ID token\",\"decision\":true},{\"id\":\"verify\",\"label\":\"Verify token signature\",\"decision\":true},{\"id\":\"session\",\"label\":\"Site session created\"},{\"id\":\"fail\",\"label\":\"\\\"Sign-in failed\\\"\"}],\"edges\":[{\"from\":\"click\",\"to\":\"check\"},{\"from\":\"check\",\"to\":\"login\",\"label\":\"app valid\"},{\"from\":\"check\",\"to\":\"fail\",\"label\":\"app rejected\"},{\"from\":\"login\",\"to\":\"consent\",\"label\":\"authenticated\"},{\"from\":\"consent\",\"to\":\"code\",\"label\":\"you approve\"},{\"from\":\"consent\",\"to\":\"fail\",\"label\":\"you cancel / deny\"},{\"from\":\"code\",\"to\":\"token\"},{\"from\":\"token\",\"to\":\"verify\",\"label\":\"token issued\"},{\"from\":\"token\",\"to\":\"fail\",\"label\":\"exchange fails\"},{\"from\":\"verify\",\"to\":\"session\",\"label\":\"valid\"},{\"from\":\"verify\",\"to\":\"fail\",\"label\":\"invalid\"}]}\n```\n\n> **Watch out:** The only screen that should ever ask for your Google password is a genuine `google.com` page. Phishing sites imitate this flow precisely because it looks official — always check the address bar before typing your password.\n\nThe security of the whole design rests on that redirect-address allowlist, the one-time code, and the signed token: a malicious site can *ask* Google about you, but it can't forge Google's answer."
+    },
+    {
+      "id": "mahnverfahren",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "diagram",
+        "steps"
+      ],
+      "found": [
+        "steps",
+        "diagram",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1104,
+        "total_tokens": 2848,
+        "completion_tokens": 1744,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 25
+        }
+      },
+      "question": "Erkläre ausführlich, wie ein gerichtliches Mahnverfahren in Deutschland abläuft, mit den Entscheidungspunkten.",
+      "answer": "# Das gerichtliche Mahnverfahren in Deutschland\n\nDas Mahnverfahren ist ein vereinfachtes Verfahren zur Durchsetzung von **Geldforderungen** (§ 688 ZPO). Es dient dazu, unbestrittene Forderungen schnell und kostengünstig durchsetzbar zu machen. Es läuft vor dem **Mahngericht** ab – in der Regel zentralisiert (z. B. in Aachen, Berlin oder Hagen), unabhängig vom Wohnort des Beklagten.\n\n## Ablauf im Detail\n\n### 1. Antrag auf Mahnbescheid\n\nDer Gläubiger stellt beim Mahngericht einen **Antrag auf Erlass eines Mahnbescheids** – heute praktisch immer über die Online-Mahnsoftware der Länder. Der Antrag enthält:\n\n- die Forderung (Hauptforderung, Zinsen, Kosten) mit Betrag in Euro,\n- die Bezeichnung beider Parteien (Name/Anschrift, bei Unternehmen auch Handelsregisterangaben),\n- den Grund der Forderung (kurze Angabe, z. B. „Kaufpreis Rechnung Nr. X\").\n\n**Entscheidungspunkt des Gerichts:** Prüft das Mahngericht, dass es sich um einen **Anspruch auf Zahlung einer bestimmten Geldsumme in Euro** handelt und der Antrag formal korrekt ist, erlässt es den Mahnbescheid. Fehlt etwas, wird der Antrag zur Berichtigung zurückgegeben. Keine Prüfung findet statt, ob die Forderung tatsächlich besteht – das Verfahren ist rein formell.\n\n### 2. Zustellung des Mahnbescheids\n\nDer Mahnbescheid wird dem Beklagten **zugestellt**. Er enthält den Hinweis, dass er zwei Möglichkeiten hat (Widerspruch oder Zahlung) und dass sonst ein Vollstreckungsbescheid ergehen kann.\n\n### 3. Reaktion des Beklagten – zentrale Weichenstellung\n\nDer Beklagte hat **zwei Wochen** ab Zustellung Zeit:\n\n- **Keine Reaktion:** Nach Ablauf der Frist (und nach Ablauf der Nachfrist) ergeht der **Vollstreckungsbescheid** auf Antrag des Gläubigers.\n- **Zahlung:** Die Sache ist erledigt.\n- **Widerspruch:** Der Beklagte legt Widerspruch ein (formlos möglich, auch fristwahrend beim Mahngericht oder beim zuständigen Streitgericht).\n\n> **Key idea:** Das Mahnverfahren ist ein „Automatikverfahren\" – es prüft nicht, wer im Recht ist. Es entscheidet nur, ob der Beklagte die Forderung widerspricht oder nicht.\n\n### 4. Vollstreckungsbescheid\n\nWiderspricht der Beklagte nicht, erlässt das Mahngericht auf Antrag (der bereits mit dem Mahnbescheid beantragt werden kann) den **Vollstreckungsbescheid** mit einer weiteren Zweiwochenfrist. Erst danach ist die Forderung **vollstreckbar** (z. B. durch Gerichtsvollzieher, Pfändung).\n\nDer Vollstreckungsbescheid wirkt wie ein Versäumnisurteil. Dagegen ist der **Einspruch** möglich, wiederum mit Zweiwochenfrist.\n\n### 5. Übergang ins streitige Verfahren\n\nBei **Widerspruch** (oder rechtzeitigem Einspruch) wird das Verfahren an das **zuständige Streitgericht** (Amts- oder Landgericht) abgegeben – der Gläubiger muss dies innerhalb von **sechs Monaten** beantragen, sonst gilt der Widerspruch als zurückgenommen. Ab dann gilt der normale Zivilprozess: Schriftsätze, ggf. Güteverhandlung, Beweisaufnahme, Urteil.\n\n```steps\n{\"items\":[{\"title\":\"Antrag\",\"text\":\"Gläubiger beantragt beim Mahngericht den Mahnbescheid (Online-Portal).\",\"tag\":\"Gläubiger\"},{\"title\":\"Mahnbescheid\",\"text\":\"Mahngericht prüft formal und stellt den Mahnbescheid zu.\",\"tag\":\"Gericht\"},{\"title\":\"Frist: 2 Wochen\",\"text\":\"Beklagter zahlt, widerspricht oder schweigt.\",\"tag\":\"Beklagter\"},{\"title\":\"Vollstreckungsbescheid\",\"text\":\"Bei Schweigen: Erlass mit weiterer 2-Wochen-Frist, dann vollstreckbar.\",\"tag\":\"Gericht\"},{\"title\":\"Streitverfahren\",\"text\":\"Bei Widerspruch/Einspruch: Übergang an das Streitgericht.\",\"tag\":\"Gericht\"}]}\n```\n\n## Die Entscheidungspunkte als Übersicht\n\n```diagram\n{\"type\":\"flow\",\"nodes\":[{\"id\":\"antrag\",\"label\":\"Antrag Mahnbescheid\"},{\"id\":\"mahnbescheid\",\"label\":\"Zustellung Mahnbescheid\"},{\"id\":\"reaktion\",\"label\":\"Reaktion des Beklagten?\",\"decision\":true},{\"id\":\"zahlung\",\"label\":\"Zahlung – Verfahren endet\"},{\"id\":\"widerspruch\",\"label\":\"Widerspruch\"},{\"id\":\"schweigen\",\"label\":\"Schweigen\"},{\"id\":\"vb\",\"label\":\"Vollstreckungsbescheid\"},{\"id\":\"einspruch\",\"label\":\"Einspruch?\",\"decision\":true},{\"id\":\"vollstreckung\",\"label\":\"Vollstreckung möglich\"},{\"id\":\"streitgericht\",\"label\":\"Streitgericht (Zivilprozess)\"}],\"edges\":[{\"from\":\"antrag\",\"to\":\"mahnbescheid\"},{\"from\":\"mahnbescheid\",\"to\":\"reaktion\"},{\"from\":\"reaktion\",\"to\":\"zahlung\",\"label\":\"Zahlung\"},{\"from\":\"reaktion\",\"to\":\"widerspruch\",\"label\":\"Widerspruch\"},{\"from\":\"reaktion\",\"to\":\"schweigen\",\"label\":\"keine Reaktion\"},{\"from\":\"schweigen\",\"to\":\"vb\"},{\"from\":\"vb\",\"to\":\"einspruch\"},{\"from\":\"einspruch\",\"to\":\"vollstreckung\",\"label\":\"nein\"},{\"from\":\"einspruch\",\"to\":\"streitgericht\",\"label\":\"ja\"},{\"from\":\"widerspruch\",\"to\":\"streitgericht\"}]}\n```\n\n## Kosten und Besonderheiten\n\n- **Gebühren:** Gerichts- und Anwaltsgebühren richten sich nach dem **Streitwert** (Gerichtskostengesetz, RVG). Die Gerichtsgebühr für den Mahnbescheid ist reduziert (0,5 Gebühr); erst mit dem Vollstreckungsbescheid bzw. im Streitverfahren fallen weitere Gebühren an. Die genauen Beträge ändere ich hier nicht – maßgeblich sind das GKG bzw. der aktuelle Gebührenrechner des BMJ.\n- **Kostenrisiko:** Widerspricht der Beklagte und verliert dann im Streitprozess, trägt er die gesamten Kosten. Widerspricht er erfolgreich, trägt der Gläubiger die Kosten.\n- **Vorteile:** schnell, ohne mündliche Verhandlung, bei unbestrittenen Forderungen oft ohne Anwalt im ersten Schritt sinnvoll.\n- **Grenzen:** Nur für Geldforderungen in Euro; keine Feststellungs-, Leistungs- oder Unterlassungsansprüche.\n- **Verjährung:** Die Zustellung des Mahnbescheids hemmt die Verjährung wie eine Klage (§ 167 ZPO).\n\n> **Watch out:** Fristen (jeweils 2 Wochen für Widerspruch und Einspruch, 6 Monate für den Antrag ans Streitgericht) sind strikt einzuhalten – eine verpasste Frist kann zur Vollstreckung oder zum Verlust des Widerspruchs führen.\n\n> **Conclusion:** Das Mahnverfahren ist der Standardweg bei unbestrittenen Geldforderungen: schnell und günstig, solange der Beklagte nicht widerspricht; widerspricht er, geht die Sache in einen normalen Zivilprozess über.\n\nWenn du magst, kann ich dir auch ein Beispiel mit konkreten Beträgen und Fristenrechnung durchspielen."
+    },
+    {
+      "id": "webapp",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "diagram"
+      ],
+      "found": [
+        "note"
+      ],
+      "malformed": [
+        "diagram"
+      ],
+      "correct": false,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1096,
+        "total_tokens": 2187,
+        "completion_tokens": 1091,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 23
+        }
+      },
+      "question": "Explain in detail the parts a typical web application is made of and how they fit together.",
+      "answer": "# The Anatomy of a Typical Web Application\n\nA web application is essentially a pipeline: a user interacts with an interface, requests travel over the network, servers process them, and data is stored and returned. Here are the main parts and how they fit together.\n\n## 1. Frontend (Client)\n\nThis is everything that runs **in the user's browser**:\n\n- **HTML** — the structure and content of pages.\n- **CSS** — styling, layout, responsive design.\n- **JavaScript** — interactivity: forms, buttons, dynamic updates without page reloads.\n- **Frameworks/libraries** — React, Vue, Angular, or Svelte organize the UI into reusable components and manage state (what the app \"remembers\" on screen).\n- **State management** — e.g. Redux, Pinia, or simple local state, tracking things like \"user is logged in\" or \"items in cart.\"\n\nThe frontend's job: present data and collect input. It doesn't (and must not) be trusted for security — everything it shows comes from the backend.\n\n## 2. Backend (Server)\n\nThe \"brain\" that runs on a server (Node.js, Python/Django, Java/Spring, Go, Ruby on Rails, etc.):\n\n- **Application logic** — business rules: \"can this user withdraw this amount?\" \"what's the price including tax?\"\n- **API layer** — endpoints the frontend calls, usually REST (HTTP + JSON) or GraphQL. This is the contract between client and server.\n- **Authentication & authorization** — verifying who the user is (sessions, JWT tokens, OAuth) and what they're allowed to do.\n- **Middleware** — code that runs on every request: logging, rate limiting, input validation.\n\n## 3. Database\n\nWhere data lives permanently:\n\n- **Relational (SQL)** — PostgreSQL, MySQL: structured tables with relationships (users, orders).\n- **Non-relational (NoSQL)** — MongoDB, Redis: flexible documents, key–value caches, etc.\n- The backend talks to the database via queries or an **ORM** (a code layer mapping tables to objects). The frontend never touches the database directly.\n\n## 4. Supporting Infrastructure\n\n- **Web server / reverse proxy** — Nginx or Caddy: receives HTTPS traffic, routes it to the app, serves static files.\n- **Load balancer** — spreads requests across multiple app servers for scale and reliability.\n- **Caches** — Redis or Memcached store frequently-used data in memory to avoid hitting the database.\n- **CDN** — serves static assets (images, JS bundles) from locations near the user.\n- **Hosting/cloud** — AWS, Azure, GCP, or platforms like Vercel/Heroku.\n\n## 5. Cross-Cutting Concerns\n\n- **Security** — HTTPS everywhere, input validation, protection against SQL injection/XSS/CSRF, secrets management.\n- **Logging & monitoring** — track errors and performance (e.g. Grafana, Sentry).\n- **CI/CD** — automated testing and deployment pipelines.\n- **Background jobs** — queues (e.g. RabbitMQ, Celery) for slow tasks like sending emails.\n\n## How a Typical Request Flows\n\n```diagram\n{\"type\":\"flow\",\"nodes\":[{\"id\":\"ui\",\"label\":\"Browser (UI)\"},{\"id\":\"api\",\"label\":\"API endpoint\"},{\"id\":\"logic\",\"label\":\"Business logic\"},{\"id\":\"auth\",\"label\":\"Auth check\",\"decision\":true},{\"id\":\"cache\",\"label\":\"Cache\",\"decision\":true},{\"id\":\"db\",\"label\":\"Database\"},{\"id\":\"resp\",\"label\":\"Response to client\"}],\"edges\":[{\"from\":\"ui\",\"to\":\"api\",\"label\":\"HTTPS request (JSON)\"},{\"from\":\"api\",\"to\":\"auth\",\"label\":\"validate token\"},{\"from\":\"auth\",\"to\":\"logic\",\"label\":\"allowed\"},{\"from\":\"auth\",\"to\":\"resp\",\"label\":\"401 denied\"},{\"from\":\"logic\",\"to\":\"cache\",\"label\":\"check data\"},{\"from\":\"cache\",\"to\":\"db\",\"label\":\"miss: query\"},{\"from\":\"cache\",\"to\":\"logic\",\"label\":\"hit\"},{\"from\":\"db\",\"to\":\"logic\",\"label\":\"rows returned\"},{\"from\":\"logic\",\"to\":\"resp\",\"label\":\"build JSON\"}]}\n```\n\nIn short: **frontend ↔ API ↔ backend logic ↔ database**, wrapped in infrastructure for speed, scale, and safety. Each layer has one job, which is what makes the system testable, scalable, and maintainable — you can swap a React frontend for a mobile app without touching the backend, or scale the database independently of the servers.\n\n```layers\n{\"rows\":[[{\"label\":\"Frontend (browser)\",\"note\":\"HTML, CSS, JS, framework\"}],[{\"label\":\"Network / API\",\"note\":\"HTTPS, REST or GraphQL, auth tokens\"}],[{\"label\":\"Backend\",\"note\":\"logic, validation, middleware\"}],[{\"label\":\"Data & infrastructure\",\"note\":\"DB, cache, queue, CDN, monitoring\"}]]}\n```\n\n> **Key idea:** Each layer only talks to its neighbors — the browser never touches the database, and the database never renders UI. That separation is what makes web apps scalable and maintainable."
+    },
+    {
+      "id": "agent",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "diagram",
+        "note"
+      ],
+      "found": [
+        "steps",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1087,
+        "total_tokens": 2088,
+        "completion_tokens": 1001,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 29
+        }
+      },
+      "question": "Explain in detail how an AI agent works.",
+      "answer": "# How an AI Agent Works\n\nAn AI agent is a system that can perceive its environment, make decisions, and take actions to achieve goals — with some degree of autonomy. Here's a detailed breakdown.\n\n## The Core Loop\n\nAt its heart, an agent runs a cycle:\n\n1. **Perceive** – gather information about the current state of the world\n2. **Think/Decide** – process that information and choose an action\n3. **Act** – execute the chosen action\n4. **Observe the result** – update its understanding and repeat\n\nThis loop continues until the goal is achieved or a stopping condition is met.\n\n```steps\n{\"items\":[{\"title\":\"Perceive\",\"text\":\"The agent receives input: user requests, sensor data, tool outputs, or messages from other systems.\",\"tag\":\"input\"},{\"title\":\"Plan / Decide\",\"text\":\"It reasons about what to do next — decomposing the goal into steps, choosing tools, or revising the plan based on what happened before.\",\"tag\":\"reasoning\"},{\"title\":\"Act\",\"text\":\"It executes an action: calling an API, writing a file, searching the web, sending a message, or controlling hardware.\",\"tag\":\"output\"},{\"title\":\"Evaluate\",\"text\":\"It checks the result against its goal. Did the action work? Is the task complete? If not, the loop repeats with updated information.\",\"tag\":\"feedback\"}]}\n```\n\n## Key Components\n\n**1. The \"brain\" (model)**\nMost modern agents use a large language model (LLM) as their reasoning engine. It interprets instructions, plans, and decides which actions to take. Older agent designs used rule-based systems, search algorithms (like A*), or reinforcement learning policies instead.\n\n**2. Memory**\n- *Short-term memory*: the current conversation or task context (often the context window).\n- *Long-term memory*: external storage (databases, vector stores) the agent can read from and write to, so it remembers facts across sessions.\n\n**3. Tools (function calling)**\nAn LLM alone can only produce text. Agents become powerful by calling *tools*: code execution, web search, file systems, databases, email, calendars. The model outputs a structured request (e.g., \"call `get_weather(city='Berlin')`\"), a runtime executes it, and the result is fed back into the model.\n\n**4. Planning**\nFor complex tasks, the agent breaks the goal into subgoals. Common patterns:\n- *ReAct*: interleave reasoning (\"I should first check X…\") with actions.\n- *Task decomposition*: split a big goal into a checklist, then work through it.\n- *Reflection*: review its own output and correct mistakes before finishing.\n\n**5. Environment & feedback**\nThe agent acts in some environment — a chat, a codebase, a browser, a robot's physical world. Feedback from the environment (success, error messages, search results) drives the next iteration.\n\n## A Concrete Example\n\nTask: \"Find the cheapest flight to Tokyo next month.\"\n\n1. **Perceive**: parse the request → origin, destination, approximate dates.\n2. **Plan**: I need today's date → call a date tool; then search flight sites; then compare prices.\n3. **Act**: call `web_search(\"flights Berlin Tokyo March\")`, then `browse(url)`.\n4. **Observe**: extract prices from the results.\n5. **Evaluate**: found three options → compare → present the cheapest with a summary.\n\nEach tool result updates the agent's context, and it iterates until done.\n\n## Multi-Agent Systems\n\nComplex tasks are sometimes split across *multiple agents*: a planner assigns work, worker agents execute subtasks, and a critic or verifier checks results. They communicate by passing messages or sharing a common workspace.\n\n## Limitations and Risks\n\n- **Errors compound**: a wrong step early can derail the whole plan, so good agents verify intermediate results.\n- **Hallucination**: the model may confidently invent facts or call tools incorrectly.\n- **Safety**: agents that act in the real world (sending emails, spending money) need guardrails — permission prompts, spending limits, sandboxing, and human approval for irreversible actions.\n\n> **Key idea:** An agent is not a single clever program — it's a loop combining a reasoning model, memory, tools, and feedback, where each action's result shapes the next decision.\n\n> **Watch out:** Autonomy is the main risk. The more an agent can do without human confirmation, the more important safeguards like sandboxing and approval steps become — they reduce risk but can't eliminate it.\n\nHappy to go deeper on any part — for example, how ReAct-style prompting works, or how tool calling is implemented technically."
+    },
+    {
+      "id": "funding",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "steps"
+      ],
+      "found": [
+        "steps"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1094,
+        "total_tokens": 1777,
+        "completion_tokens": 683,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Explain the funding stages of a startup, from the first money to going public.",
+      "answer": "# Startup Funding Stages\n\nHere's the typical journey from idea to IPO:\n\n**1. Pre-seed / Bootstrapping**\nThe founders use their own savings, friends-and-family money, or small grants to build a first prototype and validate the idea. Valuations are tiny (often under €1–2 million) and the money raised is usually tens of thousands, not millions.\n\n**2. Seed round**\nThe first proper institutional money, typically from angel investors and seed funds (in Germany, also state programs like EXIST or KfW). Usually a few hundred thousand to a couple of million euros, used to build an MVP, find first customers, and prove product–market fit. Investors often get equity via SAFE notes or convertible loans at this stage.\n\n**3. Series A**\nOnce the business model works and shows growth, venture capital firms invest roughly €2–15 million to scale sales and the team. Investors now expect real revenue metrics, not just a promising idea. This is usually when a professional board and governance structures appear.\n\n**4. Series B and C (growth rounds)**\nLarger rounds (tens of millions) from later-stage VCs, growth funds, and sometimes corporate or sovereign wealth investors. The goal is scaling aggressively: new markets, acquisitions, international expansion. By Series C, the company is often preparing for exit options.\n\n**5. Later rounds / mezzanine**\nSome companies raise Series D, E, and beyond — either because they need more capital before an exit or because they're delaying going public (\"pre-IPO\" rounds, sometimes with private equity or hedge funds). Founders and early investors may sell some shares here (secondary sales).\n\n**6. Exit — the endgame**\nThere are three typical outcomes:\n- **IPO (going public):** Shares are sold on a stock exchange (in Germany, e.g. Frankfurt via Deutsche Börse), raising large capital and giving early investors liquidity. Requires years of audited financials, heavy regulation, and underwriting by investment banks.\n- **Acquisition/M&A:** A larger company buys the startup — statistically the most common exit.\n- **Continued private ownership:** Some companies (e.g. formerly Stripe, Cargobike-scale unicorns) stay private for a very long time, funded by ever-larger private rounds.\n\n**The thread running through it all:** each round trades equity (ownership) for money, valuations rise as risk falls, and early investors expect their big payoff only at the exit stage.\n\n```steps\n{\"items\":[{\"title\":\"Pre-seed\",\"text\":\"Founders' own money, friends & family, grants; build a prototype.\",\"tag\":\"~€0–500k\"},{\"title\":\"Seed\",\"text\":\"Angels and seed funds fund the MVP and first customers.\",\"tag\":\"~€0.5–2M\"},{\"title\":\"Series A\",\"text\":\"VCs scale a proven business model; professional governance begins.\",\"tag\":\"~€2–15M\"},{\"title\":\"Series B/C\",\"text\":\"Growth capital for markets, hiring, and expansion.\",\"tag\":\"€10M+\"},{\"title\":\"Later rounds\",\"text\":\"Pre-IPO or bridge financing; possible secondary share sales.\",\"tag\":\"Variable\"},{\"title\":\"Exit\",\"text\":\"IPO on a stock exchange, acquisition, or staying private.\",\"tag\":\"Endgame\"}]}\n```"
+    },
+    {
+      "id": "sleep",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "steps"
+      ],
+      "found": [
+        "steps",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1087,
+        "total_tokens": 1621,
+        "completion_tokens": 534,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Explain the stages of sleep in one night.",
+      "answer": "# The Stages of Sleep in One Night\n\nA healthy adult cycles through sleep stages roughly every 90 minutes, about 4–6 times per night. There are two main types: **REM** (rapid eye movement) sleep and **non-REM** sleep, which has three stages (N1, N2, N3).\n\n## The stages\n\n1. **N1 – Light sleep (transition):** The brief drift-off phase, a few minutes long. Muscles relax, brain waves slow, and you can be easily woken.\n\n2. **N2 – Light sleep (main stage):** About 45–55% of the night. Heart rate and body temperature drop. Bursts of brain activity (\"sleep spindles\" and \"K-complexes\") appear, thought to help consolidate memories.\n\n3. **N3 – Deep sleep (slow-wave sleep):** The most restorative stage. Brain waves are slow and large; the body repairs tissue, builds bone and muscle, and the immune system strengthens. Waking someone from this stage causes grogginess (\"sleep inertia\").\n\n4. **REM sleep:** Brain activity becomes similar to wakefulness; most vivid dreaming happens here. The body is temporarily paralyzed (except eyes, breathing, heart). REM supports emotional processing, learning, and creativity.\n\n## How the night unfolds\n\n- **Early night:** Cycles are dominated by deep sleep (N3) — long, rich stretches in the first two cycles.\n- **Later night:** Deep sleep shrinks and REM periods get progressively longer — the longest REM stretch (20–40+ minutes) comes just before waking in the morning.\n- This is why cutting sleep short (e.g., sleeping only 5–6 hours) mainly costs you REM sleep, while a late, noisy evening environment mainly fragments your early deep sleep.\n\n```steps\n{\"items\":[{\"title\":\"N1 – Drifting off\",\"text\":\"Minutes-long transition; easily woken, muscles relax.\",\"tag\":\"Light\"},{\"title\":\"N2 – Light sleep\",\"text\":\"Roughly half the night; memory-related brain bursts.\",\"tag\":\"Light\"},{\"title\":\"N3 – Deep sleep\",\"text\":\"Slow waves; physical restoration, dominant early in the night.\",\"tag\":\"Deep\"},{\"title\":\"REM – Dream sleep\",\"text\":\"Vivid dreams, emotional processing; grows longer toward morning.\",\"tag\":\"REM\"}]}\n```\n\n> **Key idea:** Sleep isn't one uniform state — deep sleep dominates the early night for physical restoration, while REM dominates the late morning hours for the mind, which is why both total sleep time and sleep continuity matter."
+    },
+    {
+      "id": "projekt",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "steps",
+        "diagram"
+      ],
+      "found": [
+        "steps",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1092,
+        "total_tokens": 1609,
+        "completion_tokens": 517,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Erkläre die Phasen eines klassischen Projekts im Projektmanagement.",
+      "answer": "# Die Phasen eines klassischen Projekts\n\nEin klassisches Projekt durchläuft typischerweise vier bis fünf Phasen, oft als **Projektmanagement-Lebenszyklus** bezeichnet:\n\n```steps\n{\"items\":[{\"title\":\"1. Initiation (Initialisierung)\",\"text\":\"Das Projekt wird definiert: Ziel, Geschäftsnutzen, Machbarkeit und grober Rahmen. Ergebnis ist meist ein Projektauftrag (Project Charter).\",\"tag\":\"Start\"},{\"title\":\"2. Planung\",\"text\":\"Aufgaben, Zeitplan, Budget, Ressourcen, Risiken und Kommunikation werden detailliert geplant – z. B. mit Strukturplan, Gantt-Diagramm und Verantwortlichkeitsmatrix.\",\"tag\":\"Plan\"},{\"title\":\"3. Durchführung (Ausführung)\",\"text\":\"Die geplanten Arbeiten werden umgesetzt. Wichtig: Teamführung, Abstimmung mit Stakeholdern und laufende Dokumentation.\",\"tag\":\"Umsetzung\"},{\"title\":\"4. Steuerung und Kontrolle (Monitoring)\",\"text\":\"Läuft parallel zur Durchführung: Fortschritt, Kosten und Qualität werden überwacht, Abweichungen erkannt und gegen corrective Maßnahmen gesteuert.\",\"tag\":\"Kontrolle\"},{\"title\":\"5. Abschluss\",\"text\":\"Ergebnisübergabe, Lessons Learned, Auflösung des Teams und formale Projektschließung.\",\"tag\":\"Ende\"}]}\n```\n\n## Erläuterung\n\n- **Initiation:** Klären, *warum* das Projekt existiert und ob es sich lohnt. Hier wird der Projektleiter benannt.\n- **Planung:** Der detaillierteste Teil – hier entstehen Scope, Meilensteine, Budget und Risikoregister.\n- **Durchführung:** Der eigentliche Arbeitsanteil; hier entsteht das Projektergebnis.\n- **Monitoring & Controlling:** Oft als eigene Phase gelistet, begleitet aber die gesamte Durchführung.\n- **Abschluss:** Formaler Endpunkt mit Abnahme und Auswertung – wird in der Praxis gern übersprungen, ist aber wertvoll für künftige Projekte.\n\n> **Key idea:** Klassisch heißt: Phasen folgen sequenziell aufeinander (Wasserfall-Prinzip) – im Gegensatz zu agilen Ansätzen wie Scrum, die in kurzen Zyklen arbeiten.\n\nMöchtest du auch die typischen Dokumente oder Methoden je Phase kennenlernen?"
+    },
+    {
+      "id": "photosynthesis",
+      "lang": "en",
+      "model": "glm-5.3",
+      "expected": [
+        "quiz"
+      ],
+      "found": [
+        "steps",
+        "quiz",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1096,
+        "total_tokens": 2506,
+        "completion_tokens": 1410,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 620
+        }
+      },
+      "question": "I have an exam on photosynthesis next week. Explain the light reactions and then test me.",
+      "answer": "# Light Reactions of Photosynthesis\n\nThe light reactions take place in the **thylakoid membranes** of the chloroplast. Their job is to convert light energy into chemical energy — ATP and NADPH — which the Calvin cycle then uses to build sugar.\n\n## How it works\n\n1. **Light absorption at Photosystem II (PSII):** Chlorophyll inside PSII (reaction center P680) absorbs light, exciting electrons to a higher energy level.\n2. **Water splitting (photolysis):** To replace those lost electrons, PSII splits water: 2 H₂O → 4 H⁺ + 4 e⁻ + O₂. This is where the oxygen you breathe comes from.\n3. **Electron transport chain:** The energized electrons pass through plastoquinone and the cytochrome b6f complex toward PSI. Along the way, **H⁺ ions are pumped into the thylakoid lumen**, building a proton gradient.\n4. **Photosystem I (PSI):** The electrons arrive somewhat \"spent,\" so PSI (reaction center P700) absorbs light again to re-energize them.\n5. **NADPH formation:** The re-energized electrons pass to ferredoxin and then to NADP⁺ reductase, which reduces NADP⁺ + H⁺ → **NADPH**.\n6. **ATP synthesis (chemiosmosis):** The H⁺ gradient drives protons back through **ATP synthase**, producing **ATP**.\n\n> **Key idea:** Light is used twice (PSII and PSI) to push electrons \"uphill\" from water to NADP⁺, and the resulting proton gradient powers ATP production.\n\n**Net inputs:** light, H₂O, NADP⁺, ADP + P\n**Net outputs:** O₂, NADPH, ATP\n\n```steps\n{\"items\":[{\"title\":\"Light hits PSII\",\"text\":\"P680 absorbs light and its electrons get excited.\"},{\"title\":\"Water is split\",\"text\":\"O₂ is released as a byproduct; electrons replenish PSII.\"},{\"title\":\"Electron transport\",\"text\":\"Electrons move toward PSI; H⁺ is pumped into the lumen.\"},{\"title\":\"Light hits PSI\",\"text\":\"P700 re-energizes the electrons.\"},{\"title\":\"NADPH made\",\"text\":\"Electrons reduce NADP⁺ to NADPH.\"},{\"title\":\"ATP made\",\"text\":\"H⁺ flows through ATP synthase, producing ATP.\"}]}\n```\n\n## Quiz time! 🧠\n\nTry answering each question before checking the solution:\n\n```quiz\n{\"items\":[{\"q\":\"Where in the chloroplast do the light reactions occur?\",\"a\":\"In the thylakoid membranes.\"},{\"q\":\"What is the source of the electrons that end up in NADPH?\",\"a\":\"Water (H₂O), which is split by PSII.\"},{\"q\":\"Name the three products of the light reactions.\",\"a\":\"ATP, NADPH, and O₂.\"},{\"q\":\"What is the final electron acceptor of the light reactions?\",\"a\":\"NADP⁺, which is reduced to NADPH.\"},{\"q\":\"Which enzyme uses the proton gradient to make ATP?\",\"a\":\"ATP synthase.\"},{\"q\":\"What are the reaction center pigments of PSII and PSI, respectively?\",\"a\":\"P680 (PSII) and P700 (PSI).\"}]}\n```\n\nLet me know how you did — if you missed a few, we can go over those steps again, or I can quiz you harder on the details like cyclic vs. linear electron flow. Good luck next week! 🍀"
+    },
+    {
+      "id": "artikel",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "quiz"
+      ],
+      "found": [
+        "quiz",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1101,
+        "total_tokens": 1454,
+        "completion_tokens": 353,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Ich lerne Deutsch. Erkläre kurz, wann man den Akkusativ benutzt, und teste mich dann.",
+      "answer": "# Der Akkusativ\n\nMan benutzt den **Akkusativ** (den-Wenfall) vor allem in zwei Fällen:\n\n1. **Als Objekt des Satzes** – die Person oder Sache, die etwas \"erlebt\":\n   - *Ich sehe **den** Mann.* (Wen sehe ich? Den Mann.)\n   - *Sie kauft **einen** Apfel.*\n\n2. **Nach bestimmten Präpositionen**: *durch, für, gegen, ohne, um*\n   - *Das Geschenk ist **für meinen** Bruder.*\n\nDie Artikel im Akkusativ:\n| | Maskulin | Feminin | Neutrum | Plural |\n|---|---|---|---|---|\n| bestimmt | **den** | die | das | die |\n| unbestimmt | **einen** | eine | ein | – / einige |\n\nNur der Maskulin ändert sich sichtbar (der → **den**). Feminin und Neutrum bleiben gleich wie im Nominativ.\n\n> **Key idea:** Frage nach dem Objekt mit *Wen oder was?* – dann brauchst du den Akkusativ.\n\nJetzt bist du dran! 📝\n\n```quiz\n{\"items\":[{\"q\":\"Ich lese ___ Buch. (das Buch)\",\"a\":\"ein\"},{\"q\":\"Er kauft ___ Apfel. (der Apfel)\",\"a\":\"einen\"},{\"q\":\"Das Geschenk ist ___ meine Mutter. (für)\",\"a\":\"für\"},{\"q\":\"Wir besuchen ___ Schule. (die Schule)\",\"a\":\"die\"},{\"q\":\"Sie trinkt ___ Kaffee. (der Kaffee)\",\"a\":\"einen\"}]}\n```"
+    },
+    {
+      "id": "dreisatz",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "quiz"
+      ],
+      "found": [
+        "quiz",
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1099,
+        "total_tokens": 1806,
+        "completion_tokens": 707,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 39
+        }
+      },
+      "question": "Erkläre mir den Dreisatz und stelle mir danach drei Übungsaufgaben mit Lösungen.",
+      "answer": "## Der Dreisatz\n\nMit dem Dreisatz berechnet man, wie sich eine Größe ändert, wenn sich eine andere ändert. Man geht in drei Schritten vor:\n\n1. **Grundwert bestimmen:** Was gilt für eine Einheit? (z. B. Preis für 1 kg)\n2. **Umrechnen:** Diesen Wert auf die gewünschte Anzahl umrechnen (multiplizieren oder teilen).\n3. **Ergebnis berechnen:** Den Wert auf die Zielgröße übertragen.\n\n**Beispiel:** 5 kg Äpfel kosten 7,50 €.\n- 1 kg kostet: 7,50 € ÷ 5 = 1,50 €\n- 8 kg kosten: 1,50 € × 8 = **12 €**\n\nMan unterscheidet den **einfachen Dreisatz** (proportional: mehr kg → mehr Preis) und den **umgekehrten Dreisatz** (antiproportional: mehr Arbeiter → weniger Zeit).\n\n> **Key idea:** Erst auf „1“ herunterrechnen, dann auf die Zielgröße hochrechnen.\n\n## Übungsaufgaben\n\n1. 3 Flaschen Saft kosten 6,60 €. Was kosten 7 Flaschen?\n2. Ein Auto fährt 180 km mit 12 Litern Benzin. Wie viele Liter braucht es für 300 km?\n3. *(Umgekehrter Dreisatz)* 4 Arbeiter brauchen 9 Tage für einen Auftrag. Wie lange brauchen 6 Arbeiter?\n\n```quiz\n{\"items\":[{\"q\":\"3 Flaschen Saft kosten 6,60 €. Was kosten 7 Flaschen?\",\"a\":\"6,60 € ÷ 3 = 2,20 € pro Flasche; 2,20 € × 7 = 15,40 €\"},{\"q\":\"Ein Auto fährt 180 km mit 12 Litern Benzin. Wie viele Liter braucht es für 300 km?\",\"a\":\"12 ÷ 180 = 0,0667 L pro km; 0,0667 × 300 = 20 Liter\"},{\"q\":\"4 Arbeiter brauchen 9 Tage für einen Auftrag. Wie lange brauchen 6 Arbeiter?\",\"a\":\"Antiproportional: 4 × 9 = 36 Arbeitstage gesamt; 36 ÷ 6 = 6 Tage\"}]}\n```\n\n**Lösungen im Detail:**\n\n1. 1 Flasche: 6,60 € ÷ 3 = 2,20 € → 7 Flaschen: 2,20 € × 7 = **15,40 €**\n2. 1 km braucht: 12 L ÷ 180 km ≈ 0,0667 L → 300 km: ≈ **20 Liter**\n3. Gesamtarbeit: 4 × 9 = 36 Arbeitstage → 36 ÷ 6 = **6 Tage** (mehr Arbeiter, weniger Zeit)\n\nSag Bescheid, wenn du weitere Aufgaben üben möchtest – gern auch mit Prozentrechnung kombiniert!"
+    },
+    {
+      "id": "lease",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "note"
+      ],
+      "found": [
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1111,
+        "total_tokens": 1481,
+        "completion_tokens": 370,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 6
+        }
+      },
+      "question": "Should I lease or buy a car if I drive about 8,000 km a year and keep cars for a long time? Give me your verdict with the reasons.",
+      "answer": "**Buying is almost certainly the better fit for you.** Your two facts both point that way:\n\n1. **Low mileage (8,000 km/year)** — Leasing is priced largely on expected depreciation, which scales with mileage. Low mileage is exactly when owning wins: the car wears out slowly, so you get many years of use after any financing ends. A lease would have you perpetually paying for a car's steepest depreciation years while never capturing the value you're not using.\n\n2. **You keep cars a long time** — The main financial argument for leasing is avoiding long-term ownership costs (repairs after warranty, resale hassle). But if you *want* to keep a car 8–12 years, leasing forces you into an endless cycle of payments, since a lease never ends. Once a purchased car is paid off, your cost drops to insurance, tax, maintenance and fuel — often a fraction of a lease payment. Over 10 years, that gap is usually tens of thousands of euros.\n\nWhere leasing can still make sense: if you want a new car every 2–3 years, value predictable fixed costs, or drive a business vehicle with tax advantages. None of these apply to your situation.\n\nPractical tips if you buy:\n- Buy a model with a track record of reliability (check used-car reliability data for the specific model).\n- Budget a monthly amount for maintenance/repairs even when the car is new, so the \"paid-off\" years stay smooth.\n- Consider buying a 2–3 year old car rather than new — someone else absorbs the steepest depreciation, which matters even more at low mileage.\n\n> **Conclusion:** Buy — low mileage plus long ownership is the textbook case where leasing costs more and gives you nothing in return."
+    },
+    {
+      "id": "interest",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "note"
+      ],
+      "found": [
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1092,
+        "total_tokens": 1967,
+        "completion_tokens": 875,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Explain compound interest in detail to someone who has never heard of it.",
+      "answer": "# Compound Interest, Explained from Scratch\n\n**Compound interest** is interest that earns interest. It's one of the most powerful ideas in personal finance, and once you understand it, you'll see why people say \"start saving early.\"\n\n## The Basic Idea\n\nWhen you put money in a savings account or investment, you earn **interest** — a percentage of your money paid to you as a reward.\n\nThere are two ways interest can work:\n\n1. **Simple interest** — you earn interest only on your original deposit.\n2. **Compound interest** — you earn interest on your original deposit *and* on all the interest you've already earned. Your money grows on top of itself.\n\n## A Simple Example\n\nSuppose you invest **1,000 €** at **10% interest per year**.\n\n**With simple interest:** you earn 100 € every year. After 3 years: 1,000 + 100 + 100 + 100 = **1,300 €**\n\n**With compound interest:**\n\n| Year | Start amount | Interest (10%) | End amount |\n|------|-------------|----------------|------------|\n| 1 | 1,000 € | 100 € | 1,100 € |\n| 2 | 1,100 € | 110 € | 1,210 € |\n| 3 | 1,210 € | 121 € | 1,331 € |\n\nAfter 3 years: **1,331 €** — not a huge difference yet. But look at year 3: you earned 121 € instead of 100 €, because the interest from years 1 and 2 is now earning interest too.\n\n## Why It Becomes Dramatic Over Time\n\nThe growth isn't a straight line — it's a curve that gets steeper. That 1,000 € at 10% becomes:\n\n- After 10 years: ~2,594 €\n- After 20 years: ~6,727 €\n- After 30 years: ~17,449 €\n- After 50 years: ~117,391 €\n\nYou never added another cent — the money did the work.\n\n```chart\n{\"type\":\"line\",\"title\":\"Growth of 1,000 € at 10% compound interest\",\"unit\":\"EUR\",\"labels\":[\"Year 0\",\"Year 10\",\"Year 20\",\"Year 30\",\"Year 40\",\"Year 50\"],\"values\":[1000,2594,6727,17449,45259,117391],\"source\":\"Illustrative example, 10% annual compounding\"}\n```\n\n## The Formula (Optional Math)\n\nCompound amount = Principal × (1 + rate)ⁿ\n\nwhere *rate* is the interest rate per period (e.g. 0.10 for 10%) and *n* is the number of periods. For 1,000 € at 10% for 3 years: 1,000 × 1.10³ = 1,331 €.\n\n## What Affects the Result\n\nFour things determine how much compound interest you earn:\n\n1. **The starting amount** (principal)\n2. **The interest rate / return** — small differences matter enormously over decades (5% vs 7% is huge after 30 years)\n3. **Time** — the single most important factor; this is why starting early beats starting big\n4. **How often it compounds** — yearly, monthly, or daily. More frequent compounding means slightly faster growth (10% compounded monthly is a bit better than 10% compounded yearly)\n\n## The Dark Side: Debt\n\nCompound interest cuts both ways. If you carry credit card debt, the *lender* earns compound interest on what you owe — and unpaid debt can snowball just as fast as savings. That's why high-interest debt is usually the first thing to pay off.\n\n> **Key idea:** Compound interest rewards time above all — the earlier you start, the more your money grows on top of itself, and the same mechanism works against you when it's applied to debt.\n\nIf you'd like, I can walk through a concrete scenario — e.g. monthly savings toward a goal — with your own numbers."
+    },
+    {
+      "id": "bleach",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "note"
+      ],
+      "found": [
+        "note"
+      ],
+      "malformed": [],
+      "correct": true,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1091,
+        "total_tokens": 1446,
+        "completion_tokens": 355,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "question": "Can I mix bleach and vinegar to clean the bathroom better? Explain.",
+      "answer": "No — never mix bleach and vinegar. It's a dangerous combination, not a cleaning upgrade.\n\n**What happens:** Bleach (sodium hypochlorite) is alkaline. Adding vinegar (an acid) triggers a chemical reaction that releases **chlorine gas**, a toxic, yellow-green gas that damages your eyes, throat, and lungs.\n\n**Symptoms of chlorine gas exposure:**\n- Coughing, burning throat and eyes\n- Chest tightness, shortness of breath\n- Nausea, watery eyes\n- In higher concentrations: serious lung injury, even at low-level exposure over time\n\nEven small amounts in a poorly ventilated bathroom can hurt you.\n\n> **Watch out:** If you accidentally mixed them, leave the room immediately, ventilate the area, and get fresh air. If you have breathing trouble, call emergency services (112 in Germany) or the poison control line.\n\n**Safer alternatives for a clean bathroom:**\n- **Bleach-based cleaner alone** — good for mold and disinfecting; use diluted, ventilate well, never combine with anything acidic\n- **Vinegar or citric acid cleaner alone** — good for limescale, soap scum, and mineral deposits\n- **The right sequence:** if you want to use both, use one, rinse thoroughly with water, then use the other — or clean with acid one day and bleach another\n- **Never mix bleach with:** ammonia, other toilet bowl cleaners, or any product with unknown ingredients\n\n> **Key idea:** The two products work on different problems anyway — acid for limescale, bleach for mold and germs — so alternating them (with rinsing between) is both safer and just as effective."
+    },
+    {
+      "id": "sorting",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "explore",
+        "steps"
+      ],
+      "found": [
+        "note"
+      ],
+      "malformed": [
+        "explore"
+      ],
+      "correct": false,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1101,
+        "total_tokens": 1837,
+        "completion_tokens": 736,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 6
+        }
+      },
+      "question": "Explain bubble sort, merge sort and quicksort so that I can look at them one at a time and compare.",
+      "answer": "Here are the three sorting algorithms, one per tab so you can flip through and compare them.\n\n```explore\ntabs\":[{\"title\":\"Bubble Sort\",\"text\":\"**Idea:** Repeatedly walk through the list, compare adjacent elements, and swap them if they are in the wrong order. After each pass, the largest unsorted element has 'bubbled' to the end.\\n\\n**How it works:**\\n1. Compare item 1 with item 2; swap if out of order.\\n2. Move one position right and repeat to the end of the list.\\n3. The last item is now in place. Repeat passes over the shrinking unsorted part.\\n4. Stop when a full pass makes no swaps.\\n\\n**Complexity:** O(n²) time worst and average case, O(n) best case (already sorted, with the early-exit check). O(1) extra memory. Stable.\\n\\n**Verdict:** Simple to understand, very slow on large lists. Mainly used for teaching.\"},{\"title\":\"Merge Sort\",\"text\":\"**Idea:** Divide and conquer — split the list in half, sort each half recursively, then merge the two sorted halves.\\n\\n**How it works:**\\n1. Split the list into halves until each piece has one element (trivially sorted).\\n2. Merge pairs: walk through both sorted halves, always taking the smaller front element.\\n3. Merged results are combined upward until the whole list is sorted.\\n\\n**Complexity:** O(n log n) time in all cases (best, average, worst). O(n) extra memory for merging. Stable.\\n\\n**Verdict:** Reliable, predictable, great for linked lists and external sorting, but needs extra memory.\"},{\"title\":\"Quicksort\",\"text\":\"**Idea:** Divide and conquer — pick a pivot, partition the list so smaller items go left and larger go right, then recursively sort each side.\\n\\n**How it works:**\\n1. Choose a pivot (first, last, random, or median element).\\n2. Partition: rearrange so everything ≤ pivot is on its left, everything > pivot on its right.\\n3. The pivot is now in its final place.\\n4. Recursively sort the left and right partitions.\\n\\n**Complexity:** O(n log n) average and best case; O(n²) worst case (bad pivots, e.g. already-sorted data with naive pivot choice). O(log n) extra memory on average (recursion stack). Not stable in typical implementations.\\n\\n**Verdict:** Usually the fastest in practice due to good cache behaviour, but worst-case behaviour must be mitigated (random pivot, median-of-three).\"}]\n```\n\n**Quick comparison:**\n\n| | Bubble Sort | Merge Sort | Quicksort |\n|---|---|---|---|\n| Average time | O(n²) | O(n log n) | O(n log n) |\n| Worst time | O(n²) | O(n log n) | O(n²) |\n| Best time | O(n) | O(n log n) | O(n log n) |\n| Extra memory | O(1) | O(n) | O(log n) |\n| Stable | Yes | Yes | Usually no |\n\n> **Key idea:** Bubble sort is simple but slow; merge sort trades memory for guaranteed O(n log n); quicksort is usually fastest in practice but needs care to avoid its worst case."
+    },
+    {
+      "id": "memory",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "expected": [
+        "explore",
+        "diagram",
+        "steps"
+      ],
+      "found": [
+        "note"
+      ],
+      "malformed": [],
+      "correct": false,
+      "finish": "stop",
+      "usage": {
+        "prompt_tokens": 1097,
+        "total_tokens": 1912,
+        "completion_tokens": 815,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 50
+        }
+      },
+      "question": "Explain in detail the kinds of memory a computer has, from the fastest to the slowest.",
+      "answer": "# The Memory Hierarchy: Fastest to Slowest\n\nComputers use a layered system of memory, trading speed against cost and capacity. Here's the full stack, from quickest to slowest.\n\n## 1. CPU Registers\n- **What:** Tiny storage cells inside the processor itself (e.g., 16–32 general-purpose registers per core).\n- **Size:** Bytes to a few hundred bytes per core.\n- **Speed:** Sub-nanosecond — essentially as fast as the CPU itself (well under 1 ns access time).\n- **Role:** Hold the data and instructions the CPU is working on *right now*.\n\n## 2. CPU Caches (SRAM)\nBuilt into or next to the processor, in levels:\n\n- **L1 cache:** Split into instruction and data caches, typically ~32–64 KB per core. Access in ~1–2 ns.\n- **L2 cache:** Larger (~256 KB–2 MB per core), slightly slower (~3–10 ns).\n- **L3 cache:** Shared across cores, typically several to tens of MB (~10–30 ns).\n\nCaches use **SRAM** (static RAM), which is fast but expensive and power-hungry, so it can't be made very large. They automatically keep copies of frequently used data from lower levels.\n\n## 3. Main Memory (DRAM)\n- **What:** Your system RAM — **DRAM** (dynamic RAM), which stores bits as charge in tiny capacitors and must be constantly refreshed.\n- **Size:** Typically 8–64 GB in modern PCs.\n- **Speed:** ~50–100 ns access time. Modern standards include DDR4 and DDR5.\n- **Role:** Holds the operating system, running programs, and their data. It's **volatile** — contents vanish when power is lost.\n\n## 4. Storage Memory (Non-Volatile)\n- **SSD (NVMe):** Flash memory connected directly via PCIe. Very fast (~20–100 µs latency, several GB/s throughput). Typically 250 GB–4 TB.\n- **SSD (SATA) / external SSD:** Same flash technology, slower interface (~100–500 µs effective latency).\n- **HDD (hard disk drive):** Spinning magnetic platters. Access times of ~5–10 **milliseconds** — thousands of times slower than RAM — but cheap per GB, so good for bulk storage.\n\nAll of these are **non-volatile**: they keep data without power.\n\n## 5. Offline / Archival Storage\n- **Optical discs** (DVD, Blu-ray), **magnetic tape** (still used for backups in data centers), and network/cloud storage.\n- Slow to access (seconds, or physical handling for tape), but very cheap and durable for long-term archiving.\n\n## Why the Hierarchy Exists\nNo single technology is fast, big, *and* cheap. So systems keep hot data in small fast memory and cold data in large slow memory. The CPU and OS work hard to predict what data will be needed next (prefetching, caching algorithms), so most accesses hit the fast levels.\n\nRough order-of-magnitude latency comparison:\n\n| Level | Typical access time |\n|---|---|\n| Register | < 1 ns |\n| L1 cache | ~1 ns |\n| L3 cache | ~20 ns |\n| RAM | ~80 ns |\n| NVMe SSD | ~50,000 ns |\n| HDD | ~7,000,000 ns |\n\n> **Key idea:** Each step down the hierarchy is roughly 10–1000× slower but 10–1000× larger and cheaper per byte — the whole design of modern computers is about hiding that gap."
+    }
+  ]
+}
