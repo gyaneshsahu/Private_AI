@@ -1,6 +1,8 @@
 // The project screen (docs/projects-20261114.md): a project's chats, instructions and files, with
 // "New chat in this project", rename and delete. Everything it shows and changes is in the vault.
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { projectMemoryEnabled } from "./device-features";
+import { ProjectMemory } from "./project-memory/ProjectMemory";
 import type { Conversation } from "../shared/contracts";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
@@ -41,6 +43,7 @@ export const projectProblem = (error: unknown) =>
 
 export function ProjectPanel({
   vault,
+  memoryVault,
   fileSlot = "max",
   storage,
   project,
@@ -57,6 +60,8 @@ export function ProjectPanel({
   onChange,
 }: {
   vault: Vault;
+  /** Memory per project: the vault that holds memories, when it is open and is this project's own store. */
+  memoryVault?: Vault;
   /** Which sync serves this project's files: the encrypted sync, or Secure (src/stores.ts). */
   fileSlot?: FileSlot;
   /** Where the project is kept; decides what the texts promise (src/text/mode-copy.ts). */
@@ -366,6 +371,7 @@ export function ProjectPanel({
           </div>
         </form>
       </section>
+      {projectMemoryEnabled() && <ProjectMemory vault={memoryVault} projectId={project.id} />}
       <section className="project-section project-files-section" aria-labelledby={`${id}-files`}>
         <h3 id={`${id}-files`}>{t.files}</h3>
         <p className="muted">{t.filesIntro}</p>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useLang } from "./i18n";
 import { addMemory, deleteMemory, editMemory, forgetAll, MEMORY_LIMITS, pinMemory, type Memory } from "./memory";
+import { projectMemoryText } from "./text/project-memory";
 import { forStorage, type Storage } from "./text/mode-copy";
 import { memoryText } from "./text/memory";
 import type { Vault } from "./vault";
@@ -21,7 +22,9 @@ export function MemorySettings({
 }) {
   const { lang } = useLang();
   const t = forStorage(memoryText[lang], storage);
-  const memories = useMemories();
+  // A project's memories are on that project's page (docs/project-memory-20261126.md).
+  const everything = useMemories();
+  const memories = everything.filter((m) => !m.projectId);
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<{ id: string; text: string }>();
@@ -57,6 +60,7 @@ export function MemorySettings({
       <p>{t.intro}</p>
       <p>{t.sentNote}</p>
       <p className="muted">{t.notUsed}</p>
+      {everything.length > memories.length && <p className="muted">{projectMemoryText[lang].inSettings}</p>}
       {!unlocked ? (
         <p className="memory-locked">{t.locked}</p>
       ) : (

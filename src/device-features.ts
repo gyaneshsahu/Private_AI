@@ -23,6 +23,8 @@ export const whiteboardEnabled = () => on("VITE_WHITEBOARD");
  * device, no server part. Grouping chats by project works without this switch.
  */
 export const projectSpacesEnabled = () => on("VITE_PROJECTS");
+/** Memory per project (docs/project-memory-20261126.md): memories that belong to one project and are used only in its chats. */
+export const projectMemoryEnabled = () => on("VITE_PROJECT_MEMORY") && on("VITE_PROJECTS") && on("VITE_MEMORY");
 /**
  * Scheduled tasks (docs/scheduled-20261115.md): the Scheduled screen, Manual tasks in the vault,
  * the "Due now" strip and the chat detection. Auto tasks also need the server's switch.

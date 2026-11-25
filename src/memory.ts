@@ -8,6 +8,7 @@ import { z } from "zod";
 import type { Conversation } from "../shared/contracts";
 import { memoryEnabled } from "./device-features";
 import { choosePassages } from "./passage-retrieval";
+import { projectMemoryEnabled } from "./device-features";
 
 export const MEMORY_LIMITS = {
   /** Memories in the vault. With `characters` that is at most 60,000 characters in all. */
@@ -30,6 +31,8 @@ export const memoriesSchema = z
         text: z.string().min(1).max(MEMORY_LIMITS.characters),
         pinned: z.literal(true).optional(),
         at: z.string().datetime(),
+        /** Memory per project (docs/project-memory-20261126.md): this memory belongs to one project and is used only in its chats. */
+        projectId: z.string().uuid().optional(),
       })
       .strict(),
   )
@@ -61,10 +64,11 @@ const found = (list: readonly Memory[], id: string) => {
 };
 
 // Each change takes the list as stored and returns the next one, for Vault.writeMemories.
-export const addMemory = (text: string) => (list: Memory[]): Memory[] => {
-  const tidy = checked(list, text);
+/** `projectId`: the memory belongs to that project (the same words may exist in another project or in general). */
+export const addMemory = (text: string, projectId?: string) => (list: Memory[]): Memory[] => {
+  const tidy = checked(list.filter((m) => m.projectId === projectId), text);
   if (list.length >= MEMORY_LIMITS.count) throw new MemoryError("full");
-  return [...list, { id: crypto.randomUUID(), text: tidy, at: new Date().toISOString() }];
+  return [...list, { id: crypto.randomUUID(), text: tidy, at: new Date().toISOString(), ...(projectId ? { projectId } : {}) }];
 };
 export const editMemory = (id: string, text: string) => (list: Memory[]): Memory[] => {
   found(list, id);
@@ -83,7 +87,13 @@ export const pinMemory = (id: string, pinned: boolean) => (list: Memory[]): Memo
     return pinned ? { ...rest, pinned: true as const } : rest;
   });
 };
-export const forgetAll = () => (): Memory[] => [];
+/** "Forget all" in Settings forgets what Settings lists: the general memories. A project's own stay with the project. */
+export const forgetAll = () => (list: Memory[]): Memory[] => list.filter((m) => m.projectId);
+/** A deleted project takes its memories with it. */
+export const forgetProject = (projectId: string) => (list: Memory[]): Memory[] => list.filter((m) => m.projectId !== projectId);
+/** The memories a chat may use: the general ones, and its own project's while the switch is on. Another project's never. */
+export const inScope = (list: readonly Memory[], projectId: string | undefined) =>
+  list.filter((m) => !m.projectId || (projectMemoryEnabled() && !!projectId && m.projectId === projectId));
 /**
  * Restoring a backup adds its memories to the ones already here. A memory with the same words is
  * not added twice. Past the limits the rest is left out: pins first, then whole memories.
@@ -124,8 +134,9 @@ export function memoriesFor(conversation: Conversation): Memory[] {
   const included = conversation.messages.filter((m) => m.included && m.status === "complete");
   if (included.at(-1)?.role !== "user") return [];
   const asked = included.filter((m) => m.role === "user");
-  const pinned = held.filter((m) => m.pinned).slice(0, MEMORY_LIMITS.pinned);
-  const others = held.filter((m) => !m.pinned);
+  const scoped = inScope(held, conversation.projectId);
+  const pinned = scoped.filter((m) => m.pinned).slice(0, MEMORY_LIMITS.pinned);
+  const others = scoped.filter((m) => !m.pinned);
   const { chosen, matched } = choosePassages(
     others,
     asked.at(-1)!.text,
