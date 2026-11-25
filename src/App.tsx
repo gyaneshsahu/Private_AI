@@ -161,7 +161,7 @@ import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
-import { scheduledEnabled } from "./device-features";
+import { reportCardEnabled, scheduledEnabled } from "./device-features";
 import { detectSchedule, type DetectedSchedule } from "./schedule-detection";
 import { addTask, markRun, newTask, skipTask, taskProblem } from "./scheduled";
 import {
@@ -190,6 +190,7 @@ type Tab = "Conversation" | "Context" | "Saved" | "Account" | "Help";
 const SettingsBody = lazyNamed(() => import("./SettingsBody"), "SettingsBody");
 const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
 const PlansDialog = lazyNamed(() => import("./plans/PlansDialog"), "PlansDialog");
+const ReportPanel = lazyNamed(() => import("./report/ReportPanel"), "ReportPanel");
 const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
 const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
 const OwnerDashboard = lazyNamed(() => import("./owner/OwnerDashboard"), "OwnerDashboard");
@@ -437,7 +438,9 @@ export function App() {
   const [editId, setEditId] = useState<string>();
   // The right-hand panel (canvas, whiteboard or "In this chat"); one at a time. Another conversation
   // closes it, except the chat it was opened with (Whiteboard in the menu starts a chat with it).
-  const [side, setSide] = useState<"canvas" | "board" | "outputs" | "image">();
+  const [side, setSide] = useState<"canvas" | "board" | "outputs" | "image" | "report">();
+  // The report shown in the side panel (its message's id) and the section last asked for, while `side` is "report".
+  const [sideReport, setSideReport] = useState<{ id: string; section?: { index: number; at: number } }>();
   // The image shown in the side panel (its message's id), while `side` is "image".
   const [sideImage, setSideImage] = useState<string>();
   const sideChat = useRef("");
@@ -1251,12 +1254,20 @@ export function App() {
       // Memory: the ids of the notes that go with this question (the same choice composeContext makes).
       ...(memoriesFor(next).length ? { memoriesUsed: memoriesFor(next).map((m) => m.id) } : {}),
       ...(projectInstructionsBlock(next) ? { projectInstructionsSent: true as const } : {}),
+      // Report card (docs/report-card-20261125.md): a deep research answer is a report.
+      ...(research && reportCardEnabled() ? { report: true as const } : {}),
       // A deep research answer: what was searched and read comes first (shown and exported the same way).
       // At most what a saved answer holds: with project files many documents can be named.
       passagesUsed:
         [research?.note, ...passageNotes(next, true)].filter(Boolean).join(" ").slice(0, 4000) || undefined,
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
+    // Beside the chat on a wide screen, the report is written where it will be read; a phone keeps the chat.
+    if (answer.report && matchMedia("(min-width: 1100px)").matches) {
+      sideChat.current = next.id;
+      setSideReport({ id: answer.id });
+      setSide("report");
+    }
     if (consumeDraft) setInput("");
     // From here the picture lives only in this request; it is gone when the request ends.
     if (image) setAttachedImage(undefined);
@@ -3154,6 +3165,10 @@ export function App() {
                       : undefined
                   }
                   onCanvas={canvasEnabled() ? () => openCanvas(message.text) : undefined}
+                  onOpenReport={(section) => {
+                    setSideReport({ id: message.id, ...(section === undefined ? {} : { section: { index: section, at: Date.now() } }) });
+                    setSide("report");
+                  }}
                   // Image creation on a short answer: the dialog opens with the answer's start as the description.
                   onCreateImage={
                     status?.imageCreation && message.role === "assistant" && message.text.length <= 600
@@ -4101,6 +4116,23 @@ export function App() {
         </>
       )}
       {share.element}
+      {side === "report" &&
+        tab === "Conversation" &&
+        (() => {
+          const at = conversation.messages.findIndex((m) => m.id === sideReport?.id);
+          const shown = conversation.messages[at];
+          return shown?.report ? (
+              <ReportPanel
+                message={shown}
+                question={conversation.messages[at - 1]?.text ?? ""}
+                section={sideReport?.section}
+                openSource={setSource}
+                onEdit={canvasEnabled() && proposedText(shown.text).length <= CANVAS_LIMITS.characters ? () => void openCanvas(shown.text) : undefined}
+                onShare={shown.status === "complete" ? () => share.answer(shown) : undefined}
+                onClose={() => setSide(undefined)}
+              />
+          ) : null;
+        })()}
       {side === "image" &&
         tab === "Conversation" &&
         (() => {

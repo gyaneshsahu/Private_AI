@@ -22,7 +22,8 @@ import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
-import { projectSpacesEnabled } from "./device-features";
+import { projectSpacesEnabled, reportCardEnabled } from "./device-features";
+import { ReportCard } from "./report/ReportCard";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
@@ -137,6 +138,7 @@ export function ChatMessage({
   onReport,
   onRemember,
   onCanvas,
+  onOpenReport,
   onCreateImage,
   onRegenerateImage,
   onImagePrivacy,
@@ -169,6 +171,8 @@ export function ChatMessage({
   onRemember?: () => void;
   /** Canvas: offered on a completed answer when the canvas is on (absent otherwise). */
   onCanvas?: () => void;
+  /** Report card: opens a report answer in the side panel, at one of its sections when given. */
+  onOpenReport?: (section?: number) => void;
   /** Image creation: offered on a short completed answer when it is on (absent otherwise). */
   onCreateImage?: () => void;
   /** A created image's Regenerate and its small info icon (absent when image creation is off). */
@@ -196,6 +200,8 @@ export function ChatMessage({
   const sp = sidePanelsText[lang];
   const Answer = answerModule?.Answer ?? LazyAnswer;
   const user = message.role === "user";
+  // A report answer is a card that opens the side panel; a stopped or failed one stays in the chat as text.
+  const asReport = !user && !!message.report && reportCardEnabled() && !!onOpenReport && (message.status === "complete" || streaming);
   const [draft, setDraft] = useState(message.text);
   const editBox = useRef<HTMLTextAreaElement>(null);
   const wasEditing = useRef(false);
@@ -279,7 +285,7 @@ export function ChatMessage({
           {GERMAN_RULES.noOfficial}
         </p>
       )}
-      {message.passagesUsed && <p className="muted passages-used">{message.passagesUsed}</p>}
+      {message.passagesUsed && !asReport && <p className="muted passages-used">{message.passagesUsed}</p>}
       {message.memoriesUsed && <MemoryNote ids={message.memoriesUsed} storage={storage} />}
       {message.projectInstructionsSent && projectSpacesEnabled() && (
         <p className="muted project-used">{projectText[lang].instructionsSent}</p>
@@ -347,6 +353,8 @@ export function ChatMessage({
             </button>
           )}
         </>
+      ) : asReport ? (
+        <ReportCard message={message} question={conversation.messages[index - 1]?.text ?? ""} onOpen={onOpenReport!} />
       ) : streaming && !message.text ? (
         // Before the first text: moving dots for the eye, a sentence for screen readers.
         <div className="message-text message-waiting">

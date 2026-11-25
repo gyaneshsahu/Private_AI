@@ -51,6 +51,7 @@ const conversationBody = z.object({
       searchedSources: z.array(z.string().min(1).max(200)).max(50).optional(),
       memoriesUsed: z.array(z.string().uuid()).max(8).optional(),
       projectInstructionsSent: z.literal(true).optional(),
+      report: z.literal(true).optional(),
       answeredBy: z.string().max(300).optional(),
       mode: z.enum(["fast", "thinking"]).optional(),
       // Only the fact that a picture was asked about. There is no field that could hold a picture.

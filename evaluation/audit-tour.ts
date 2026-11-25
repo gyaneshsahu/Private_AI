@@ -322,8 +322,13 @@ const STEPS: Step[] = [
     // The fake research can finish in a split second: the progress line or, if that was missed, the answer.
     await vis(c.page.locator(".research-progress, article.assistant")).first().waitFor({ timeout: 15000 });
     await c.shot("deep-research-progress");
-    await pause(c.page, 6000);
+    // The report card (docs/report-card-20261125.md): the card in the chat, the report in the side panel.
+    await vis(c.page.locator(".report-card")).waitFor({ timeout: 30000 });
+    await pause(c.page, 800);
     await c.shot("deep-research-answer");
+    if (!(await c.page.locator(".report-panel").count())) await vis(c.page.locator(".report-card")).click();
+    await pause(c.page, 600);
+    await c.shot("deep-research-report-panel");
   }, "on"],
   ["code-execution", async (c) => {
     await c.fresh();

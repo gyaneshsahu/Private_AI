@@ -1,0 +1,270 @@
+{
+  "capturedAt": "2026-11-25T16:11:47.616Z",
+  "listPriceEuros": 0.0443,
+  "rows": [
+    {
+      "id": "fact",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "Why is the sky blue?",
+      "ms": 2830,
+      "usage": {
+        "prompt_tokens": 740,
+        "total_tokens": 1059,
+        "completion_tokens": 319,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 53
+        }
+      },
+      "finish": "stop",
+      "answer": "The sky is blue because of the way sunlight interacts with air molecules — a phenomenon called **Rayleigh scattering**.\n\nHere's the basic idea:\n\n- Sunlight looks white, but it's actually made of all colors of the rainbow, each with a different wavelength. Blue and violet light have shorter wavelengths; red and orange have longer ones.\n- Air molecules (mostly nitrogen and oxygen) are much smaller than the wavelength of light. When light hits them, shorter wavelengths scatter far more strongly than longer ones — blue light scatters roughly 4–5 times more than red.\n- This scattered blue light bounces around in all directions across the sky, so wherever you look, blue light reaches your eyes.\n\nA couple of follow-up points:\n\n- **Why not violet?** Violet scatters even more, but the sun emits less violet light, some is absorbed high in the atmosphere, and our eyes are less sensitive to it — so the mix we perceive is blue.\n- **Why are sunsets red?** At sunrise and sunset, light travels through much more atmosphere. By the time it reaches you, most of the blue has been scattered away along the way, leaving the reds and oranges to dominate.\n\nThe same physics explains why the sky on the Moon (with no atmosphere) stays black even in daytime."
+    },
+    {
+      "id": "how-to",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "How do I set up automatic backups of my laptop to an external drive on Windows? Step by step.",
+      "ms": 10160,
+      "usage": {
+        "prompt_tokens": 755,
+        "total_tokens": 1739,
+        "completion_tokens": 984,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 529
+        }
+      },
+      "finish": "stop",
+      "answer": "Here's how to set it up using **File History**, the built-in Windows backup tool:\n\n## Setup\n\n1. **Connect your external drive** via USB. Make sure it has more free space than the data you want to back up.\n2. **Open backup settings:**\n   - **Windows 10:** Settings → Update & Security → Backup\n   - **Windows 11:** Settings → System → Storage → Advanced storage options → Backup options\n   (Or search \"File History\" in the Start menu.)\n3. **Turn on \"Automatically back up my files.\"** If prompted, select your external drive as the backup destination.\n4. **Click \"More options\"** to configure:\n   - **Backup frequency** – default is every hour; you can change it from every 10 minutes to daily.\n   - **How long backups are kept** – default is forever; \"Until space is needed\" is a good choice for smaller drives.\n   - **Folders** – add any extra folders you want included, and exclude folders you don't.\n5. **Leave the drive connected** (or plug it in regularly). File History runs automatically on schedule whenever the drive is available; it resumes where it left off if the drive was unplugged.\n\nThe first backup can take a while. After that, only changed files are copied, so it's quick.\n\n## Restoring files\n\nGo to your backup settings and click **\"Restore files from a current backup,\"** or browse the drive directly to copy files back.\n\n## Optional: full system image\n\nFile History covers personal files only. For a complete snapshot of Windows and installed programs:\n\n- Control Panel → **Backup and Restore (Windows 7)** → **Create a system image** (one-time, or schedule it from there).\n\n## Tips\n\n- Keep the drive in a different room or safe spot if possible — a backup on the same desk won't help in a fire or theft.\n- For important data, a second copy (e.g., cloud storage) alongside the external drive is worthwhile — a single backup can fail too.\n\nMenu names vary slightly between Windows versions, so if something doesn't match, searching \"File History\" from the Start menu gets you there."
+    },
+    {
+      "id": "comparison",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "Compare a heat pump and a gas boiler for a 70 square metre flat: cost to buy, cost to run, and what to check before deciding.",
+      "ms": 27356,
+      "usage": {
+        "prompt_tokens": 765,
+        "total_tokens": 3765,
+        "completion_tokens": 3000,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 3000
+        }
+      },
+      "finish": "length",
+      "answer": ""
+    },
+    {
+      "id": "numbers",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "My electricity bills were 82, 91, 77, 95, 88 and 102 euros from January to June. How did they develop, and what is the average?",
+      "ms": 5233,
+      "usage": {
+        "prompt_tokens": 772,
+        "total_tokens": 1348,
+        "completion_tokens": 576,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 380
+        }
+      },
+      "finish": "stop",
+      "answer": "Your bills went from **82 € in January to 102 € in June** — an overall increase of 20 € (about +24%), though not steadily: they rose, dipped in March (77 €), climbed again, dipped slightly in May, then peaked in June.\n\nMonth-over-month changes:\n- Jan → Feb: +9 €\n- Feb → Mar: −14 €\n- Mar → Apr: +18 €\n- Apr → May: −7 €\n- May → Jun: +14 €\n\n**Total:** 535 € over six months\n**Average:** 535 ÷ 6 ≈ **89.17 € per month**\n\n```chart\n{\"type\":\"line\",\"title\":\"Electricity bills January–June\",\"unit\":\"EUR\",\"labels\":[\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\"],\"values\":[82,91,77,95,88,102],\"source\":\"user-provided bills\"}\n```"
+    },
+    {
+      "id": "study-guide",
+      "lang": "en",
+      "model": "glm-5.3",
+      "question": "I have an exam on photosynthesis next week. Make me a question bank: learning goals, six questions of mixed difficulty, and the answers at the end.",
+      "ms": 54349,
+      "usage": {
+        "prompt_tokens": 766,
+        "total_tokens": 3766,
+        "completion_tokens": 3000,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 512,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1869
+        }
+      },
+      "finish": "length",
+      "answer": "# Photosynthesis Question Bank\n\n*Level: upper secondary / intro university. Tell me if you need it easier, harder, or matched to a specific curriculum.*\n\n## Learning goals\nBy the end of this set, you should be able to:\n\n1. Write the overall equation of photosynthesis and trace where each reactant and product comes from.\n2. Identify where each stage occurs in the chloroplast (thylakoid membranes vs. stroma).\n3. Explain the light-dependent reactions: photolysis, electron transport, chemiosmosis, and the products ATP, NADPH and O₂.\n4. Describe the three phases of the Calvin cycle, including RuBisCO's role and how ATP/NADPH are used.\n5. Explain limiting factors and how C4/CAM plants reduce photorespiration.\n\n## Questions\n\n**Q1 (Easy).** Write the overall balanced equation for photosynthesis. Name the two main stages and state exactly where in the chloroplast each takes place.\n\n**Q2 (Easy).** Which pigment is most important for photosynthesis, and why do leaves appear green? Name one other pigment and explain its role.\n\n**Q3 (Medium).** Trace the path of an electron through non-cyclic photophosphorylation, starting at water and ending at NADP⁺. State where oxygen is released and where ATP is generated.\n\n**Q4 (Medium).** Describe the three phases of the Calvin cycle. Which enzyme fixes CO₂, what are ATP and NADPH used for, and what happens to the G3P that is produced?\n\n**Q5 (Hard).** Explain why photorespiration occurs and why it wastes energy. How do C4 and CAM plants each avoid it — and what is the key difference between their strategies?\n\n**Q6 (Hard).** A student measures oxygen bubble production by pondweed at increasing light intensity, first at 0.04% CO₂ and then at 4% CO₂. Both curves rise, then flatten, but the 4% CO₂ curve plateaus at a much higher rate. Interpret both plateaus in terms of limiting factors, and predict whether raising the temperature from 15 °C to 25 °C would increase the rate at high light intensity — with a caveat.\n\n---\n\n## Answers\n\n**A1.** 6 CO₂ + 6 H₂O + light energy → C₆H₁₂O₆ + 6 O₂ (catalysed by chlorophyll). The light-dependent reactions occur in the thylakoid membranes; the Calvin cycle (light-independent reactions) occurs in the stroma. Note: the released O₂ comes from splitting water, not from CO₂ — a classic exam trap.\n\n**A2.** Chlorophyll *a* is the primary photosynthetic pigment. It strongly absorbs red and blue light but reflects/transmits green, so leaves look green. Accessory pigments (e.g., chlorophyll *b* or carotenoids) absorb other wavelengths and pass the energy on, broadening the absorption spectrum; carotenoids also protect against excess light damage.\n\n**A3.** Water is split (photolysis) at photosystem II, releasing O₂ and providing electrons. Electrons pass along an electron transport chain between PSII and PSI; the energy pumps H⁺ into the thylakoid lumen, and this gradient drives ATP synthesis via ATP synthase (chemiosmosis). The electrons are re-energised at photosystem I and passed to NADP⁺ (via ferredoxin), forming NADPH. Trap to remember: PSII acts first, despite its number.\n\n**A4.**\n- **Fixation:** RuBisCO attaches CO₂ to the 5-carbon sugar RuBP, producing two 3-PGA molecules.\n- **Reduction:** 3-PGA is converted to G3P using ATP and NADPH from the light reactions.\n- **Regeneration:** Five of every six G3P are rearranged back into RuBP, using more ATP; the sixth exits to build glucose.\n\nNet per G3P made: 3 CO₂, 9 ATP and 6 NADPH used.\n\n**A5.** On hot, dry days stomata close, so internal CO₂ falls and O₂ rises. RuBisCO then oxygenates RuBP instead of fixing CO₂, producing 3-PGA plus 2-phosphoglycolate, which must be salvaged at a cost of ATP and reducing power — no sugar is gained. **C4 plants** use *spatial* separation: PEP carboxylase fixes CO₂ in mesophyll cells into a 4-carbon acid (malate), which is transported to bundle-sheath cells where the CO₂ is released, concentrating it around RuBisCO. **CAM plants** use *temporal* separation: stomata open at night, CO₂ is stored as malate, and released for the Calvin cycle during the day.\n\n**A6.** At low light intensity, light is the limiting factor, so both curves rise. The first plateau occurs when light is no longer limiting and CO₂ concentration becomes the limiting factor; the higher plateau with 4% CO₂ shows that CO₂ supply was limiting at the lower concentration. Raising the temperature to 25 °C should increase the rate (enzyme-catalysed reactions speed up) — but only if another"
+    },
+    {
+      "id": "decision",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "Should I lease or buy a car if I drive about 8,000 km a year and keep cars for a long time?",
+      "ms": 7267,
+      "usage": {
+        "prompt_tokens": 760,
+        "total_tokens": 1480,
+        "completion_tokens": 720,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 400
+        }
+      },
+      "finish": "stop",
+      "answer": "For your situation, buying is almost certainly the better fit.\n\n**Why buying suits you:**\n\n- **Low mileage (~8,000 km/year)** means your car wears slowly, so a well-chosen used or new car can serve you reliably for many years.\n- **Keeping cars a long time** is the key factor. Leasing is essentially perpetual renting — you always have a payment and never own an asset. Buying means payments end, and you keep driving payment-free.\n- Over a 10+ year ownership, buying (especially used) is usually much cheaper per kilometre.\n\n**Practical tips:**\n\n- A 2–4 year old used car often hits the sweet spot: the steep early depreciation is gone, but the car is still modern and reliable.\n- Budget for maintenance as the car ages — set aside roughly what a lease payment would cost, and you'll build a repair fund and often still come out ahead.\n- Keep good service records; they help with resale and reliability.\n\n**When leasing can still make sense:**\n\n- You want a new car every 2–3 years with predictable costs and warranty coverage.\n- It's a company car / business lease with tax advantages.\n- You don't want the risk of unexpected repair bills.\n\nOne caveat: if you're considering an electric car, the technology and battery longevity matter more for long-term ownership, so check the battery warranty period (often 8 years) before buying.\n\nIf you tell me your rough budget and whether you're looking at new or used, I can help you compare specific numbers."
+    },
+    {
+      "id": "code",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "Write a Python function that removes duplicate lines from a text file but keeps the order, and explain it briefly.",
+      "ms": 14466,
+      "usage": {
+        "prompt_tokens": 756,
+        "total_tokens": 1843,
+        "completion_tokens": 1087,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 625
+        }
+      },
+      "finish": "stop",
+      "answer": "Here's a straightforward version that works line by line, so it also handles large files:\n\n```python\ndef remove_duplicate_lines(in_path, out_path):\n    \"\"\"Write a copy of the file with duplicate lines removed, keeping first occurrences in order.\"\"\"\n    seen = set()\n    with open(in_path, \"r\", encoding=\"utf-8\") as infile, \\\n         open(out_path, \"w\", encoding=\"utf-8\") as outfile:\n        for line in infile:\n            key = line.rstrip(\"\\n\")      # compare without the trailing newline\n            if key not in seen:\n                seen.add(key)\n                outfile.write(line)\n```\n\nUsage:\n\n```python\nremove_duplicate_lines(\"input.txt\", \"output.txt\")\n```\n\n**How it works:**\n\n- It reads the file line by line and keeps a `set` of lines it has already seen — set lookups are O(1), so this stays fast even for big files.\n- `rstrip(\"\\n\")` removes the trailing newline before comparing, so the last line counts as a duplicate even if the file doesn't end with a newline. The original line (with its newline) is still written out unchanged.\n- Only the *first* occurrence of each line is kept, which preserves the original order automatically.\n- Writing to a separate output file avoids destroying your data if something goes wrong mid-run. If you want in-place replacement, write to a temp file and then `os.replace(tmp, in_path)`.\n\n**Shorter alternative** (fine for small/medium files, since it loads everything into memory):\n\n```python\ndef remove_duplicate_lines(in_path, out_path):\n    with open(in_path, encoding=\"utf-8\") as f:\n        lines = f.read().splitlines()\n    unique = list(dict.fromkeys(lines))   # dicts keep insertion order (Python 3.7+)\n    with open(out_path, \"w\", encoding=\"utf-8\") as f:\n        f.write(\"\\n\".join(unique) + \"\\n\")\n```\n\nNote that both compare lines *exactly* — `\"Foo\"` and `\"foo\"` count as different, and leading/trailing spaces matter. If you want case-insensitive or trimmed matching, adjust the `key` accordingly."
+    },
+    {
+      "id": "email",
+      "lang": "en",
+      "model": "glm-5.3-flash",
+      "question": "Write a short, friendly email to my landlord asking when the broken heating will be repaired.",
+      "ms": 5327,
+      "usage": {
+        "prompt_tokens": 752,
+        "total_tokens": 1169,
+        "completion_tokens": 417,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 277
+        }
+      },
+      "finish": "stop",
+      "answer": "Here's a draft you can adapt:\n\n**Subject:** Heating repair – follow-up\n\nDear [Landlord's name],\n\nI hope you're doing well. I'm writing to ask about the heating in my apartment at [address], which has been out of order since [date, or \"last week\"]. It's getting quite cold, so I'd be grateful to know when a repair might be scheduled.\n\nPlease let me know if you need any further information from me. Thank you very much for your help.\n\nBest regards,\n[Your name]\n[Your address / apartment number]\n\nWant me to adjust the tone (firmer or more casual) or translate it into German for your landlord?"
+    },
+    {
+      "id": "erklaerung",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "question": "Was ist der Unterschied zwischen Steuer-ID und Steuernummer?",
+      "ms": 5924,
+      "usage": {
+        "prompt_tokens": 747,
+        "total_tokens": 1338,
+        "completion_tokens": 591,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 249
+        }
+      },
+      "finish": "stop",
+      "answer": "Gut zu wissen, das werden oft verwechselt:\n\n**Steuer-ID (Steuerliche Identifikationsnummer)**\n- 11-stellige Nummer, z. B. `12 345 678 901`\n- Wird vom **Bundeszentralamt für Steuern** vergeben\n- Gilt **einmalig und lebenslang** für eine Person – sie ändert sich nicht bei Umzug, Heirat oder Namensänderung\n- Bekommt jeder automatisch nach der Anmeldung in Deutschland (Kinder per Post)\n- Identifiziert **die Person** (auch für Kindergeld, Elterngeld etc.)\n\n**Steuernummer**\n- 10–13 Ziffern, Aufbau hängt vom Bundesland ab\n- Wird vom **zuständigen Finanzamt** vergeben\n- Kann sich **ändern** – z. B. bei Umzug in einen anderen Finanzamtsbezirk oder bei Änderung des Familienstands\n- Wichtig bei der **Kommunikation mit deinem Finanzamt**, z. B. auf der Steuererklärung\n\nKurz gesagt: Die Steuer-ID identifiziert dich als Person bundesweit und lebenslang, die Steuernummer ordnet dich einem konkreten Finanzamt zu und ist dort \"lokal\" vergeben.\n\n**Noch eine dritte Nummer zur Abgrenzung:** Die **USt-IdNr.** (Umsatzsteuer-Identifikationsnummer, `DE` + 9 Ziffern) brauchen nur Unternehmen für den EU-Auslandsverkehr – die hat privat niemand automatisch."
+    },
+    {
+      "id": "vergleich",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "question": "Vergleiche Mieten und Kaufen einer Wohnung in einer deutschen Großstadt: Vorteile, Nachteile, und für wen sich was eignet.",
+      "ms": 30437,
+      "usage": {
+        "prompt_tokens": 817,
+        "total_tokens": 3817,
+        "completion_tokens": 3000,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1722
+        }
+      },
+      "finish": "length",
+      "answer": "# Mieten vs. Kaufen in der deutschen Großstadt\n\n## Mieten – Vorteile\n\n- **Flexibilität:** Bei Jobwechsel, Trennung oder Lebensphasenwechsel ist ein Auszug deutlich einfacher als ein Immobilienverkauf.\n- **Wenig Startkapital nötig:** Kaution und Umzugskosten reichen; kein Eigenkapitalblock von zehntausenden Euro.\n- **Weniger Risiko:** Kein Wertverlustrisiko, keine Zinsänderungsrisiken, keine unerwartete Sonderumlage (z. B. Dachsanierung bei der Eigentümergemeinschaft).\n- **Reparaturlast beim Vermieter:** Große Instandhaltung (Dach, Heizung, Fassade) trifft nicht den Mieter.\n- **Kapital bleibt frei:** Das gesparte Eigenkapital kann breit gestreut investiert werden statt in ein einzelnes Objekt.\n\n## Mieten – Nachteile\n\n- **Keine Vermögensbildung in Sachwerten:** Die Miete „ist weg\"; man partizipiert nicht an Wertsteigerungen.\n- **Unsicherheit:** Eigenbedarfskündigung, Modernisierung mit Mieterhöhung oder Verkauf des Objekts können einen Umzug erzwingen.\n- **Mietsteigerungen im Alter:** Im Ruhestand kann die Miete zum Problem werden, wenn die Rente niedrig ausfällt.\n- **Einschränkungen:** Umbau, Ausgestaltung, teils Haustiere oder Gewerbe sind vom Vermieter abhängig.\n\n## Kaufen – Vorteile\n\n- **Vermögensaufbau mit Zwangscharakter:** Die Tilgung ist ein erzwungener Sparplan; die Immobilie bleibt als Asset.\n- **Inflationsschutz bei Finanzierung:** Die Darlehensschuld bleibt nominal fix, während Einkommen und Mietniveau tendenziell steigen.\n- **Planbare Kosten im Alter:** Nach der Tilgung fällt die Wohnkostenlast deutlich niedriger aus als eine dann marktübliche Miete.\n- **Gestaltungsfreiheit:** Umbau, Einrichtung, Ausbau – weitgehend ohne Rückfrage.\n- **Nutzungsflexibilität später:** Selbst nutzen, vermieten oder vererben.\n\n## Kaufen – Nachteile\n\n- **Hohe Einstiegskosten:** Neben dem Kaufpreis kommen Erwerbsnebenkosten hinzu (Notar, Grundbuch, Grunderwerbsteuer – deren Höhe ist je nach Bundesland unterschiedlich; genaue Sätze bitte beim Finanzamt oder unter gesetze-im-internet.de, Stichwort GrEStG, prüfen).\n- **Klumpenrisiko:** Ein großer Teil des Vermögens steckt in genau einem Objekt an genau einem Ort.\n- **Weniger mobil:** Verkauf kann dauern und je nach Marktlage Geld kosten.\n- **Laufende Lasten:** Hausgeld, Instandhaltungsrücklage, Versicherung, ggf. Grundsteuer (Höhung hängt von der Kommune ab) und bei Eigentumswohnungen Entscheidungen der Eigentümergemeinschaft (WEG – Regelungen im Wohnungseigentumsgesetz, einsehbar auf gesetze-im-internet.de).\n- **Finanzierungsrisiken:** Zinsbindung läuft aus (Folgefinanzierung), bei Einkommensausfall kann die Last kritisch werden.\n- **Wertverlustrisiko:** Stark lageabhängig; Mikrolage, Sanierungsstau und Demografie spielen eine große Rolle.\n\n## Worauf es praktisch ankommt\n\n- **Geplante Wohndauer:** Die Erwerbsnebenkosten (v. a. Grunderwerbsteuer) amortisieren sich in der Regel erst nach mehreren Jahren. Wer in 2–3 Jahren umziehen will, fährt mit Miete meist besser.\n- **Eigenkapital:** Nicht nur für Anzahlung, sondern auch für Nebenkosten und einen Puffer für Reparaturen.\n- **Einkommensstabilität:** Kann das Darlehen auch bei Jobwechsel, Teilzeit oder Krankheit getragen werden?\n- **Rechenvergleich:** Kaufpreis im Verhältnis zur ortsüblichen Jahreskaltmiete („Kaufpreisfaktor\") plus laufende Eigentumskosten versus Miete plus die Rendite, die das angelegte Eigenkapital erzielen könnte. Lokale Vergleichswerte liefern die **Gutachterausschüsse der Kommunen** (Bodenrichtwerte, Marktberichte) und die **Verbraucherzentrale**.\n\n## Für wen eignet sich was?\n\n**Mieten passt eher, wenn:**\n- du beruflich oder privat flexibel bleiben willst oder musst,\n- Einkommen oder Lebensplanung unsicher sind,\n- wenig Eigenkapital vorhanden ist oder du es lieber diversifiziert anlegen möchtest,\n- du in einer sehr teuren Metropole wohnst, wo Kaufpreise das Mietniveau weit übersteigen.\n\n**Kaufen passt eher, wenn:**\n- du voraussichtlich viele Jahre oder für immer am Ort bleibst,\n- Einkommen stabil und ausreichend Eigenkapital inklusive Puffer vorhanden ist,\n- dir planbare Wohnkosten im Alter wichtig sind (Altersvorsorge-Gedanke),\n- du ein Objekt findest, das dir langfristig gefällt – nicht „was gerade geht\".\n\n**Hinweis:** Konkrete Zahlen (Kaufpreise, Mieten, Zinssätze, Steuersätze) ändern sich laufend – mein Wissensstand hat ein nicht öffentliches Enddatum und kann veraltet sein. Verbindliche Auskünfte zu Steuersätzen gibt das Finanzamt, Rechtsgrundlagen findest du auf gesetze-im-internet.de (BGB-Mietrecht, WEG, GrEStG). Wenn du magst, kann ich einen konkre"
+    },
+    {
+      "id": "lernplan",
+      "lang": "de",
+      "model": "glm-5.3",
+      "question": "Ich schreibe in zehn Tagen eine Klausur in Mikroökonomie. Erstelle mir einen Lernplan mit Tageszielen und einer Checkliste.",
+      "ms": 83772,
+      "usage": {
+        "prompt_tokens": 767,
+        "total_tokens": 3263,
+        "completion_tokens": 2496,
+        "prompt_tokens_details": {
+          "cached_tokens": 512,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1683
+        }
+      },
+      "finish": "stop",
+      "answer": "# Lernplan Mikroökonomie – 10 Tage\n\nIch gehe von einem klassischen Bachelor-Modul und ca. 3–4 Stunden Lernzeit pro Tag aus. Sag mir gern deine konkrete Themenliste, dann passe ich den Plan an.\n\n**Methode täglich:** 3 Blöcke à 45–60 Min. Theorie nur kurz wiederholen, den Großteil der Zeit **Aufgaben rechnen** (aktives Lernen bringt mehr als Lesen).\n\n| Tag | Ziel |\n|---|---|\n| 1 | **Angebot & Nachfrage:** Marktgleichgewicht, Verschiebung vs. Bewegung entlang der Kurve, Elastizitäten – Übungsblätter rechnen |\n| 2 | **Konsumententheorie I:** Präferenzen, Indifferenzkurven, Budgetgerade, Optimalbündel (inkl. Randlösungen) |\n| 3 | **Konsumententheorie II:** Nachfragefunktion, Einkommens- vs. Substitutionseffekt (Slutsky/Hicks), Engel-Kurve, Giffen-Güter |\n| 4 | **Produktion & Kosten:** Produktionsfunktion, Grenz-/Durchschnittsprodukt, Kostenfunktionen, Skalenerträge |\n| 5 | **Polypol:** Gewinnmaximierung (GK = Preis), Angebotskurve, kurz- vs. langfristig, Konsumenten-/Produzentenrente |\n| 6 | **Monopol:** MR = MC, Wohlfahrtsverlust, natürliches Monopol, Preisdiskriminierung (1./2./3. Grades) |\n| 7 | **Oligopol & Spieltheorie:** Cournot, Bertrand, Stackelberg, Nash-Gleichgewicht, Gefangenendilemma |\n| 8 | **Marktversagen:** externe Effekte, öffentliche Güter, asymmetrische Information (Adverse Selektion, Moral Hazard) |\n| 9 | **Probe-Klausur:** Altklausur unter realen Bedingungen, Fehlerliste erstellen, Schwachstellen nacharbeiten |\n| 10 | **Prüfungstag:** Spickzettel überfliegen, 2–3 bekannte Aufgaben „warm rechnen\", Material und Anfahrt checken |\n\n*(Falls die Klausur erst an Tag 11 ist: Tag 10 nur leichte Wiederholung nach Fehlerliste.)*\n\n## Checkliste\n\n**Vorab (heute noch)**\n- [ ] Themenliste der Klausur notiert – was ist relevant, was nicht?\n- [ ] Skript/Folien, Übungslösungen und mindestens eine Altklausur besorgt\n- [ ] Modalitäten geklärt: Ort, Uhrzeit, erlaubte Hilfsmittel, Punkteverteilung\n\n**Während der Woche**\n- [ ] Jeden Tag Übungsblattaufgaben zum Tages-Thema gerechnet\n- [ ] Eigene Formelsammlung/„Spickzettel\" erstellt und täglich ergänzt\n- [ ] Fehlerliste geführt (was falsch war und warum)\n- [ ] Unklare Aufgaben im Tutorium/Forum geklärt – nicht liegen lassen\n\n**Vor der Klausur**\n- [ ] Altklausur unter Zeitdruck komplett durchgerechnet\n- [ ] Spickzettel auf 1–2 Seiten reduziert\n- [ ] Fehlerliste von Tag 9 ein zweites Mal durchgegangen\n- [ ] Ausgeschlafen (mind. 7 Std.) und Pausen ernst genommen\n\nWenn du mir deine Themen, die tägliche Lernzeit und deinen aktuellen Stand nennst (z. B. „Spieltheorie habe ich gar nicht verstanden\"), stelle ich den Plan konkreter um."
+    },
+    {
+      "id": "lang",
+      "lang": "de",
+      "model": "glm-5.3-flash",
+      "question": "Erkläre ausführlich, wie eine Wärmepumpe funktioniert, mit den einzelnen Schritten des Kreislaufs und typischen Kennzahlen.",
+      "ms": 30200,
+      "usage": {
+        "prompt_tokens": 765,
+        "total_tokens": 3722,
+        "completion_tokens": 2957,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1539
+        }
+      },
+      "finish": "stop",
+      "answer": "# Wie eine Wärmepumpe funktioniert\n\nEine Wärmepumpe „pumpt\" Wärme von einem niedrigen Temperaturniveau (z. B. Außenluft bei 5 °C oder Erdreich bei ca. 10 °C) auf ein höheres Niveau (Heizkörperspeicher oder Fußbodenheizung bei 30–55 °C). Das geht gegen die natürliche Richtung von selbst abfließender Wärme – dafür braucht sie Antriebsenergie, meist Strom für einen Kompressor. Physikalisch ist es ein Kühlschrank umgekehrt: Der Kühlschrank entzieht seinem Inneren Wärme und gibt sie an die Raumluft ab; die Wärmepumpe entzieht der Umwelt Wärme und gibt sie ans Heizsystem.\n\n## Der Kältemittelkreislauf in vier Schritten\n\nDas Herzstück ist ein geschlossener Kreislauf mit einem Kältemittel (z. B. Propan R290, CO₂ oder synthetische Gemische), das schon bei niedrigen Temperaturen verdampft und kondensiert.\n\n1. **Verdampfer – Wärme aufnehmen**\n   Das flüssige Kältemittel steht unter niedrigem Druck und hat dadurch eine sehr niedrige Siedetemperatur (oft unter 0 °C). Es strömt durch den Verdampfer, wo es Wärme aus der Wärmequelle (Außenluft, Erdsonde, Grundwasser) aufnimmt und dabei vollständig verdampft – selbst wenn die Quelle nur 0–10 °C warm ist.\n\n2. **Verdichter (Kompressor) – Druck und Temperatur erhöhen**\n   Der elektrisch angetriebene Kompressor saugt das gasförmige Kältemittel an und verdichtet es stark. Beim Verdichten steigen Druck und Temperatur deutlich an – das Gas wird auf typischerweise 60–90 °C heiß. Hier fließt die elektrische Antriebsenergie in den Kreislauf ein.\n\n3. **Verflüssiger (Kondensator) – Wärme abgeben**\n   Das heiße, komprimierte Gas gibt seine Wärme an den Heizkreislauf ab (Heizwasser-Vorlauf). Dabei kühlt es ab und kondensiert wieder zur Flüssigkeit. Die abgegebene Wärme ist die Summe aus der aufgenommenen Umweltwärme plus der Kompressorarbeit.\n\n4. **Expansionsventil (Drossel) – Druck senken**\n   Das flüssige Kältemittel fließt durch ein Expansionsventil. Der Druck fällt schlagartig, das Medium kühlt stark ab (teilweise verdampft es bereits) und gelangt wieder in den Verdampfer. Der Kreislauf beginnt von vorn.\n\n## Wärmequellen im Vergleich\n\n- **Luft (Luft/Wasser- oder Luft/Luft-WP):** günstig und einfach zu installieren, aber ineffizienter bei Kälte; außenunit erzeugt Geräusche; bei Frost taupt das Gerät periodisch (Abtauzyklen).\n- **Erdreich über Erdsonden (Sole/Wasser):** ganzjährlich konstante Quelle (~8–12 °C), hohe Effizienz, aber Bohrkosten und Genehmigung.\n- **Grundwasser (Wasser/Wasser):** sehr effizient und konstant, aber nur bei geeignetem, genehmigtem Brunnen.\n\n## Typische Kennzahlen\n\n**COP (Coefficient of Performance)** – Momentanwirkungsgrad unter Norm-Testbedingungen:\n- **B0/W35** (Erdsonde 0 °C, Vorlauf 35 °C): typisch **COP 4–5** → 1 kWh Strom liefert 4–5 kWh Wärme.\n- **A2/W35** (Luft 2 °C, Vorlauf 35 °C): typisch **COP 3–4**.\n- Bei Luft-Wärmepumpen sinkt der COP bei −10 °C Außentemperatur oft auf ca. 2–2,5.\n\n**JAZ (Jahresarbeitszahl)** – Wärmeenergie pro Jahr geteilt durch Stromverbrauch pro Jahr, realistisch inkl. Abtauzyklen, Pufferverlusten, Pumpen:\n- Luft/Wasser: ca. **3–4** (moderne, gut ausgelegte Anlagen teils >4)\n- Sole/Wasser und Wasser/Wasser: ca. **4–5**\n\n**Warum die Temperaturdifferenz so wichtig ist:** Die theoretische Obergrenze ist der Carnot-Faktor; reale Anlagen erreichen davon grob 40–60 %. Je kleiner der Temperaturunterschied zwischen Quelle und Vorlauf, desto effizienter. Deshalb:\n- Niedrige Vorlauftemperaturen (35–40 °C mit Fußbodenheizung oder großen Heizkörpern) sind ideal.\n- Hohe Vorlauftemperaturen (55–70 °C für alte Heizkörper) kosten deutlich Effizienz.\n- Eine gute Dämmung senkt sowohl den Wärmebedarf als auch die nötige Vorlauftemperatur.\n\n**Weitere Praxispunkte:**\n- Auslegung: Eine überdimensionierte Anlage taktet häufig, eine unterdimensionierte braucht Heizstäbe (teuer).\n- Heizkurve und Pufferspeicher beeinflussen die JAZ stark.\n- Viele Erdsonden-Anlagen können im Sommer passiv kühlen (Kühlung ohne Kompressor).\n- Wärmepumpen laufen effizient, wenn sie möglichst gleichmäßig und mit niedrigen Vorlauftemperaturen betrieben werden – idealerweise mit optimierter Heizkurve statt ständiger manueller Korrektur.\n\n```chart\n{\n  \"type\": \"bar\",\n  \"title\": \"Typische Jahresarbeitszahlen nach Wärmequelle\",\n  \"unit\": \"JAZ\",\n  \"labels\": [\"Luft/Luft (ca. 3,5–4,5)\", \"Luft/Wasser (ca. 3–4)\", \"Sole/Wasser (ca. 4–5)\", \"Wasser/Wasser (ca. 4,5–5)\"],\n  \"values\": [4.0, 3.5, 4.5, 4.75],\n  \"source\": \"Typische Richtwerte aus Fachliteratur; abhängig von Gebäude, Auslegung und Betrieb\"\n}\n```"
+    }
+  ]
+}

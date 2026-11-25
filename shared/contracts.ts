@@ -430,6 +430,8 @@ export interface Message {
   memoriesUsed?: string[];
   /** For an answer: its chat's project instructions were sent with its question (the text is not kept here). */
   projectInstructionsSent?: true;
+  /** This answer is a report (docs/report-card-20261125.md): the chat shows a card and the text opens in the side panel. */
+  report?: true;
   /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
   keptOnDevice?: string;
   /** Creation time, ISO 8601; absent on messages saved before 22 October 2026. */

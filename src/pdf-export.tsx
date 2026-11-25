@@ -45,6 +45,7 @@ export function ExportView({
             </p>
           ))}
           <Answer
+            designed={false}
             text={message.text}
             complete
             sources={message.sourceSnapshot ?? []}
