@@ -37,39 +37,63 @@
 
 - **Date:** 26 November 2026.
 - **You asked:** add a test that fails if the chat list takes longer than 8 seconds, and keep investigating.
-- **Status:** open.
+- **What I did:**
+  - **The test:** `tests/chat-list-load-ui.test.ts` opens the real app 60 times (12 fresh accounts, 5 loads each, phone and desktop) and fails if the saved chats ever take longer than 8 seconds; on a failure it prints the requests still waiting. It runs with the unit suite and in CI.
+  - **A diagnostic in the screen tour:** a failed step now records every request without an answer and what the sidebar said, so the next stall names its cause.
+  - **Two look-alikes found and fixed:** the test tool's own relay of the first status request (it now tries twice), and a tour step that waited for a split-second progress line.
+  - **Found on the way, a real fault:** the chart's hidden table for screen readers made a narrow phone screen scroll sideways (CI on Linux fonts caught it). Fixed.
+- **Where:** branch `fix/before-owner-test`. Doc `docs/loading-hang-20261126.md`.
+- **Tests:** the new test passes (60 loads, none over 8 seconds).
+- **Status:** partly. The guard and the diagnostic are in place. **The stall itself is still not explained:** it has not appeared outside the long tour in 820 page loads, and the code that opens saved chats is unchanged since your tag.
 
 ## 17. Memory per project
 
 - **Date:** 26 November 2026.
 - **You asked:** yes, like ChatGPT projects, as its own module behind an off-switch. Project memories stay inside that project.
-- **Status:** open.
+- **What I did:** every project has a "Project memory" section on its page (add, list, delete). "Remember that …" in a chat of the project saves into that project. A project memory goes with questions in that project's chats and nowhere else; general memories work as before and also inside projects. Settings does not list project memories and says where they are; "Forget all" there keeps them. Deleting a project deletes its memories.
+- **Where:** branch `feat/project-memory` (on top of `feat/projects-ux`), commit `5910597`. Doc `docs/project-memory-20261126.md`. Switch `VITE_PROJECT_MEMORY`.
+- **Tests:** 6 logic tests and 4 browser tests green (phone and desktop, English and German, light and dark). Not browser-tested: saving by "Remember that …" inside a project chat, and the note in Settings (both are in your owner tests, section 46).
+- **Status:** done. **One warning:** once project memories exist, a build from before this branch cannot read the memory list (details in the doc). And one choice of mine to confirm: general memories also apply inside a project; ChatGPT has a "project-only" setting that I did not build.
 
 ## 16. Dark mode: the full pass
 
 - **Date:** 26 November 2026.
 - **You asked:** the full screen-by-screen pass over all earlier screens.
-- **Status:** open.
+- **What I did:** the screen tour can now run every screen in dark (`--scheme dark`). I ran all of it in dark at phone and desktop size with the accessibility check (which measures contrast), and looked at 18 key screens myself in contact sheets (project page, chat menu, image card and editor, share, owner dashboard, feedback, plans, settings, usage, saved chats, research report, canvas).
+- **Found and fixed:** the main buttons of the share, feedback and plans screens used white text on the accent colour (too pale in dark); the "Thought" line had a light box behind it; the report card and the answer design were built against both themes from the start.
+- **Where:** fixes on `feat/image-share`, `feat/feedback`, `feat/plans-checkout`, `feat/activity-states`; the tour option on `fix/before-owner-test`.
+- **Tests:** dark tour: every screen, no failed step, 0 accessibility findings (numbers of the final run are in the run report).
+- **Status:** done, with this limit: the dark tour ran in English only (colours do not depend on the language), and I looked closely at 18 screens, not at every one of about 200. Your test 47.1 is the full human pass.
 
 ## 15. Error states, like ChatGPT
 
 - **Date:** 26 November 2026.
 - **You asked:** when an answer fails or stops, one short friendly line with a soft red accent where the answer would be, with Retry; plain words, no codes; keep the partial answer and the message and say what was lost; "You're offline" until the connection is back; the same for a failed image; a failed search does not fail the answer; the usage limit stays the calm line, not red.
-- **Status:** open.
+- **What I did:** one shared error line. "Something went wrong. Your message is safe." (also for timeout and busy, each with its own words), with Retry; the part that arrived stays and the line says the rest was lost; offline says so and Retry waits for the connection; "Stopped by you." is the same line without red; a failed image shows the line in the Create image window with Retry. The second, technical notice above the message box is gone while the switch is on. The limit and refusals keep their own calm sentences. A failed search already did not fail the answer; nothing was changed there.
+- **Where:** branch `feat/error-states` (on top of `feat/activity-states`). Doc `docs/error-states-20261126.md`. Switch `VITE_ERROR_STATES`.
+- **Tests:** 4 browser tests green (phone and desktop, English and German, light and dark); one older test updated to the new line.
+- **Status:** done.
 
 ## 14. Loading and progress states: one shared "activity" component
 
 - **Date:** 26 November 2026.
-- **You asked:** behind an off-switch: "Thinking…" with a softly pulsing dot in the brand gradient, collapsing to "Thought for N s", with the model's reasoning shown collapsed if Privatemode returns it, otherwise the steps (and tell you which it is); steps in the same line (searching, reading N sources, reading a file, calculating, deep research); an image placeholder in the final size with a soft shimmer, then a fade-in; skeleton rows for the chat list and app start.
-- **Status:** open.
+- **You asked:** behind an off-switch: "Thinking…" with a softly pulsing dot in the brand gradient, collapsing to "Thought for N s", with the model's reasoning shown collapsed if Privatemode returns it, otherwise the steps (and tell you which it is); steps in the same line; an image placeholder with a soft shimmer, then a fade-in; skeleton rows for the chat list and app start.
+- **Your question, answered: Privatemode returns the model's reasoning text,** in both Fast and Thinking (one made-up question to each, under one cent). So "Thought for N s" opens to the real reasoning; when an answer comes without it, it opens to the steps.
+- **What I did:** one component used everywhere: the live line with the gradient dot ("Thinking…", "Searching the web…", "Reading on your device…", "Calculating on your device…", the backup model, deep research); "Thought for N s" over the answer; "Read N sources" as a step after a search; a square shimmer placeholder for an image and a fade-in; skeleton rows in the sidebar. The technical statuses ("Preparing encrypted transport…") are all "Thinking…" while the switch is on. Nothing moves when the answer arrives; nothing moves at all under "reduce motion".
+- **Where:** branch `feat/activity-states` (on top of `feat/answer-design`). Doc `docs/activity-states-20261126.md`. Switch `VITE_ACTIVITY`.
+- **Tests:** 4 browser tests green (phone and desktop, English and German, light and dark, one with "reduce motion").
+- **Status:** done. **One decision to confirm:** the reasoning is shown while the chat is open and is not saved (after a reload an older answer has no "Thought" line). Saving it would grow every saved chat.
 
 ## 13. Answers stay inline; finish the inline answer design
 
 - **Date:** 26 November 2026.
 - **You asked:** answers stay inline, like ChatGPT. Document cards only for deep research reports and canvas documents. Finish the answer design for inline answers: the "Searched the web" block, and a before/after sheet of the sample answers to judge after your exams.
-- **Status:** open, in work. Decision recorded: no document cards for normal answers.
+- **What I did:** recorded the decision (no cards for normal answers). "Searched the web" is now a quiet pill with the number of sources; opened, a card with the searched text and the sources as numbered rows. The before/after sheet is in `docs/answer-design-sheets/`: one picture per sample answer, before left and after right, in light and in dark (22 pictures), made by the test from the real answers.
+- **Where:** branch `feat/answer-design`. Doc `docs/answer-design-20261125.md`.
+- **Tests:** 6 browser tests green on the real answers (phone and desktop, light and dark).
+- **Status:** done for this round. Your judgement of the sheet decides the next pass; the two blocks from entry 19 (coloured cards, diagrams) wait for your yes.
 
-**For entries 13 to 18 you also asked:** calm, not flashy; light and dark; respect "reduce motion"; no layout jumps; test at desktop and phone size in English and German; add rows to the owner-test additions; log each item here. At the end: full unit suite, all browser tests and the screen tour on `preview/all-tracks`, CI green there, the report updated; then stop and wait; no new features beyond the list.
+**For entries 13 to 18 you also asked:** calm, not flashy; light and dark; respect "reduce motion"; no layout jumps; test at desktop and phone size in English and German; add rows to the owner-test additions; log each item here. At the end: full unit suite, all browser tests and the screen tour on `preview/all-tracks`, CI green there, the report updated; then stop and wait; no new features beyond the list. **The numbers of that final run are in the run report, section "The combined build".**
 
 ## 12. Which in-chat research result you prefer (ChatGPT and Claude screenshots)
 
