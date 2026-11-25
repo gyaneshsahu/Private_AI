@@ -409,6 +409,25 @@ it("loads deployment/render-config.owner-test.example.json with everything on, i
     await withEditing({ enabled: true, masks: true });
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
     await writeFile(configFile, JSON.stringify(parsed));
+    // The image provider: Black Forest Labs unless named; Microsoft Foundry needs its address and offers FLUX.2 [pro] only.
+    const withProvider = (change: Record<string, unknown>) =>
+      writeFile(configFile, JSON.stringify({ ...parsed, inference: { ...parsed.inference, imageCreation: { ...parsed.inference.imageCreation, ...change } } }));
+    await writeFile(configFile, JSON.stringify(parsed));
+    expect((await loadDeploymentConfig(configFile)).inference?.imageCreation).not.toHaveProperty("provider");
+    await withProvider({ provider: "foundry", endpoint: "https://synthetic.api.cognitive.microsoft.com", model: "flux-2-pro" });
+    expect((await loadDeploymentConfig(configFile)).inference?.imageCreation).toMatchObject({ provider: "foundry", endpoint: "https://synthetic.api.cognitive.microsoft.com", model: "flux-2-pro", apiKey: "SYNTHETIC_IMAGE_KEY" });
+    for (const bad of [
+      { provider: "foundry", model: "flux-2-pro" },
+      { provider: "foundry", endpoint: "https://synthetic.api.cognitive.microsoft.com" },
+      { provider: "foundry", endpoint: "http://synthetic.api.cognitive.microsoft.com", model: "flux-2-pro" },
+      { provider: "foundry", endpoint: "https://synthetic.api.cognitive.microsoft.com/providers/x", model: "flux-2-pro" },
+      { endpoint: "https://synthetic.api.cognitive.microsoft.com" },
+      { provider: "vertex" },
+    ]) {
+      await withProvider(bad);
+      await expect(loadDeploymentConfig(configFile), JSON.stringify(bad)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    }
+    await writeFile(configFile, JSON.stringify(parsed));
     // The allowlist holds up to 30 addresses (owner test plus 10 to 20 invitees); 31 refuse.
     const emails = (n: number) => Array.from({ length: n }, (_, i) => `person${i}@example.test`);
     await writeFile(configFile, JSON.stringify({ ...parsed, allowedEmails: emails(30) }));
