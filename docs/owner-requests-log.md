@@ -8,6 +8,13 @@
 
 ---
 
+## 20. Where your screenshots are kept
+
+- **Date:** 26 November 2026.
+- **You asked:** whether the screenshots you upload are saved somewhere, and where you can put more instead of pasting them into the chat.
+- **What I did:** they were only in the app's own upload folder of this session. I made `C:\Gyanesh\Startups\Private_AI-tracks\ui-references` with a `README.txt`, copied everything you had sent into `received-20261126` under names that say what each shows, and made `new` for the next ones. **It is outside the repository on purpose:** the screenshots show private chat titles and a photo of you, and the repository is public. Two desktop screenshots of 25 November were no longer in the upload folder and could not be copied.
+- **Status:** done. Put new ones into `ui-references\new` and tell me.
+
 ## 19. Reference screenshots, and how a long answer should look
 
 - **Date:** 26 November 2026.

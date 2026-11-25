@@ -31,6 +31,8 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 ### UI references I need
 
+**Where to put screenshots:** the folder `C:\Gyanesh\Startups\Private_AI-tracks\ui-references\new` (its `README.txt` says how to name them). It is outside the repository on purpose: your screenshots show private things and the repository is public. What you sent in the chat so far is in `ui-references\received-20261126`.
+
 Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in `docs/working-rules.md`). I build my best version meanwhile; send screenshots when you can, any of the three apps is fine.
 
 1. **Received (desktop 25 November, phone 26 November). Nothing more needed.** **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.

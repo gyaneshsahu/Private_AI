@@ -9,6 +9,7 @@ Standing rules for this work and for every later session. They add to `docs/owne
 - Meanwhile the agent builds its best version.
 - After the exams the owner sends screenshots, and the agent improves the screens from them.
 - The goal is to be as good as them or better, not to copy.
+- Screenshots go into `C:\Gyanesh\Startups\Private_AI-tracks\ui-references\new`, outside the repository (they show private things; the repository is public). The agent never commits them.
 
 ## 2. Request log
 
