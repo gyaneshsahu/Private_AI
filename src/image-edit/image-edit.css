@@ -14,6 +14,8 @@
 .chat-design dialog.image-editor[open] {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
+  /* One column no wider than the screen: without this the widest row sets the width. */
+  grid-template-columns: minmax(0, 1fr);
 }
 .chat-design .image-editor-bar {
   display: flex;
@@ -108,6 +110,7 @@
 .chat-design .image-editor-foot {
   grid-row: 4;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
@@ -208,8 +211,18 @@
   cursor: zoom-in;
 }
 @media (max-width: 760px) {
-  /* Phones: tools show their icons only; every target is at least 44 px. */
-  .chat-design .image-editor :is(.image-editor-tools > button, .image-editor-tools > a) > span {
+  /* Phones: the tools keep their names and wrap onto a second line; every target is at least 44 px. */
+  .chat-design .image-editor-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .chat-design .image-editor-back {
+    align-self: flex-start;
+  }
+  .chat-design .image-editor-tools {
+    justify-content: flex-start;
+  }
+  .chat-design .image-editor .image-editor-tools > a > span {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -217,7 +230,8 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  .chat-design .image-editor :is(.image-editor-back, .image-editor-tools > button, .image-editor-tools > a, .image-editor-sizes > button) {
+  /* The form's own button is in the list so this rule is as specific as the one it overrides. */
+  .chat-design .image-editor :is(.image-editor-back, .image-editor-tools > button, .image-editor-tools > a, .image-editor-sizes > button, .image-editor-form .icon-only) {
     min-width: 44px;
     min-height: 44px;
     padding: 0 10px;
@@ -225,4 +239,23 @@
   .chat-design .image-editor-picture img {
     max-height: calc(100dvh - 300px);
   }
+}
+/* The app's general dialog rules add margins and fix field widths; the editor is its own layout. */
+.chat-design dialog.image-editor > :is(header, div, footer) {
+  margin: 0;
+}
+.chat-design dialog.image-editor .image-editor-form input[type="text"] {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  margin: 0;
+}
+.chat-design dialog.image-editor .image-editor-form .primary {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chat-design dialog.image-editor .image-editor-versions,
+.chat-design dialog.image-editor .image-editor-versions li {
+  margin: 0;
 }
