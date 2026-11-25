@@ -30,6 +30,8 @@ ARG VITE_MEMORY=
 ARG VITE_PROJECTS=
 ARG VITE_LIVE_VOICE=
 ARG VITE_SCHEDULED=
+# "Install CometRow" in Settings (docs/pwa-20261125.md): off unless built with it set to 1.
+ARG VITE_INSTALL_APP=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).
