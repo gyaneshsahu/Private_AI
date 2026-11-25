@@ -16,8 +16,11 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 ## Next
 
-- Track 0 (`fix/before-owner-test`): code done and committed (`9679d94`); the full local check is running; then push for CI.
-- Then Track 1 (`feat/image-editing`), worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-editing`.
+- Track 0 (`fix/before-owner-test`, head `e6193da`): done, pushed; read the CI result (`gh run list --branch fix/before-owner-test`).
+- Track 1 (`feat/image-editing`, head `686bb13`, worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-editing`): built and tested; its full local check is running. When green: push, read CI.
+- Then Track 1b (`feat/image-share`): branch it **from `feat/image-editing`**, not from the tag (it builds on the image card and the editor; written down under Track 1b when started).
+- Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
+- Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
 
 ## How your build is protected
 
@@ -37,6 +40,8 @@ Every decision and every manual step only you can do. Nothing here was done by t
 | Date | Service | What for | Cost |
 | --- | --- | --- | --- |
 | 25 Nov | Black Forest Labs | One request to learn which model address exists (512 x 512, made-up prompt "A calm lake at sunrise"); the result was not downloaded | USD 0.014 |
+| 25 Nov | Black Forest Labs | Image editing live check: 1 created image, 5 edits (described edit, resize, erase twice, one area), made-up content (an apple and a cup on a table) | about USD 0.10 |
+| | | **Total so far** | **about USD 0.11 (about EUR 0.10)** of the EUR 3 to 5 you allowed |
 
 ## Baseline (the tag, before any change)
 
@@ -46,8 +51,8 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 
 | Track | Branch | State | CI |
 | --- | --- | --- | --- |
-| 0 Fixes | `fix/before-owner-test` | built, local check running | not pushed yet |
-| 1 Image editing | `feat/image-editing` | not started | |
+| 0 Fixes | `fix/before-owner-test` | done; local: build, 2,368 unit tests, 64 browser tests, evaluation checks, secret scan all green | pushed 25 Nov, run 45584344193 in progress when written |
+| 1 Image editing | `feat/image-editing` | built; 32 new tests green; 245 tests of touched areas green; full local check running | not pushed yet |
 | 1b Placement and sharing | `feat/image-share` | not started | |
 | 2 Analytics | `feat/analytics` | not started | |
 | 3 Feedback | `feat/feedback` | not started | |
@@ -87,6 +92,27 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 
 **Not verified:** anything on Render (no deploy). The account-menu line "Usage unavailable" appears only when no allowance is configured; with your premium config it shows the counts.
 
+## Track 1: image editing (`feat/image-editing`)
+
+Everything is in `docs/image-editing-20261125.md` on the branch: what a user gets, the switches, what leaves the device, ten decisions, the live check, what is not verified. In short:
+
+- **Built:** Edit on every image, full-screen editor (phones too), Describe edits, a version strip where earlier versions stay, Download and Delete per version, Select area, Erase, Resize (three shapes), Zoom, follow-up requests in the chat ("make the background white"), uploaded photos behind their own switch with a people check. An edit counts as one image of the day, checked at the start.
+- **Off by default:** `inference.imageEditing` in the config; `uploads` and `providerMasks` are separate switches inside it.
+- **Masks:** the provider's model has no mask. The browser cuts out a box around the painted part, sends only that, and pastes the answer back through the painted part. A test checks pixel by pixel that nothing outside changes. Tried live once: it works (an apple erased, a cup replaced by a plant).
+- **Not built, and why:** Remove background (the provider has no such function); comments on images (you said none).
+- **Limits you should know:** about 8 to 12 versions fit in one chat (the 4 MB limit of a synced chat); painting needs a mouse, finger or pen.
+- **Tests:** 32 new (6 server, 10 logic, 16 real-browser at 375 and 1,280 px in English and German). The accessibility check is clean on the card and the editor. Re-run and green: images, chat, Canvas, Whiteboard, limits, Secure and Secure Max, sign-in-free areas (245 tests in 30 files).
+
 ## Files touched by more than one branch
+
+| File | Branches | Risk when combined |
+| --- | --- | --- |
+| `server/app.ts` | fix (search answer), image-editing (config field, status field, route mount) | low: different places |
+| `src/App.tsx` | fix (search outcome, project rename, account buttons), image-editing (one hook, four call sites) | low: different places |
+| `server/render-bridge.ts` | fix (visitor address, `/edge-check`), image-editing (body size and quiet time for one path) | low |
+| `server/deployment-config.ts` | fix (`clientIpHeader`), image-editing (`imageEditing`) | low |
+| `server/image-creation.ts` (fix) and `server/image-edit.ts` (image-editing) | both map `flux-2-klein` to the provider's `flux-2-klein-4b` | none: separate files; fold together after merging |
+| `src/chat-design.css` | fix only (appended at the end). Tracks keep their styles in their own files | none so far |
+| `tests/deployment-inference-config.test.ts`, `deployment/render-config.owner-test.example.json` | fix only so far | later tracks that add a switch to the example will touch the same line |
 
 *(filled in per track)*
