@@ -12,6 +12,7 @@
 | Feedback (37) | `inference.feedback.enabled` with your address in `ownerEmails` | Migration 0029 and the privileges SQL |
 | No-training image provider (38) | `imageCreation.provider: "foundry"` and `endpoint` | An Azure Foundry resource (report, "Needs you") |
 | Install row (39) | Render variable `VITE_INSTALL_APP=1`, then redeploy | |
+| Plans (41) | none on Render: only on your PC, see section 41 | |
 
 **Cost:** every edit counts as one image of the day (about EUR 0.01 to 0.03 each). Sections 32 and 33 together use about 12. Raise `dailyImages` for your test day or spread them over two days.
 
@@ -145,3 +146,19 @@
 | 40.2 | Set `renderBridge.clientIpHeader` to that header, deploy, sign in with A | Sign-in works as before | |
 | 40.3 | From one network, ask for many sign-ins in a row with B until refused; then sign in with A from the hotspot | B's network is slowed down; A on the other network is not | |
 | 40.4 | Shell: look at the rate-limit rows | No real address is stored, only a stand-in | |
+
+## 41. Plans and the test checkout (on your PC only; it cannot be switched on at Render)
+
+**Start it:** in the folder of `preview/all-tracks` run `npx tsx evaluation/audit-harness.ts --config on --serve`, open the address it prints, then the sign-in address it prints. Everything there is fake: answers, search and the checkout. No money can move. The prices and limits are proposals (`docs/plans-20261125.md`).
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 41.1 | Account menu > **Plans** | Free, Plus and Pro side by side; Free is marked "Your plan" | |
+| 41.2 | Read the three cards | Decide the prices and limits you want; write them in the findings log | |
+| 41.3 | **Choose Plus** | A plain page "Test checkout" that says no money moves, with "Pay (test)" and "Cancel" | |
+| 41.4 | Pay (test) | Back in CometRow, the Plans window open: "You are on Plus now."; the address bar shows no id | |
+| 41.5 | Reload | The window does not open again; Plans still shows Plus as yours | |
+| 41.6 | Choose Pro, then Cancel | "The checkout was cancelled. Nothing changed."; still Plus | |
+| 41.7 | Switch to Free | Asks once more ("Yes, switch to Free"); then Free is yours | |
+| 41.8 | Phone width (narrow the window) | The three plans one under the other; nothing cut off | |
+| 41.9 | Use the app on Plus and on Free | The limits do **not** change with the plan yet. That is expected and written in the doc | |
