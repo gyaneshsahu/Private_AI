@@ -24,6 +24,8 @@ export interface Entry {
   consoleErrors: string[];
   pageErrors: string[];
   failedRequests: string[];
+  /** On a failed step only: requests still without an answer (with their age), and what the app said about its chats. For the rare stall on "Loading your chats…". */
+  waiting?: { requests: string[]; chats: string };
   nonLocal: string[];
   overflowPx: number;
   outside: string[];
@@ -678,6 +680,11 @@ export async function runTour(o: {
           // Each context its own synthetic account, so saved chats and projects do not carry over.
           await context.addCookies([{ name: "audit-account", value: randomUUID(), url: o.origin }]);
           const fakes = await installFakes(context, { origin: o.origin, config: o.config });
+          // Requests without an answer yet, with their start time: read when a step fails.
+          const open = new Map<object, { url: string; at: number }>();
+          context.on("request", (r) => open.set(r, { url: `${r.method()} ${r.url().replace(o.origin, "").slice(0, 120)}`, at: Date.now() }));
+          context.on("requestfinished", (r) => open.delete(r));
+          context.on("requestfailed", (r) => open.delete(r));
           const page = await context.newPage();
           // "Leave site?" (unsaved work) is accepted so the next step can navigate; other dialogs are dismissed.
           page.on("dialog", (d) => void (d.type() === "beforeunload" ? d.accept() : d.dismiss()).catch(() => {}));
@@ -769,6 +776,11 @@ export async function runTour(o: {
             } catch (error) {
               await c.shot(`${name}-FAILED`);
               entries.at(-1)!.error = String((error as Error).message).split("\n")[0].slice(0, 300);
+              entries.at(-1)!.waiting = {
+                requests: [...open.values()].map((r) => `${r.url} (${Date.now() - r.at} ms)`),
+                chats: await c.page.evaluate(() => [...document.querySelectorAll(".history-locked, .composer-note, .activity-skeleton")].map((el) => (el as HTMLElement).innerText.replace(/\s+/g, " ").slice(0, 120)).join(" | ")).catch(() => ""),
+              };
+              console.log(`  waiting: ${JSON.stringify(entries.at(-1)!.waiting)}`);
             }
             c.page = page;
             const fresh = entries.slice(started);
