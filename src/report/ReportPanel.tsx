@@ -6,7 +6,7 @@ import type { Message, Source } from "../../shared/contracts";
 import { Icon } from "../Icon";
 import { useText } from "../i18n";
 import { reportText } from "../text/report";
-import { reportSections, reportTitle } from "./report";
+import { downloadReport, reportSections, reportTitle } from "./report";
 import "./report.css";
 
 const Answer = lazy(() => import("../Answer").then((m) => ({ default: m.Answer })));
@@ -43,12 +43,6 @@ export function ReportPanel(props: {
       setNote(t.copyFailed);
     }
   }
-  function download() {
-    const url = URL.createObjectURL(new Blob([message.text], { type: "text/markdown;charset=utf-8" }));
-    const name = title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 60) || "report";
-    Object.assign(document.createElement("a"), { href: url, download: `${name}.md` }).click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
   return (
     <aside className="side-panel report-panel" aria-label={t.panel}>
       <header>
@@ -72,7 +66,7 @@ export function ReportPanel(props: {
             <Icon name="copy" />
             {t.copy}
           </button>
-          <button type="button" onClick={download}>
+          <button type="button" onClick={() => downloadReport(title, message.text)}>
             <Icon name="download" />
             {t.download}
           </button>

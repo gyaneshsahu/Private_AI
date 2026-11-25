@@ -5,6 +5,8 @@ export const reportText = defineText({
   en: {
     kind: "Research report",
     open: (title: string) => `Open the report: ${title}`,
+    openShort: "Open the report",
+    downloadReport: "Download the report",
     writing: "Writing the report…",
     sources: (n: number) => (n === 1 ? "1 source" : `${n} sources`),
     minutes: (n: number) => `${n} min read`,
@@ -23,6 +25,8 @@ export const reportText = defineText({
   de: {
     kind: "Recherchebericht",
     open: (title: string) => `Bericht öffnen: ${title}`,
+    openShort: "Bericht öffnen",
+    downloadReport: "Bericht herunterladen",
     writing: "Der Bericht wird geschrieben…",
     sources: (n: number) => (n === 1 ? "1 Quelle" : `${n} Quellen`),
     minutes: (n: number) => `${n} Min. Lesezeit`,
