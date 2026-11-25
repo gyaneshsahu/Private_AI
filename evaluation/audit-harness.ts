@@ -199,6 +199,7 @@ CometRow audit server (${config}) at ${origin}
       browsers: arg("browsers", "chromium").split(",").map((b) => [b, engines[b as keyof typeof engines]] as const),
       widths: arg("widths", "375,768,1280").split(",").map(Number),
       langs: arg("lang", "en,de").split(",") as ("en" | "de")[],
+      ...(arg("scheme", "") === "dark" ? { scheme: "dark" as const } : {}),
       ...(process.argv.includes("--steps") ? { only: arg("steps", "").split(",") } : {}),
       ...(process.argv.includes("--axe") ? { axe: (await import("node:module")).createRequire(import.meta.url).resolve("axe-core/axe.min.js") } : {}),
     });
