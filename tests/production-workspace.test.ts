@@ -224,7 +224,7 @@ for (const viewport of [
         // The chat menu (docs/projects-ux-20261125.md): "Add to project" opens the list of projects in place.
         await page.getByRole("button", { name: "Add to project", exact: true }).click();
         await page.locator(".chat-menu-projects").getByRole("button", { name: "JOURNEY_Renamed", exact: true }).click();
-        await page.keyboard.press("Escape");
+        // Choosing a project closes the menu by itself; an Escape here would close the phone's sidebar.
         await actions.click();
         await page
           .getByRole("button", { name: "Archive", exact: true })
