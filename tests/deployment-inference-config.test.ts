@@ -394,6 +394,13 @@ it("loads deployment/render-config.owner-test.example.json with everything on, i
     expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("imageCreation");
     await writeFile(configFile, JSON.stringify({ ...parsed, inference: { ...parsed.inference, imageCreation: { ...parsed.inference.imageCreation, model: "dall-e" } } }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    // The Render bridge's visitor-address header: absent by default, one of two names, nothing else.
+    await writeFile(configFile, JSON.stringify(parsed));
+    expect((await loadDeploymentConfig(configFile)).renderBridge?.clientIpHeader).toBeUndefined();
+    await writeFile(configFile, JSON.stringify({ ...parsed, renderBridge: { ...parsed.renderBridge, clientIpHeader: "cf-connecting-ip" } }));
+    expect((await loadDeploymentConfig(configFile)).renderBridge?.clientIpHeader).toBe("cf-connecting-ip");
+    await writeFile(configFile, JSON.stringify({ ...parsed, renderBridge: { ...parsed.renderBridge, clientIpHeader: "x-forwarded-for" } }));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
     // The allowlist holds up to 30 addresses (owner test plus 10 to 20 invitees); 31 refuse.
     const emails = (n: number) => Array.from({ length: n }, (_, i) => `person${i}@example.test`);
     await writeFile(configFile, JSON.stringify({ ...parsed, allowedEmails: emails(30) }));

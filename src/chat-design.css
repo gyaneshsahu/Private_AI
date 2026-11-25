@@ -6045,7 +6045,8 @@
 .chat-design .settings-content .settings-rows li + li {
   border-top: 1px solid var(--line);
 }
-.chat-design .settings-content .settings-rows button:not(.primary):not(.danger):not([role="switch"]) {
+/* Direct children only: the "Sign out everywhere" confirmation renders inside its row and keeps its own buttons. */
+.chat-design .settings-content .settings-rows > li > button:not(.primary):not(.danger):not([role="switch"]) {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -6060,7 +6061,7 @@
   font-weight: 500;
   text-align: left;
 }
-.chat-design .settings-content .settings-rows button svg {
+.chat-design .settings-content .settings-rows > li > button svg {
   flex: 0 0 auto;
   margin: 0;
 }
@@ -6071,7 +6072,7 @@
   font-size: 20px;
   line-height: 1;
 }
-.chat-design .settings-content .settings-rows button:focus-visible {
+.chat-design .settings-content .settings-rows > li > button:focus-visible {
   outline-offset: -3px;
 }
 /* Usage and plan: limits as aligned rows, not bullets; notes in one quiet block. */

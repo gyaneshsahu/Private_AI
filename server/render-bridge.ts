@@ -105,7 +105,17 @@ export function createRenderBridge(config: {
     // Health checks expose only readiness, never account data or redirects.
     const health = req.method === "GET" && req.url === "/healthz";
     if (req.method === "GET" && req.url === "/edge-check") {
-      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify(edgeCheck(req.rawHeaders)));
+      // Authored by the bridge itself, so it carries the fixed headers like /healthz.
+      res
+        .writeHead(200, {
+          "Content-Type": "application/json",
+          "Referrer-Policy": "no-referrer",
+          "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "DENY",
+          "Permissions-Policy": "camera=(self), microphone=(self), geolocation=()",
+          "Content-Security-Policy": "default-src 'none'",
+        })
+        .end(JSON.stringify(edgeCheck(req.rawHeaders)));
       return;
     }
     const requestOrigin = single("origin");
