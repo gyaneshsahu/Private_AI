@@ -2,6 +2,7 @@
 // user's own text as plain text and collapsed when long, edit and send in place, retry with its
 // cost in the label, and the report entry. Sending itself stays in App: this file only calls back.
 import { CreatedImageCard } from "./CreateImage";
+import { shareText } from "./text/share";
 import { imageCreationText } from "./text/image-creation";
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AnswerMode, Conversation, Message, Source } from "../shared/contracts";
@@ -140,6 +141,9 @@ export function ChatMessage({
   onRegenerateImage,
   onImagePrivacy,
   onEditImage,
+  onShare,
+  onShareImage,
+  onOpenImagePanel,
   onOpenBoard,
   onResize,
   streaming,
@@ -172,6 +176,10 @@ export function ChatMessage({
   onImagePrivacy?: () => void;
   /** Opens this message's image full screen for editing; absent where image editing is off. */
   onEditImage?: () => void;
+  /** Opens the Share dialog for this answer. */
+  onShare?: () => void;
+  onShareImage?: () => void;
+  onOpenImagePanel?: () => void;
   /** The whiteboard card on a question that had the board with it (absent when the whiteboard is off). */
   onOpenBoard?: () => void;
   onReport: () => void;
@@ -351,7 +359,14 @@ export function ChatMessage({
         </div>
       ) : (
         message.createdImage ? (
-          <CreatedImageCard image={message.createdImage} onRegenerate={onRegenerateImage} onPrivacy={onImagePrivacy} onEdit={onEditImage} />
+          <CreatedImageCard
+            image={message.createdImage}
+            onRegenerate={onRegenerateImage}
+            onPrivacy={onImagePrivacy}
+            onEdit={onEditImage}
+            onShare={onShareImage}
+            onOpenPanel={onOpenImagePanel}
+          />
         ) : (
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>
@@ -422,6 +437,11 @@ export function ChatMessage({
               >
                 <Icon name={copied ? "check" : "copy"} />
               </button>
+              {onShare && !message.createdImage && (
+                <button className="icon-action" disabled={incomplete || !message.text} aria-label={shareText[lang].share} title={shareText[lang].share} onClick={onShare}>
+                  <Icon name="share" />
+                </button>
+              )}
               <ReadAloudButton id={message.id} disabled={incomplete} />
               <PdfExportButton conversation={conversation} answer={index} disabled={incomplete} />
               {onCreateImage && !message.createdImage && (

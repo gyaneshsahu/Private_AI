@@ -6,6 +6,7 @@ import { IMAGE_EDIT, type EditSize, type EditTool } from "../../shared/image-edi
 import { Icon } from "../Icon";
 import { useText } from "../i18n";
 import { imageEditText } from "../text/image-edit";
+import { shareText } from "../text/share";
 import { applyEdit } from "./edit";
 import { zoomStep } from "./geometry";
 import type { EditFailure } from "./request";
@@ -37,8 +38,11 @@ export function ImageEditor(props: {
   /** A new, shown or deleted version; `counted` when an edit used one of the day's images. */
   onChange(image: CreatedImage, counted?: boolean): void;
   onClose(): void;
+  /** Opens the Share dialog for the version shown. */
+  onShare?(image: CreatedImage): void;
 }) {
   const t = useText(imageEditText);
+  const sh = useText(shareText);
   const dialog = useRef<HTMLDialogElement>(null);
   const overlay = useRef<HTMLCanvasElement>(null);
   const picture = useRef<HTMLImageElement>(null);
@@ -169,6 +173,12 @@ export function ImageEditor(props: {
           <button type="button" className="icon-only" aria-label={t.zoomIn} title={t.zoomIn} disabled={zoom >= 4} onClick={() => zoomTo(1)}>
             +
           </button>
+          {props.onShare && (
+            <button type="button" disabled={busy} onClick={() => props.onShare!(props.image)}>
+              <Icon name="share" />
+              <span>{sh.share}</span>
+            </button>
+          )}
           <a className="image-editor-download" href={urls[at]} download={`cometrow-image-${at + 1}.${extension}`} aria-label={t.download} title={t.download}>
             <Icon name="download" />
             <span>{t.download}</span>

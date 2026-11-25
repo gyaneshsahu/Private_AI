@@ -9,6 +9,7 @@ import { useLang, useText } from "./i18n";
 import { prepareSearchQuery } from "./identifier-masking";
 import { imageCreationText } from "./text/image-creation";
 import { imageEditText } from "./text/image-edit";
+import { shareText } from "./text/share";
 import "./image-edit/image-card.css";
 
 export type CreatedImage = NonNullable<Message["createdImage"]>;
@@ -132,7 +133,16 @@ export function CreateImageDialog(props: {
 }
 
 /** A created image in the chat: the picture, Download, Regenerate, and a small info icon to Privacy. */
-export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(prompt: string): void; onPrivacy?(): void; onEdit?(): void }) {
+export function CreatedImageCard(props: {
+  image: CreatedImage;
+  onRegenerate?(prompt: string): void;
+  onPrivacy?(): void;
+  onEdit?(): void;
+  onShare?(): void;
+  /** Desktop only: shows the image in the side panel (the app passes it only where a panel fits). */
+  onOpenPanel?(): void;
+}) {
+  const sh = useText(shareText);
   const t = useText(imageCreationText);
   const e = useText(imageEditText);
   // Made in an effect, not a memo: StrictMode's second mount would otherwise keep a revoked URL.
@@ -169,6 +179,16 @@ export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(pro
           <a className="icon-action" href={url} download={`cometrow-image.${extension}`} aria-label={t.download} title={t.download}>
             <Icon name="download" />
           </a>
+          {props.onShare && (
+            <button type="button" className="icon-action" aria-label={sh.share} title={sh.share} onClick={props.onShare}>
+              <Icon name="share" />
+            </button>
+          )}
+          {props.onOpenPanel && (
+            <button type="button" className="icon-action created-image-panel" aria-label={sh.openInPanel} title={sh.openInPanel} onClick={props.onOpenPanel}>
+              <Icon name="panel" />
+            </button>
+          )}
           {props.onRegenerate && original && (
             <button type="button" className="icon-action" aria-label={t.regenerate} title={t.regenerate} onClick={() => props.onRegenerate!(props.image.prompt)}>
               <Icon name="retry" />

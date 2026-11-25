@@ -28,6 +28,8 @@ export function useImageEditing(o: {
   setBusy(text: string): void;
   /** One picture question to CometRow's own picture model; absent where picture questions are off. */
   askVision?: (question: string, jpegDataUrl: string) => Promise<string>;
+  /** Opens the Share dialog for an image (docs/sharing-20261125.md). */
+  share?: (image: CreatedImage) => void;
 }) {
   const t = useText(imageEditText);
   const [editing, setEditing] = useState<string>();
@@ -134,6 +136,7 @@ export function useImageEditing(o: {
               if (counted) o.countImage();
             }}
             onClose={() => setEditing(undefined)}
+            onShare={o.share}
           />
         </Suspense>
       )}

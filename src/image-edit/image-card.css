@@ -35,3 +35,9 @@
     flex-wrap: wrap;
   }
 }
+/* "Open in side panel" only where a panel sits beside the chat; on smaller screens the picture opens full screen. */
+@media (max-width: 1099px) {
+  .chat-design .created-image-panel {
+    display: none;
+  }
+}
