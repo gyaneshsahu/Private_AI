@@ -319,7 +319,8 @@ const STEPS: Step[] = [
     await tools(c, "Deep research");
     await c.label("Message CometRow").fill("How long is the synthetic notice period, and what is the fee?");
     await c.click("Send message");
-    await vis(c.page.locator(".research-progress")).waitFor({ timeout: 15000 });
+    // The fake research can finish in a split second: the progress line or, if that was missed, the answer.
+    await vis(c.page.locator(".research-progress, article.assistant")).first().waitFor({ timeout: 15000 });
     await c.shot("deep-research-progress");
     await pause(c.page, 6000);
     await c.shot("deep-research-answer");
@@ -676,6 +677,8 @@ export async function runTour(o: {
               const m = (await c.page.evaluate(MEASURE).catch(() => ({ overflowPx: -1, outside: [], wide: [], belowFoldPx: -1 }))) as { overflowPx: number; outside: string[]; wide: string[]; belowFoldPx: number };
               const axe = o.axe
                 ? await c.page.addScriptTag({ path: o.axe }).then(() => c.page.evaluate(async () => {
+                    // A message fades in for a moment; measured mid-fade its colours fail the contrast rule. Wait for one-off animations (at most 2 s).
+                    await Promise.race([Promise.all(document.getAnimations().filter((x) => x.effect?.getComputedTiming().iterations !== Infinity).map((x) => x.finished.catch(() => {}))), new Promise((done) => setTimeout(done, 2000))]);
                     const r = await (window as unknown as { axe: { run: (c: unknown, o: unknown) => Promise<{ violations: { id: string; impact: string | null; nodes: { target: string[]; failureSummary?: string }[] }[] }> } })
                       .axe.run(document, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] });
                     return r.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, targets: v.nodes.slice(0, 3).map((n) => n.target.join(" ")), summary: v.nodes[0]?.failureSummary?.slice(0, 300) }));
