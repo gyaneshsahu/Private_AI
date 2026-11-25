@@ -33,7 +33,7 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in `docs/working-rules.md`). I build my best version meanwhile; send screenshots when you can, any of the three apps is fine.
 
-1. **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
+1. **Received on 25 November for desktop (Claude); the phone view is still wanted.** **A finished deep research in the chat** (filled; desktop and phone): how the result sits in the chat (card or file), and what the opened report looks like beside or over the chat. To compare: our report card and report panel.
 2. **A long normal answer** with headings, a list and a table (filled; light and dark; phone and desktop). To compare: spacing, heading sizes, how a table looks on a phone, the row of buttons under the answer.
 3. **An answer that used web search** (filled; phone): how sources are shown inside the text and as a list. To compare: our source chips and the "Searched the web" line.
 4. **The opened document from a file card**, as in your Claude screenshot (filled; desktop and phone): the panel or page that opens when you tap "NetEcon Question Bank". To compare: our report panel and canvas.
@@ -45,9 +45,9 @@ Screens where seeing ChatGPT, Claude or Gemini would make ours better (rule 1 in
 **The run is finished: tracks 0 to 6 and the projects work are built.** Everything is on GitHub; nothing is merged into your branch, nothing is deployed.
 
 - **To look at everything together:** branch `preview/all-tracks` (worktree `C:\Gyanesh\Startups\Private_AI-tracks\preview`). It combines the fix branch and every track. CI green on `f4c2185` (run 45646292812), database suite included; a later commit on it only adds this report.
-- **Your new tests:** `docs/owner-test-additions-20261125.md` on `preview/all-tracks` (sections 32 to 41, same format as your list).
+- **Your new tests:** `docs/owner-test-additions-20261125.md` on `preview/all-tracks` (sections 32 to 43, same format as your list).
 - **To take the work into your branch,** merge in this order, or simply merge `preview/all-tracks`, where the conflicts are already resolved: `fix/before-owner-test`, `feat/projects-ux`, `feat/image-editing`, `feat/image-share`, `feat/image-provider-eu`, `feat/analytics`, `feat/feedback`, `feat/pwa`, `feat/plans-checkout`. **Merging `preview/all-tracks` is the easy way.** One by one, you meet the conflicts again that are listed under "The combined build".
-- **If you say "continue":** the open work is the answer design (`feat/answer-design`, list "Still to do" in its doc `docs/answer-design-20261125.md`), then merging `feat/report-card` and `feat/answer-design` into `preview/all-tracks` with a full check there. Both branches are pushed; neither is in the preview yet. `docs/owner-requests-log.md` has the state of every request.
+- **If you say "continue":** the open work is the answer design (`feat/answer-design`, list "Still to do" in its doc `docs/answer-design-20261125.md`), Both `feat/report-card` and `feat/answer-design` are in `preview/all-tracks`, and the full check there was clean (unit 2,490 passed, browser tests 64 of 64, tour 396 screens with no failed step, accessibility 0 findings). `docs/owner-requests-log.md` has the state of every request.
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
 

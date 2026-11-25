@@ -8,6 +8,24 @@
 
 ---
 
+## 12. Which in-chat research result you prefer (ChatGPT and Claude screenshots)
+
+- **Date:** 25 November 2026, evening.
+- **You asked:** you sent how ChatGPT and Claude show a finished research, and said you like ChatGPT's better, mainly the result inside the chat; I should go with whatever is better.
+- **What I did:** rebuilt the card in that form: one line above it ("Research report · sources · reading time"), then a document card whose head has the title, **Download** and **Open**, and whose body is the beginning of the report itself, fading out. A click opens the report in the side panel. Kept from my first version, because neither of them has it: the report's sections as links under the card. Dropped: the summary lines of entry 11, which the preview replaces.
+- **Where:** branch `feat/report-card`, commit `83269b2`; merged into `feat/answer-design` and `preview/all-tracks`. A screenshot was sent to you.
+- **Tests:** 5 logic tests and 4 browser tests green (phone and desktop, English and German, light and dark); on the combined preview the same plus the accessibility check on the research screens: clean.
+- **Status:** done. Your screenshots answer "UI references I need" number 1 for desktop.
+
+## 11. Deep research: side panel, not the canvas (a correction, with a Claude screenshot)
+
+- **Date:** 25 November 2026, evening.
+- **You asked:** you had said "canvas" but meant the side panel, as in the Claude screenshot you sent (research status and a written summary in the chat, the document in a panel on the right). Do what is best for our platform.
+- **What I did:** this is what entry 6 had built: the report opens in a side panel, and the canvas is one button away. From your screenshot I took one thing ours lacked: **the report's main points in the chat**, each with its bold opening, under the card. They are read from the report's own first list (its "Short answer" or summary section), so there is no second request to the model and no extra cost. The report text in the panel now also stays a readable column, as a document does.
+- **What I did not copy:** Claude writes a separate, longer summary for the chat with a second model request. That costs a request per research; say if you want it.
+- **Where:** branch `feat/report-card`.
+- **Status:** done, and changed again by entry 12: the main points were replaced by the report's own beginning inside the card. The readable column in the panel stayed.
+
 ## 10. Two standing rules: UI references and this log
 
 - **Date:** 25 November 2026, evening.
@@ -32,14 +50,14 @@
 - **What I did so far:** read your example (the PDF is a structured document: title, a "how to use" box, a tracker table, tagged questions, a formula sheet, answers). Looked at how our answers are drawn today: clean but plain Markdown; the canvas edits raw Markdown; the screen tour has only one dark screenshot, of an empty chat. Plan: (a) the report card of entry 6 first, as the general "document card"; (b) capture about 12 real answers from the live model as fixed examples, so every style change is judged on real text; (c) restyle what the model already writes (headings, lists, tables, quotes, bold lead-ins, code, charts) in light and dark; (d) at most one or two new answer blocks; (e) send you a before/after sheet early.
 - **Done since:** (a) the report card (entry 6). (b) 12 real answers captured from the live model for about EUR 0.04. (c) a first design pass that draws what the model already writes: the opening as a lead, "Total / Average" lines as tiles, a bold line before a list as its label, check-lists you can tick, tables with banded rows and "Copy table", clearer titles and sections, quoted lines as notes. No new instruction to the model. A before/after sample was sent to you.
 - **Where:** branch `feat/answer-design` (on top of `feat/report-card`), commit `04a733a`. Doc `docs/answer-design-20261125.md`, with the list "Still to do".
-- **Tests:** 5 browser tests green on the real answers (phone and desktop, light and dark; with the design off, none of it). The full local suite and CI for this branch had not finished when this was written.
-- **Status:** partly. **Open:** long document-like answers as a card (built for deep research only so far); the search answer block; a full before/after sheet; one or two new answer blocks; merging into `preview/all-tracks`. I would like your reaction to the two samples before going further in one direction.
+- **Tests:** 5 browser tests green on the real answers (phone and desktop, light and dark; with the design off, none of it). Merged into `preview/all-tracks`, where the full run was clean: unit 2,490 passed and none failed, browser tests 64 of 64, screen tour 396 screens with no failed step, accessibility check 0 findings. Your tests are section 43.
+- **Status:** partly. **Open:** long document-like answers as a card (built for deep research only so far); the search answer block; a full before/after sheet; one or two new answer blocks. I would like your reaction to the two samples before going further in one direction.
 
 ## 7. Light and dark mode
 
 - **Date:** 25 November 2026, evening.
 - **You asked:** be careful about both dark and light mode in whatever I do.
-- **What I did:** taken as a standing rule (`docs/working-rules.md`). New screens use only the theme's colour variables, so both modes follow. The report card and the answer design are tested and looked at in both. **Not done yet:** a dark pass over the screens built earlier on 25 November. Already found: the main buttons in the share, feedback and plans screens use white text on the accent colour, which is too pale in dark mode.
+- **What I did:** taken as a standing rule (`docs/working-rules.md`). New screens use only the theme's colour variables, so both modes follow. The report card and the answer design are tested and looked at in both. **Not done yet:** a dark pass over the screens built earlier on 25 November. Found and fixed on their branches: the main buttons in the share, feedback and plans screens used white text on the accent colour, which is too pale in dark mode. Still open: looking at every earlier screen in dark, one by one.
 - **Status:** partly. Rule in force; the dark pass over the earlier screens is open.
 
 ## 6. Deep research as a file in the chat, opening in the side panel
@@ -50,7 +68,7 @@
 - **Note on an older decision:** your decision of 16 to 18 November put deep research "in the chat". This changes only where the finished report is shown. I did not edit `docs/owner-decisions.md`.
 - **Where:** branch `feat/report-card` (on top of `feat/image-share`), commit `84ce261`. Doc `docs/report-card-20261125.md`. Two screenshots sent to you on 25 November.
 - **Tests:** 5 logic tests and 4 browser tests green (phone and desktop, English and German, light and dark); accessibility check clean on the deep research screens; CI green (run 45651028776), database suite included. The full local run was still going when this was written.
-- **Status:** partly. Built and pushed. **Not yet in `preview/all-tracks`**, and the owner tests for it (a section 42) are not written. One thing differs from your words: the report opens in a reading panel with "Edit in canvas" as its first button, not straight in the canvas, because the canvas shows raw Markdown today (reason in the doc).
+- **Status:** done, in the form of entry 12. In `preview/all-tracks`; your tests are section 42 of `docs/owner-test-additions-20261125.md`. One thing differs from your words: the report opens in a reading panel with "Edit in canvas" as its first button, not straight in the canvas, because the canvas shows raw Markdown today (reason in the doc).
 
 ## 5. Projects and the chat menu
 
