@@ -18,9 +18,9 @@ Every decision and every manual step only you can do. Nothing here was done by t
 
 ## Next
 
-- Track 0 (`fix/before-owner-test`, head `7bb1478`): done, pushed. CI was green on `e6193da` (run 45584344193); read the run for `7bb1478`.
-- Track 1 (`feat/image-editing`, head `d4a74f9`, worktree `C:\Gyanesh\Startups\Private_AI-tracks\image-editing`): done, pushed 25 November; read its CI run.
-- **Now: projects and chat menu redesign** (owner's message of 25 November), branch `feat/projects-ux` **from `fix/before-owner-test`** (it changes the same project screen), worktree `C:\Gyanesh\Startups\Private_AI-tracks\projects-ux`. Start by screenshotting today's flows.
+- Track 0 (`fix/before-owner-test`, head `7bb1478`): done, **CI green** (run 45591198070).
+- Track 1 (`feat/image-editing`, head `d4a74f9`): done, **CI green** (run 45590689598).
+- Projects and chat menu (`feat/projects-ux`, from `fix/before-owner-test`, worktree `C:\Gyanesh\Startups\Private_AI-tracks\projects-ux`): built, 12 new browser tests green; the wider regression and the accessibility check were running when this was written (`Private_AI-tracks\px-areas.log`, `px-axe.log`). When green: full local check, push, read CI.
 - Then Track 1b (`feat/image-share`): branch it **from `feat/image-editing`**, not from the tag (it builds on the image card and the editor; written down under Track 1b when started).
 - Rule learned: run one heavy test job at a time on this machine. Two at once caused page-load timeouts.
 - Worktrees share `node_modules` through a folder link to `Private_AI-tracks\fix\node_modules`; a track that adds a dependency needs its own `npm ci`.
@@ -54,9 +54,9 @@ Full unit suite on the tag `owner-test-candidate`, run from `C:\Gyanesh\Startups
 
 | Track | Branch | State | CI |
 | --- | --- | --- | --- |
-| 0 Fixes | `fix/before-owner-test` | done. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `e6193da` (run 45584344193); `7bb1478` pushed, run to read |
-| 1 Image editing | `feat/image-editing` | done. Local full run on `d4a74f9`: build green, unit 2,393 passed and 1 failed (`invite-browser`, a 5-second wait; alone it passed 5 of 6 here and 4 of 4 on the fix branch: timing, not this change, but unproven), browser tests 64 of 64, evaluation checks and secret scan green | pushed 25 Nov, run to read |
-| P Projects and chat menu | `feat/projects-ux` | starting | |
+| 0 Fixes | `fix/before-owner-test` | done, CI green. Local full run on `9679d94`: build green, unit 2,367 passed and 1 page-load timeout (the same test passed 3 of 3 alone), browser tests 63 of 64 (the one failure was real and is fixed in `e6193da`; then 64 of 64), evaluation checks and secret scan green. After that only the touched tests were rerun locally; CI is the full run | green on `7bb1478` (run 45591198070) |
+| 1 Image editing | `feat/image-editing` | done. Local full run on `d4a74f9`: build green, unit 2,393 passed and 1 failed (`invite-browser`, a 5-second wait; alone it passed 5 of 6 here and 4 of 4 on the fix branch: timing, not this change, but unproven), browser tests 64 of 64, evaluation checks and secret scan green | green on `d4a74f9` (run 45590689598), which includes that test |
+| P Projects and chat menu | `feat/projects-ux` (from the fix branch) | built; 12 new browser tests green; regression running | not pushed yet |
 | 1b Placement and sharing | `feat/image-share` | not started | |
 | 2 Analytics | `feat/analytics` | not started | |
 | 3 Feedback | `feat/feedback` | not started | |
@@ -112,6 +112,16 @@ Everything is in `docs/image-editing-20261125.md` on the branch: what a user get
 - **Limits you should know:** about 8 to 12 versions fit in one chat (the 4 MB limit of a synced chat); painting needs a mouse, finger or pen.
 - **Tests:** 32 new (6 server, 10 logic, 16 real-browser at 375 and 1,280 px in English and German). The accessibility check is clean on the card and the editor. Re-run and green: images, chat, Canvas, Whiteboard, limits, Secure and Secure Max, sign-in-free areas (245 tests in 30 files).
 
+## Projects and the chat menu (`feat/projects-ux`, your message of 25 November)
+
+Everything is in `docs/projects-ux-20261125.md` on the branch: what was there before, what it is now, five decisions, what is not built and what it would take. In short:
+
+- **Honest starting point:** a "⋯" on each chat already existed, with Rename, Pin, Archive and Delete. What was weak: it opened as a block inside the list, moving to a project was a plain drop-down box, there was no "New project" there and no "Remove from project", the open chat's own menu could not organise the chat, and the project screen had its chats at the very bottom.
+- **Now:** one menu, the same on a chat in the sidebar, on a chat inside a project and at the top right of the open chat: Rename, Pin, Add to project (with New project…), Remove from its project, Archive, Delete. It floats under the "⋯". The project's name under a chat's title opens the project. The project screen is a wide sheet with the chats first. A project's own "⋯" can start a chat in it.
+- **Found and fixed:** renaming the chat that is open did not change its title on screen.
+- **Not built:** memory per project (about two to three days, and one decision from you first: should a project chat still see your general memories?); dragging a chat onto a project; the project as a page of its own instead of a sheet.
+- **This branch starts from the fix branch, not from the tag,** because it changes the same project screen. Merging it brings the fixes with it.
+
 ## Files touched by more than one branch
 
 | File | Branches | Risk when combined |
@@ -121,7 +131,9 @@ Everything is in `docs/image-editing-20261125.md` on the branch: what a user get
 | `server/render-bridge.ts` | fix (visitor address, `/edge-check`), image-editing (body size and quiet time for one path) | low |
 | `server/deployment-config.ts` | fix (`clientIpHeader`), image-editing (`imageEditing`) | low |
 | `server/image-creation.ts` (fix) and `server/image-edit.ts` (image-editing) | both map `flux-2-klein` to the provider's `flux-2-klein-4b` | none: separate files; fold together after merging |
-| `src/chat-design.css` | fix only (appended at the end). Tracks keep their styles in their own files | none so far |
+| `src/chat-design.css` | fix (appended at the end); projects-ux changes three of those appended lines (it contains the fix branch, so no conflict). Tracks keep their styles in their own files | none so far |
+| `src/App.tsx`, `src/ProjectPanel.tsx`, `src/WorkspaceNavigation.tsx`, `src/SettingsBody.tsx` | projects-ux (on top of fix); image-editing touches `src/App.tsx` in other places | low; check the "+" menu and the send function after combining |
+| `evaluation/audit-tour.ts` | image-editing (one new step), projects-ux (one renamed entry) | low |
 | `tests/deployment-inference-config.test.ts`, `deployment/render-config.owner-test.example.json` | fix only so far | later tracks that add a switch to the example will touch the same line |
 
 *(filled in per track)*
