@@ -18,6 +18,7 @@
 | Activity (44) | Render variable `VITE_ACTIVITY=1`, then redeploy | |
 | Error states (45) | Render variable `VITE_ERROR_STATES=1`, then redeploy | Best together with Activity |
 | Memory per project (46) | Render variable `VITE_PROJECT_MEMORY=1`, then redeploy | `VITE_PROJECTS` and `VITE_MEMORY` on. Read the warning in `docs/project-memory-20261126.md` before switching it on |
+| Answer blocks (49) | Render variable `VITE_ANSWER_BLOCKS=1`, then redeploy | Best with `VITE_ANSWER_DESIGN`. It adds about 300 tokens of instructions to every message (`docs/answer-blocks-20261126.md`) |
 
 **Cost:** every edit counts as one image of the day (about EUR 0.01 to 0.03 each). Sections 32 and 33 together use about 12. Raise `dailyImages` for your test day or spread them over two days.
 
@@ -261,3 +262,25 @@
 | --- | --- | --- | --- |
 | 48.1 | Reload the app ten times in a row, signed in, with saved chats | Each time the chats are there within a few seconds | |
 | 48.2 | If the sidebar ever stays on "Loading your chats…" (or on grey rows) for more than about 8 seconds | Write down what you did just before and send it to the agent (`docs/loading-hang-20261126.md`) | |
+
+## 49. Visual answers: notes, steps, diagrams, quick checks, tabs (with `VITE_ANSWER_BLOCKS` on)
+
+Use made-up questions. The point of this section is as much what does **not** appear as what does.
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| 49.1 | Five short questions: a capital city, "15 % of 240", a thank-you note, a translation, a short e-mail | Plain answers. **No box, no diagram, nothing decorative** | |
+| 49.2 | "Explain in detail how a CI/CD pipeline works, including what happens when the tests fail." | A flow diagram drawn by the app (boxes, arrows, a decision, a loop back) and at most one "Key idea" note. The text still explains everything | |
+| 49.3 | "Explain the funding stages of a startup, from the first money to going public." | Numbered step cards with small tags | |
+| 49.4 | "Explain in detail the parts a typical web application is made of." | A diagram of layers or a flow | |
+| 49.5 | "Should I lease or buy a car if I drive 8,000 km a year? Give me your verdict." | A green-edged "Conclusion" note; no diagram | |
+| 49.6 | "Can I mix bleach and vinegar to clean better?" | An amber-edged "Watch out" note | |
+| 49.7 | "Explain the accusative in German and then test me." | A quick check: questions whose answers open on a tap | |
+| 49.8 | "Explain bubble sort, merge sort and quicksort so I can look at them one at a time." | Tabs, one algorithm each (the model sometimes writes this as plain sections instead) | |
+| 49.9 | Count the colours in any of these answers | The accent, greys, and at most the amber and green of the two notes. It should look calm | |
+| 49.10 | Phone: 49.2 | The diagram keeps a readable size and scrolls sideways inside its frame; the page does not | |
+| 49.11 | Dark mode: 49.2, 49.3, 49.5 | Readable; the notes keep their soft tint | |
+| 49.12 | The same questions in German | The labels are German ("Kernidee", "Achtung", "Fazit") | |
+| 49.13 | Copy an answer with a diagram, and export it as PDF | Copy gives the text with the diagram's data; the PDF shows the drawn diagram | |
+| 49.14 | If a block ever shows as a grey box of code with curly brackets | The model made a slip and the app showed it as written. Note the question; about 1 in 16 in my measurement | |
+| 49.15 | Write down which blocks you find useful and which you would drop | Each can be removed from the rules on its own | |
