@@ -18,10 +18,64 @@
 - **Allowance.** Your friends will get the alpha plan: 150 units a week and 40 a day. A full pass of this list uses more than 40 in a day. So for your test, set `"metering": { "enabled": true, "plan": "premium" }` in `render-config.json` (150 a day, 600 a week, more pictures, voice and research), and set it back to `"alpha"` before friends come. The limit tests in section 20 use account B and a database edit, so they work with either plan.
 - **Cost.** One full pass costs well under EUR 10: Privatemode tokens, about 60 Brave searches (about USD 0.30) and about 10 created images (about EUR 0.15 to 0.30). Check the Privatemode portal at the end of each day (test 25.6).
 
+## Core path (do these 46 first)
+
+**What this is:** the shortest pass that touches everything a friend will use. About 2 hours on the PC plus 20 minutes on the phone. If all 46 pass, the build is good enough to go on with the full list below; if one fails, write it in the findings log as "C.n" and carry on. The number in brackets is the full test it comes from. C.20, C.21 and C.35 are new (fixes of 25 November).
+
+| # | Do | Expect | P/F |
+| --- | --- | --- | --- |
+| C.1 | Open `https://app.cometrow.com/readyz`, then sign in with A and open `/api/status` (0.1, 0.2) | `200`; the status lists the features and `inference` shows `"ready": true` | |
+| C.2 | Signed out, open the app (2.1) | Sign-in page with "Continue with Google" and the one line about Terms and Privacy Policy | |
+| C.3 | Sign in with A (2.2) | The app opens. No popup, notice, card or consent anywhere | |
+| C.4 | Sign in with a Google account that is not on the list (2.5) | Refused; no app opens | |
+| C.5 | Sign in with B in another browser; A writes a chat (2.4, 3.1) | B's app is empty and stays empty | |
+| C.6 | **Fast**: "Write two sentences about autumn." (4.1) | The answer streams within a few seconds | |
+| C.7 | **Thinking**: "A train leaves at 09:17 and arrives at 11:52. How long is the trip in minutes? Show the steps." (4.2) | 155 minutes, with steps | |
+| C.8 | A long answer, press **Stop** halfway (4.4) | Stops at once with "Stopped by you."; the partial answer can be copied | |
+| C.9 | **Copy** an answer, then **Retry** it, then **Edit** your message and send (4.5 to 4.8) | Copy pastes the full text; Retry and Edit make branches you can switch between | |
+| C.10 | Ask for a markdown table, a Python code block and a formula (4.9) | All render cleanly; "Copy code" says "Copied" | |
+| C.11 | Sidebar: rename a chat, pin it, archive another, delete a third (4.12, 4.13) | Each works; delete asks first | |
+| C.12 | Ctrl+K, search for a word in a chat title (4.14) | The chat is found | |
+| C.13 | **New incognito chat**, one message, reload (4.16) | "Incognito chat · Not saved"; gone after reload | |
+| C.14 | Ask in German: "Was ist die Hauptstadt von Frankreich?" (4.20) | The answer is in German | |
+| C.15 | Ask "What is the current ticket price for the Hamburg Elbphilharmonie plaza?" (5.1) | It searches by itself, answers with numbered sources, and shows "Searched the web" | |
+| C.16 | Tap "Searched the web" (5.2) | The exact searched text and the sources; each source opens | |
+| C.17 | Ask "Explain how photosynthesis works" (5.3) | No search, no "Searched the web" line | |
+| C.18 | A question with "pia@example.test" that needs a search (5.6) | The searched text shows the address replaced | |
+| C.19 | Settings > General: turn "Look things up online" off, ask C.15 again, turn it on (5.7) | Off: no search. On by default | |
+| C.20 | **New.** Account > Your usage, the "Web searches" line | The daily number is 60 on the premium plan | |
+| C.21 | **New, B only, optional.** Use up B's searches for the day, then ask C.15 as B | B gets a normal answer without a search, and one calm line: "Today's web searches are used up, so this answer does not use web results. Searching works again within 24 hours." No error | |
+| C.22 | "+" > **Deep research**: "Compare heat pumps and gas heating for a German flat in 2026" (6.1, 6.2) | It starts at once, shows one progress line with "Stop the research", and ends with numbered sources | |
+| C.23 | Attach a PDF of 50 to 100 pages and ask about a fact on a late page (7.2) | The right answer and page; the note says which passages were sent | |
+| C.24 | **Photo to text** on printed text (7.6) | The text is read on the device and editable before sending | |
+| C.25 | "+" > **Ask about a picture** with a photo of a shopping list; cover a part, attach, ask "What does this picture show?" (8.1 to 8.3) | Boxes work; a sensible answer; the chat keeps "[Picture: not kept]" | |
+| C.26 | "+" > **Create image**: "A calm lake at sunrise, watercolour style", then Download (9.1, 9.2) | An image within about 30 s; the file saves and opens | |
+| C.27 | "A realistic photo of Angela Merkel" (9.4) | Refused; no count used | |
+| C.28 | Tap the microphone, say a sentence, tap again (10.1) | The text lands in the box; nothing is sent | |
+| C.29 | "What is 19 % of 6,420 EUR?" (11.1) | 1,219.80 with "Calculated with code on this device" | |
+| C.30 | "Show Germany's population for 2018 to 2024 as a chart" (12.1) | A line chart with a title and units | |
+| C.31 | **Read aloud** on an answer, then "Export as PDF" (13.1, 13.4) | A voice reads it; the PDF is clean black on white | |
+| C.32 | **Open in canvas**, edit, "Ask for changes": "make it shorter", Apply (14.1 to 14.3) | The panel opens on the right; nothing changes until Apply | |
+| C.33 | "Remember that I am vegetarian", Save; in a new chat ask for a dinner idea (15.1, 15.2) | Not sent as a message; the new answer respects it and says 1 memory was sent | |
+| C.34 | Create a project with instructions and a PDF; "New chat in this project", ask about the file (16.1 to 16.3) | Uses the file and the instructions | |
+| C.35 | **New.** Open the project, press the pencil beside a chat, type a new name, Enter. Then again and press Esc | Enter saves and the new name shows in the project and the sidebar; Esc keeps the old name | |
+| C.36 | Left menu > **Whiteboard**: draw, write "Kitchen", ask "What is on my whiteboard?" (17.1, 17.2, 17.4) | A sensible answer with a "Whiteboard" card on the question | |
+| C.37 | **Scheduled** > a template, time 2 minutes ahead, Manual; wait; Run now (18.1 to 18.3) | The due strip appears; Run now makes a new chat | |
+| C.38 | Chat on the PC, then sign in on the phone (19.2, 19.3) | The chat is there; continue it on the phone and both devices show both parts | |
+| C.39 | Account menu, then Account > **Your usage** (20.1, 20.2) | The compact line and the page with week, today and daily limits; rows line up; no euros | |
+| C.40 | **Secure Max** the first time; turn on sync and save the recovery key (21.1 to 21.3) | The one consent dialog; the key is shown once; "Sync is on." | |
+| C.41 | Settings: open every tab; Security on the phone too (22.1) | Each opens; the Security rows line up, one under the other | |
+| C.42 | Data controls > "Export my chats" > Markdown (22.3) | The file holds your test chats; no incognito chat | |
+| C.43 | `/terms`, `/privacy` and the footer (23.1, 23.5) | Both open; the footer says "No advertising. No training on your data." | |
+| C.44 | `https://app.cometrow.com/no-such-page`; then go offline during a streaming answer (24.1, 24.3) | The CometRow "Page not found" page; a plain sentence with Retry, no blank page | |
+| C.45 | Shell: `touch /tmp/cometrow-chat-stop`, send; `rm` it, send (25.1, 25.2) | Refused at once, then works again | |
+| C.46 | Phone: sign in, C.6, C.15, C.26, and "Add to Home screen" (4.1, 5.1, 9.1, 1.6) | All work; nothing is cut off; the CometRow icon opens the app | |
+
 ## Index
 
 | Section | Area | Tests |
 | --- | --- | --- |
+| C | Core path (above; do it first) | C.1 to C.46 |
 | 0 | Set-up check | 0.1 to 0.6 |
 | 1 | Website to app | 1.1 to 1.6 |
 | 2 | Sign-in, consent and sessions | 2.1 to 2.9 |

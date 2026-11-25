@@ -916,8 +916,9 @@ export function App() {
       window.location.assign("/auth?reason=expired");
     }
     if (!response.ok)
-      throw new Error(
-        result.error ? serverMessage(result.error, lang) : t.requestFailed,
+      throw Object.assign(
+        new Error(result.error ? serverMessage(result.error, lang) : t.requestFailed),
+        { status: response.status },
       );
     return result;
   }
@@ -1566,7 +1567,7 @@ export function App() {
   // One automatic search: its masked text goes to the server, its results join the chat.
   async function research(
     approved: Disclosure,
-  ): Promise<{ attachment?: Attachment } | "failed" | undefined> {
+  ): Promise<{ attachment?: Attachment } | "failed" | "capped" | "quiet" | undefined> {
     if (busy) return;
     setSearchSent("");
     setBusy(t.retrieving);
@@ -1619,6 +1620,11 @@ export function App() {
       }
     } catch (e) {
       if (current === epoch.current && !abort.signal.aborted) {
+        // The day's searches are used up (429), or the search service has no credit left (503):
+        // the question is answered without a search, never with an error (owner, 25 November).
+        const code = (e as { status?: number }).status;
+        if (approved.kind === "search" && (code === 429 || code === 503))
+          return code === 429 ? "capped" : "quiet";
         fail(e instanceof Error ? e.message : t.researchFailed);
         return "failed";
       }
@@ -1650,8 +1656,10 @@ export function App() {
     if (limit) return void setNotice(limit);
     const outcome = await research({ kind: "search", value });
     if (!outcome) return;
-    if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed);
+    if (outcome === "failed" || outcome === "capped" || outcome === "quiet") {
+      // "quiet": the search service is out of credit; the answer comes without a note.
+      if (outcome !== "quiet")
+        setSearchSent(outcome === "capped" ? WHEN_TO_SEARCH.dailyCapReached : WHEN_TO_SEARCH.automaticFailed);
       return send(base, text, draft, asked?.mode, undefined, asked?.voiceTurn);
     }
     return send(

@@ -403,6 +403,12 @@ export const RULES_GOGGLE = [
   ...RULES_SOURCE_DOMAINS.official.map((domain) => `$boost=4,site=${domain}`),
   ...RULES_SOURCE_DOMAINS.publicInterest.map((domain) => `$boost=2,site=${domain}`),
 ].join("\n");
+/** The search provider refused for money reasons: no credit left, or its quota is reached. */
+export class SearchCreditExhausted extends Error {
+  constructor() {
+    super("Search provider credit exhausted.");
+  }
+}
 export async function searchWeb(
   query: string,
   key: string,
@@ -440,6 +446,8 @@ export async function searchWeb(
   });
   if (!response.ok) {
     await response.body?.cancel();
+    // 402: the plan's credit is used up. 429: the plan's rate or monthly quota is reached.
+    if (response.status === 402 || response.status === 429) throw new SearchCreditExhausted();
     throw new Error(
       "Search provider unavailable. No automatic retry was made.",
     );

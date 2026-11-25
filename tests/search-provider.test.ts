@@ -3,7 +3,7 @@ const upstream = vi.hoisted(() => vi.fn());
 vi.mock("undici", async (importOriginal) => ({
   ...(await importOriginal<typeof import("undici")>()), fetch: upstream,
 }));
-import { RULES_GOGGLE, searchWeb } from "../server/research";
+import { RULES_GOGGLE, SearchCreditExhausted, searchWeb } from "../server/research";
 import { parseResearchResult } from "../src/research-result";
 afterEach(() => upstream.mockReset());
 const result = { title: "<b>Library</b>", url: "https://example.com/library", description: "Saturday: <b>10–14</b>." };
@@ -20,6 +20,15 @@ it("sends only the exact search query and returns labelled excerpts compatible w
   expect(sources[0].text).toBe("Search excerpt only (full page not fetched): Saturday: 10–14.");
   expect(sources[0].title).toBe("Library");
   expect(parseResearchResult({ sources }, [])).toEqual(sources);
+});
+
+it("tells an empty account at the search provider apart from an outage", async () => {
+  for (const status of [402, 429]) {
+    upstream.mockResolvedValue(new Response("", { status }));
+    await expect(searchWeb("synthetic", "TEST_ONLY")).rejects.toBeInstanceOf(SearchCreditExhausted);
+  }
+  upstream.mockResolvedValue(new Response("", { status: 500 }));
+  await expect(searchWeb("synthetic", "TEST_ONLY")).rejects.not.toBeInstanceOf(SearchCreditExhausted);
 });
 
 it("fails the whole response on malformed evidence without exposing payloads or retrying", async () => {

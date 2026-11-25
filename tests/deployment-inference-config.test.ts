@@ -378,7 +378,8 @@ it("loads deployment/render-config.owner-test.example.json with everything on, i
     expect(loaded.inference).toMatchObject({
       apiKey: "synthetic",
       searchKey: "synthetic",
-      metering: { plan: "alpha" },
+      // The owner's test runs on the premium plan (decision D6): 60 web searches a day.
+      metering: { plan: "premium" },
       imageCreation: { apiKey: "SYNTHETIC_IMAGE_KEY", model: "flux-2-klein", dailyImages: 3 },
       code: true,
       research: { cost: 15 },
