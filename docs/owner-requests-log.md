@@ -22,9 +22,10 @@
 - **What I did:** looked at all twelve, moved them to `ui-references\received-20261126b` under names that say what each shows, and wrote a proposal: `docs/answer-design-next-20261126.md`. It says what each element in your references does well or badly, and proposes five answer blocks (callout, steps, diagram, quick check, explorer), each with a rule for when the model may use it, limits the app keeps, how it is measured before it ships, and what it costs. No pictures from the web: the app loads nothing from other sites, and a drawn diagram says more than a stock picture.
 - **Built after your yes (entry 22):** notes (Key idea, Watch out, Conclusion), steps, diagrams (flow and layers), quick checks and tabs. One accent colour and greys; only the three notes have a soft tint of their own. The model has a rule for each block that says when it may be used; the app keeps the limits and shows a block that does not fit as it was written.
 - **Measured on the live model** (24 made-up questions, English and German, the product's own settings): the 8 short or simple questions all stayed plain; 14 of the 16 that should get a block got a fitting one; 22 of 24 in all.
-- **Where:** branch `feat/answer-blocks` (on top of `feat/error-states`), commit `128b752`. Doc `docs/answer-blocks-20261126.md`. Switch `VITE_ANSWER_BLOCKS`. Your tests: section 49. Two screenshots were sent to you.
+- **Where:** branch `feat/answer-blocks` (on top of `feat/error-states`), commit `7cb1222`. Doc `docs/answer-blocks-20261126.md`. Switch `VITE_ANSWER_BLOCKS`. Your tests: section 49. Two screenshots were sent to you.
 - **Tests:** 5 logic tests and 5 browser tests green (phone and desktop, light and dark; with the switch off no block and the instructions unchanged to the character).
 - **Cost:** about 300 more input tokens per message (about EUR 0.00006 on Fast). The measurement cost EUR 0.25.
+- **Added after a review (same evening):** while an answer is still being written, a block shows the quiet line "Preparing a figure…" instead of its raw data; block data is left out of the source check and out of read aloud (a diagram is read from its words, not twice); the blocks are now a step of the screen tour, which found one fault, fixed: on a phone the diagram scrolls sideways and could not be reached by keyboard.
 - **Status:** done. Not built: pictures from the web (your rule: nothing is loaded from other sites) and a live try-out with a slider (the possible sixth block).
 
 ## 20. Where your screenshots are kept
@@ -61,10 +62,10 @@
   - **A diagnostic in the screen tour:** a failed step now records every request without an answer and what the sidebar said, so the next stall names its cause.
   - **Two look-alikes found and fixed:** the test tool's own relay of the first status request (it now tries twice), and a tour step that waited for a split-second progress line.
   - **Found on the way, a real fault:** the chart's hidden table for screen readers made a narrow phone screen scroll sideways (CI on Linux fonts caught it). Fixed.
-- **Where:** branch `fix/before-owner-test`. Doc `docs/loading-hang-20261126.md`.
+- **Where:** branch `fix/before-owner-test`, commit `6472f36`. Doc `docs/loading-hang-20261126.md`.
 - **Tests:** the new test passes (60 loads, none over 8 seconds).
-- **What the diagnostic then showed (the same evening):** two stalls named what they waited for. One: the request for the saved chats had no answer for 69 seconds while an old streamed test answer still held a connection (the browser allows six to one server). Two: no request was open at all, so the browser's own database was the thing waiting, most likely held by another page. Both are written up with next steps in `docs/loading-hang-20261126.md`.
-- **Status:** partly. Guard test and diagnostic in place; two causes named. **Not done:** confirming whether a user can hit either one, and the three next steps in the doc (close streams in the tour, report a blocked database with a plain line, a two-tab test).
+- **What the diagnostic then showed (the same evening): leads, not causes.** Three stalls were recorded. One showed the request for the saved chats without an answer; one showed no request open at all (so something inside the page waited, possibly the browser's own database); one was a different failure that only looks alike. **A correction:** I first wrote that old streamed answers used up the browser's six connections. That does not hold (the test answers never use a connection to the server, and the diagnostic's list still held requests of earlier pages) and is withdrawn. The diagnostic now forgets earlier pages.
+- **Status:** partly. Guard test and corrected diagnostic in place. **The stall is not explained.** Not done: the next steps in the doc (read the next stall with the corrected diagnostic, report a blocked database with a plain line, a two-tab test).
 
 ## 17. Memory per project
 
@@ -81,7 +82,7 @@
 - **You asked:** the full screen-by-screen pass over all earlier screens.
 - **What I did:** the screen tour can now run every screen in dark (`--scheme dark`). I ran all of it in dark at phone and desktop size with the accessibility check (which measures contrast), and looked at 18 key screens myself in contact sheets (project page, chat menu, image card and editor, share, owner dashboard, feedback, plans, settings, usage, saved chats, research report, canvas).
 - **Found and fixed:** the main buttons of the share, feedback and plans screens used white text on the accent colour (too pale in dark); the "Thought" line had a light box behind it; the report card and the answer design were built against both themes from the start.
-- **Where:** fixes on `feat/image-share`, `feat/feedback`, `feat/plans-checkout`, `feat/activity-states`; the tour option on `fix/before-owner-test`.
+- **Where:** fixes on `feat/image-share` (`9033ba1`), `feat/feedback` (`804dce5`), `feat/plans-checkout` (`23eeb6e`), `feat/activity-states`; the tour option on `fix/before-owner-test`.
 - **Tests:** dark tour: every screen, no failed step, 0 accessibility findings (numbers of the final run are in the run report).
 - **Status:** done, with this limit: the dark tour ran in English only (colours do not depend on the language), and I looked closely at 18 screens, not at every one of about 200. Your test 47.1 is the full human pass.
 
@@ -90,7 +91,7 @@
 - **Date:** 26 November 2026.
 - **You asked:** when an answer fails or stops, one short friendly line with a soft red accent where the answer would be, with Retry; plain words, no codes; keep the partial answer and the message and say what was lost; "You're offline" until the connection is back; the same for a failed image; a failed search does not fail the answer; the usage limit stays the calm line, not red.
 - **What I did:** one shared error line. "Something went wrong. Your message is safe." (also for timeout and busy, each with its own words), with Retry; the part that arrived stays and the line says the rest was lost; offline says so and Retry waits for the connection; "Stopped by you." is the same line without red; a failed image shows the line in the Create image window with Retry. The second, technical notice above the message box is gone while the switch is on. The limit and refusals keep their own calm sentences. A failed search already did not fail the answer; nothing was changed there.
-- **Where:** branch `feat/error-states` (on top of `feat/activity-states`). Doc `docs/error-states-20261126.md`. Switch `VITE_ERROR_STATES`.
+- **Where:** branch `feat/error-states` (on top of `feat/activity-states`), commit `cb75027`. Doc `docs/error-states-20261126.md`. Switch `VITE_ERROR_STATES`.
 - **Tests:** 4 browser tests green (phone and desktop, English and German, light and dark); one older test updated to the new line.
 - **Status:** done.
 
@@ -100,7 +101,7 @@
 - **You asked:** behind an off-switch: "Thinking…" with a softly pulsing dot in the brand gradient, collapsing to "Thought for N s", with the model's reasoning shown collapsed if Privatemode returns it, otherwise the steps (and tell you which it is); steps in the same line; an image placeholder with a soft shimmer, then a fade-in; skeleton rows for the chat list and app start.
 - **Your question, answered: Privatemode returns the model's reasoning text,** in both Fast and Thinking (one made-up question to each, under one cent). So "Thought for N s" opens to the real reasoning; when an answer comes without it, it opens to the steps.
 - **What I did:** one component used everywhere: the live line with the gradient dot ("Thinking…", "Searching the web…", "Reading on your device…", "Calculating on your device…", the backup model, deep research); "Thought for N s" over the answer; "Read N sources" as a step after a search; a square shimmer placeholder for an image and a fade-in; skeleton rows in the sidebar. The technical statuses ("Preparing encrypted transport…") are all "Thinking…" while the switch is on. Nothing moves when the answer arrives; nothing moves at all under "reduce motion".
-- **Where:** branch `feat/activity-states` (on top of `feat/answer-design`). Doc `docs/activity-states-20261126.md`. Switch `VITE_ACTIVITY`.
+- **Where:** branch `feat/activity-states` (on top of `feat/answer-design`), commit `6d03b21`. Doc `docs/activity-states-20261126.md`. Switch `VITE_ACTIVITY`.
 - **Tests:** 4 browser tests green (phone and desktop, English and German, light and dark, one with "reduce motion").
 - **Status:** done. **One decision to confirm:** the reasoning is shown while the chat is open and is not saved (after a reload an older answer has no "Thought" line). Saving it would grow every saved chat.
 
@@ -109,7 +110,7 @@
 - **Date:** 26 November 2026.
 - **You asked:** answers stay inline, like ChatGPT. Document cards only for deep research reports and canvas documents. Finish the answer design for inline answers: the "Searched the web" block, and a before/after sheet of the sample answers to judge after your exams.
 - **What I did:** recorded the decision (no cards for normal answers). "Searched the web" is now a quiet pill with the number of sources; opened, a card with the searched text and the sources as numbered rows. The before/after sheet is in `docs/answer-design-sheets/`: one picture per sample answer, before left and after right, in light and in dark (22 pictures), made by the test from the real answers.
-- **Where:** branch `feat/answer-design`. Doc `docs/answer-design-20261125.md`.
+- **Where:** branch `feat/answer-design`, commit `6ce6bb4`. Doc `docs/answer-design-20261125.md`.
 - **Tests:** 6 browser tests green on the real answers (phone and desktop, light and dark).
 - **Status:** done for this round. Your judgement of the sheet decides the next pass; the two blocks from entry 19 (coloured cards, diagrams) wait for your yes.
 
