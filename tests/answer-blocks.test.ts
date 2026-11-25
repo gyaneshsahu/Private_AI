@@ -15,7 +15,11 @@ it("steps, quiz and explore take their shape and nothing else", () => {
   expect(parseSteps(json({ items: [{ title: "A" }, { title: "B", text: "t", tag: "now" }] }))?.items).toHaveLength(2);
   expect(parseSteps(json({ items: [{ title: "only one" }] }))).toBeUndefined();
   expect(parseSteps(json({ items: Array.from({ length: 9 }, () => ({ title: "x" })) }))).toBeUndefined();
-  expect(parseSteps(json({ items: [{ title: "A" }, { title: "x".repeat(81) }] }))).toBeUndefined();
+  // A title a little too long is cut, not refused; far too long is not a slip any more.
+  expect(parseSteps(json({ items: [{ title: "A" }, { title: "x".repeat(81) }] }))?.items[1].title).toHaveLength(80);
+  expect(parseSteps(json({ items: [{ title: "A" }, { title: "x".repeat(400) }] }))).toBeUndefined();
+  // The opening of the JSON left out (seen from the live model) is put back.
+  expect(parseSteps('items":[{"title":"A"},{"title":"B"}]}')?.items).toHaveLength(2);
   expect(parseSteps("not json")).toBeUndefined();
   expect(parseQuiz(json({ items: [{ q: "Why?", a: "Because." }] }))?.items[0].a).toBe("Because.");
   expect(parseQuiz(json({ items: [{ q: "Why?" }] }))).toBeUndefined();

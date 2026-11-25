@@ -4,7 +4,15 @@
 // bounded here whatever the model writes. Nothing is fetched and no library is used.
 import { z } from "zod";
 
-const short = (max: number) => z.string().trim().min(1).max(max);
+// A text a little over its length is cut to it, not refused: a diagram with one long label is still a diagram.
+// Four times over is not a slip any more, and the block stays code.
+const short = (max: number) =>
+  z
+    .string()
+    .trim()
+    .min(1)
+    .max(max * 4)
+    .transform((text) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text));
 
 const steps = z.object({ items: z.array(z.object({ title: short(80), text: short(300).optional(), tag: short(28).optional() })).min(2).max(8) });
 export type StepsData = z.infer<typeof steps>;
@@ -15,8 +23,8 @@ export type QuizData = z.infer<typeof quiz>;
 const flow = z.object({
   type: z.literal("flow"),
   title: short(100).optional(),
-  nodes: z.array(z.object({ id: short(24), label: short(48), decision: z.boolean().optional() })).min(2).max(14),
-  edges: z.array(z.object({ from: short(24), to: short(24), label: short(18).optional() })).min(1).max(24),
+  nodes: z.array(z.object({ id: z.string().trim().min(1).max(24), label: short(44), decision: z.boolean().optional() })).min(2).max(14),
+  edges: z.array(z.object({ from: z.string().trim().min(1).max(24), to: z.string().trim().min(1).max(24), label: short(22).optional() })).min(1).max(24),
 });
 const layers = z.object({
   type: z.literal("layers"),
@@ -32,12 +40,16 @@ const explore = z.object({ tabs: z.array(z.object({ title: short(32), text: shor
 export type ExploreData = z.infer<typeof explore>;
 
 function parsed<T>(schema: z.ZodType<T>, text: string): T | undefined {
-  try {
-    const result = schema.safeParse(JSON.parse(text));
-    return result.success ? result.data : undefined;
-  } catch {
-    return undefined;
+  // Seen from the live model: the opening `{"` left out. Tried once more with it put back.
+  for (const candidate of [text, `{"${text.trim()}`]) {
+    try {
+      const result = schema.safeParse(JSON.parse(candidate));
+      if (result.success) return result.data;
+    } catch {
+      /* not JSON in this form */
+    }
   }
+  return undefined;
 }
 export const parseSteps = (text: string) => parsed(steps, text);
 export const parseQuiz = (text: string) => parsed(quiz, text);
